@@ -1,0 +1,36 @@
+name: "FDA with R"
+output_dir: '.'
+navbar:
+  title: FDA with R
+  right:
+  - text: Overview
+    href: overview.html
+  - text: Datasets
+    menu:
+    - text: NHANES
+      href: dataset_nhanes.html
+    - text: Content
+      href: dataset_content.html
+  - text: Chapters
+    menu:
+    - text: Chapter 1
+      href: chapter_01.html
+    - text: Chapter 2: 
+      href: chapter_02.html
+    - text: Chapter 3: FPCA
+      href: chapter_03.html
+    - text: Chapter 4: SoFR
+      href: chapter_04.html
+    - text: Chapter 4: FoSR
+      href: chapter_05.html
+  - icon: fa-github
+    href: https://github.com/FDAwithR
+output:
+  html_document:
+    theme: cosmo
+    include:
+      in_header: header.html
+      after_body: footer.html
+    css: styles.css
+    lib_dir: site_libs
+    self_contained: no

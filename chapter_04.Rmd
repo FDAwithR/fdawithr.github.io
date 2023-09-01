@@ -1,0 +1,955 @@
+---
+title: "Chapter 4: SoFR"
+output:
+  html_document: 
+    toc: true
+    toc_float: true
+---
+
+
+```{r, include = FALSE}
+library(tidyverse)
+library(tidyfun)
+
+library(mgcv)
+
+library(refund)
+library(refundr)
+
+library(splines2)
+
+library(patchwork)
+
+source(here::here("source", "nhanes_fpcr.R"))
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+
+## Ch Intro
+
+Thinking of complete functions as individual data points, which is the basic conceptual framework for FDA, suggests the need to include these observations in standard analyses. Regression models with scalar outcomes avoid reducing functional predictors to single-number summaries or treating each observed grid point separately. Instead, this class of approaches generally seeks to smooth estimate coefficient functions that flexibly capture the time-dependent structure in the associations.
+
+
+## Motivating Scalar-on-Function Regression
+
+The goal of this Chapter is to introduce FDA methods for modeling the effect of functional predictors on scalar outcomes. We start with a direct but non-functional approach which serves to build intuition for later functional methods. This approach, where bin-level averages are used as predictors in standard regression models, is useful in itself as an exploratory and interpretable analysis. 
+
+
+
+```{r load_nhanes}
+# import and organize the data
+
+nhanes_df = 
+  readRDS(
+    here::here("data", "nhanes_fda_with_r.rds")) %>% 
+  mutate(
+    death_2yr = ifelse(event == 1 & time <= 24, 1, 0)) %>% 
+  select(
+    SEQN, BMI, age, gender, death_2yr,
+    MIMS_mat = MIMS, MIMS_sd_mat = MIMS_sd) %>% 
+  filter(age >= 25) %>% 
+  drop_na(BMI) %>% 
+  tibble()
+```
+
+
+```{r create_tf}
+nhanes_df = 
+  nhanes_df %>% 
+  mutate(
+    MIMS_tf = matrix(MIMS_mat, ncol = 1440),
+    MIMS_tf = tfd(MIMS_tf, arg = seq(1/60, 24, length = 1440)),
+    MIMS_sd_tf = matrix(MIMS_sd_mat, ncol = 1440),
+    MIMS_sd_tf = tfd(MIMS_sd_tf, arg = seq(1/60, 24, length = 1440)))
+```
+
+Doing 12 2-hour bins. 
+
+```{r}
+nhanes_bin_df = 
+  nhanes_df %>% 
+  mutate(
+    MIMS_binned = 
+      tf_smooth(MIMS_tf, method = "rollmean", k = 120, align = "center"),
+    MIMS_binned = tfd(MIMS_binned, arg = seq(1, 23, by = 2))) %>% 
+  select(BMI, MIMS_binned) 
+
+fit_binned = 
+  lm(BMI ~ ., 
+     data = nhanes_bin_df %>% tf_spread(MIMS_binned))
+```
+
+
+
+```{r}
+nhanes_bin_df %>% 
+  slice(1:500) %>% 
+  ggplot(aes(y = MIMS_binned, color = BMI)) + 
+  geom_spaghetti() + 
+  geom_meatballs()
+
+fit_binned %>% 
+  broom::tidy() %>% 
+  filter(term != "(Intercept)") %>% 
+  mutate(
+    hour = str_replace(term, "MIMS_binned_", ""),
+    hour = as.numeric(hour),
+    ub = estimate + 1.96 * std.error,
+    lb = estimate - 1.96 * std.error) %>% 
+  ggplot(aes(x = hour, y = estimate)) + 
+  geom_point() + geom_path() +
+  geom_errorbar(aes(ymin = lb, ymax = ub), width = .5)
+```
+
+Not shown: code plotting and saving results
+
+```{r, echo = FALSE}
+ggp_binned_mims = 
+  nhanes_bin_df %>% 
+  slice(1:500) %>% 
+  ggplot(aes(y = MIMS_binned, color = BMI)) + 
+  geom_spaghetti() + 
+  geom_meatballs() + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "Coefficient")
+
+ggp_binned_coef = 
+  fit_binned %>% 
+  broom::tidy() %>% 
+  filter(term != "(Intercept)") %>% 
+  mutate(
+    hour = str_replace(term, "MIMS_binned_", ""),
+    hour = as.numeric(hour),
+    ub = estimate + 1.96 * std.error,
+    lb = estimate - 1.96 * std.error) %>% 
+  ggplot(aes(x = hour, y = estimate)) + 
+  geom_point() + geom_path() +
+  geom_errorbar(aes(ymin = lb, ymax = ub), width = .5) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "Coefficient")
+
+ggp_binned_mims + ggp_binned_coef
+
+ggsave(
+  here::here("figures", "ch04_sofr", "ch4_nhanes_binned_coef.pdf"),
+  plot = ggp_binned_mims + ggp_binned_coef,
+  width = 8, height = 4.5)
+```
+
+Binned vs daily average, comparing adjusted R squared
+
+```{r}
+nhanes_df %>% 
+  mutate(mean_mims = tf_integrate(MIMS_tf)) %>% 
+  lm(BMI ~ mean_mims, data = .) %>% 
+  broom::glance() %>% 
+  select(adj.r.squared)
+
+fit_binned %>% 
+  broom::glance() %>% 
+  select(adj.r.squared)
+```
+
+
+Showing the binned regression as a step function -- begin to shift towards coefficient function interpretation
+
+
+```{r}
+stepfun_coef_df = 
+  fit_binned %>% 
+  broom::tidy() %>% 
+  filter(term != "(Intercept)") %>% 
+  select(estimate, std.error) %>% 
+  slice(rep(1:12, each = 120)) %>% 
+  mutate(
+    method = "Step", 
+    estimate = .5 * estimate,
+    arg = seq(1/60, 24, length = 1440)) %>% 
+  tf_nest(.id = method)
+```
+
+Not shown: code for plots similar to above
+
+```{r, echo = FALSE}
+ggp_stepfun_mims = 
+  nhanes_df %>% 
+  slice(1:500) %>% 
+  ggplot(aes(y = MIMS_tf, color = BMI)) + 
+  geom_spaghetti() + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "Coefficient")
+
+ggp_stepfun_coef = 
+  stepfun_coef_df %>% 
+  ggplot(aes(y = estimate)) + 
+  geom_spaghetti(linewidth = 1.1, alpha = .75) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "Coefficient")
+
+ggp_stepfun_mims + ggp_stepfun_coef
+
+ggsave(
+  here::here("figures", "ch04_sofr", "ch4_nhanes_stepfun_coef.pdf"),
+  plot = ggp_stepfun_mims + ggp_stepfun_coef,
+  width = 8, height = 4.5)
+```
+
+
+### "Simple Linear" Scalar-on-Function
+
+Probably most important overall approach; very flexible, and with many model extensions. Start with a single functional coefficient to get things going. 
+
+
+
+### Model specification and interpretation
+
+Would then introduce functional form of a "simple" SoFR, including intercept and integral term only. Discuss interpretation of the functional coefficient, drawing on EDA for intuition. 
+
+Note that interpretation in more complex settings is similar -- would need to "hold scalar covariates" constant or think in terms of log ORs (for logit regression), but key ideas hold.
+
+Key challenge in this model is choosing a form for coefficient function and developing an estimation approach. 
+
+
+```{r, include = FALSE}
+pfr_fit = 
+  pfr(
+    BMI ~ lf(MIMS_mat, argvals = seq(1/60, 24, length = 1440)), 
+    method = "REML", data = nhanes_df)
+
+
+
+plt_pfr <- plot(pfr_fit, n = 1440)
+beta <- plt_pfr[[1]]$fit
+
+pfr_coef_df = 
+  coef(pfr_fit) %>% 
+  mutate(method = "refund::pfr()") %>% 
+  tf_nest(.id = method, .arg = MIMS_mat.argvals) %>% 
+  rename(estimate = value)
+
+pfr_coef_df = 
+  tibble(
+    coef = tfd(t(beta), arg = seq(1/60, 24, length = 1440))
+  )
+
+plot_subj_df = 
+  nhanes_df %>% 
+  mutate(
+    fitted = fitted(pfr_fit),
+    int = fitted - pfr_fit$coefficients[1]) %>% 
+  filter(
+    between(fitted, 25.0, 25.2) | between(fitted, 29, 29.0005) | between(fitted, 32.22, 32.25)
+  ) %>% 
+  select(SEQN, BMI, fitted, int, MIMS_tf) %>% 
+  mutate(
+    coef = pfr_coef_df$coef,
+    prod = MIMS_tf * coef,
+    SEQN = as.factor(SEQN),
+    SEQN = fct_reorder(SEQN, fitted))
+  
+
+interpret_p1 = 
+  plot_subj_df %>% 
+  mutate(
+    tf0 = tfd(rep(0, 1440), arg = seq(1/60, 24, length = 1440))
+  ) %>% 
+  ggplot(aes(y = MIMS_tf)) + 
+  geom_spaghetti() + 
+  facet_grid(SEQN~.) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "MIMS") + 
+  theme(text = element_text(size = 16)) 
+
+interpret_p2 = 
+  pfr_coef_df %>% 
+  ggplot(aes(y = coef)) + 
+  geom_spaghetti(linewidth = 1.2) + 
+  labs(x = "Time of day (hours)", y = "Coefficient") + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  theme(text = element_text(size = 16)) 
+
+interpret_p3 = 
+  plot_subj_df %>% 
+  mutate(
+    tf0 = tfd(rep(0, 1440), arg = seq(1/60, 24, length = 1440))
+  ) %>% 
+  ggplot(aes(y = prod)) + 
+  geom_spaghetti() + 
+  geom_errorband(aes(ymax = tf0, ymin = prod)) + 
+  facet_grid(SEQN~.) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "MIMS x Coefficient") + 
+  theme(text = element_text(size = 16)) 
+
+ggsave(
+  here::here("figures", "ch04_sofr", "ch4_interpret_p1.pdf"),
+  plot = interpret_p1,
+  width = 3, height = 7 )
+
+ggsave(
+  here::here("figures", "ch04_sofr", "ch4_interpret_p2.pdf"),
+  plot = interpret_p2,
+  width = 4.5, height = 4.5)
+
+ggsave(
+  here::here("figures", "ch04_sofr", "ch4_interpret_p3.pdf"),
+  plot = interpret_p3,
+  width = 3, height = 7)
+
+```
+
+
+
+
+### Parametric estimation of the coefficient function
+
+Clearly the novelty in the SoFR, compared to nonfunctional models, is the coefficient function that integrates with observed functions to produce scalar terms in the linear predictor. 
+
+Can start with a parametric basis expansion -- linear or quadratic -- to walk through the conversion of model to estimating a small number of parameters. This will include the integration of each basis function and functional predictor (and numeric approximations of that integration), which creates a known design matrix. 
+
+OPTION: Is it worthwhile to do this estimation using lm() with a fixed basis expansion? That would emphasize this is "just" regression after recasting the model.
+
+This has some limitations, though, and is not so flexible
+
+Code for creating basis.
+
+```{r}
+epoch_arg = seq(1/60, 24, length = 1440)
+
+B = cbind(1, epoch_arg, epoch_arg^2)
+colnames(B) = c("int", "lin", "quad")
+
+num_int_df = 
+  as_tibble(
+    (nhanes_df$MIMS_mat %*% B) * (1/ 60), 
+    rownames = "SEQN") %>% 
+  mutate(SEQN = as.numeric(SEQN))
+```
+
+Code for fitting model.
+
+```{r}
+nhanes_quad_df = 
+  left_join(nhanes_df, num_int_df, by = "SEQN") %>% 
+  select(BMI, int, lin, quad)
+
+fit_quad = 
+  nhanes_quad_df %>% 
+  lm(BMI ~ 1 + int + lin + quad, data = .)
+
+quad_coef_df = 
+  tibble(
+    method = "Quadratic",
+    estimate = tfd(t(B %*% coef(fit_quad)[-1]), arg = epoch_arg))
+```
+
+
+
+Not shown: code for doing integration via `tf_integrate` and confirming this is similar. 
+
+```{r, eval = FALSE, echo = FALSE}
+B_df = 
+  as_tibble(B) %>% 
+  mutate(arg = epoch_arg, id = "id") %>% 
+  tf_nest()
+
+temp = 
+  cross_join(nhanes_df, B_df) %>% 
+  mutate(x1 = tf_integrate(MIMS_tf * int)) 
+```
+
+Slight change in code, using BS with 8 DoF
+
+```{r}
+B_bspline = splines::bs(epoch_arg, df = 8, intercept = TRUE)
+colnames(B_bspline) = str_c("BS_", 1:8)
+
+num_int_df = 
+  as_tibble(
+    (nhanes_df$MIMS_mat %*% B_bspline) * (1/ 60), 
+    rownames = "SEQN") %>% 
+  mutate(SEQN = as.numeric(SEQN))
+
+nhanes_bspline_df = 
+  left_join(nhanes_df, num_int_df, by = "SEQN") %>% 
+  select(BMI, BS_1:BS_8)
+
+fit_bspline = 
+  lm(BMI ~ 1 + ., data = nhanes_bspline_df)
+
+bspline_coef_df = 
+  tibble(
+    method = "B-Spline",
+    estimate = 
+      tfd(t(B_bspline %*% coef(fit_bspline)[-1]), arg = epoch_arg))
+```
+
+```{r}
+bind_rows(stepfun_coef_df, quad_coef_df, bspline_coef_df) %>% 
+  ggplot(aes(y = estimate, color = method)) + 
+  geom_spaghetti(alpha = 1, linewidth = 1.2) 
+```
+
+
+```{r, echo = FALSE}
+ggp_unpen_coef_compare = 
+  bind_rows(stepfun_coef_df, quad_coef_df, bspline_coef_df) %>% 
+  ggplot(aes(y = estimate, color = method)) + 
+  geom_spaghetti(alpha = 1, linewidth = 1.2)  + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "Coefficient")
+
+ggp_unpen_coef_compare
+
+ggsave(
+  here::here("figures", "ch04_sofr", "ch4_unpen_coef_compare.pdf"),
+  plot = ggp_unpen_coef_compare,
+  width = 8, height = 4.5)
+```
+
+
+
+### Penalized spline estimation
+
+Broadly, we favor expanding in terms of a known basis and explicitly controlling smoothness using penalties, although other approaches are available. Simply using a low dimension spline basis works the same way as the parametric approach, but need to increase degrees of freedom and shift to penalized regression. 
+
+Recalling some preliminary information on smoothing, our goal is to estimate coefficient function in a way that explicitly penalizes wiggliness; we've seen how to do this in scatterplot smoothing, but the idea translates to this setting. In particular, we want to estimate coefficient function subject to a smoothness penalty controlled by a single tuning parameter. 
+
+Can write the resulting penalized likelihood for "simple" SoFR; note tuning parameter could be chosen in a variety of ways. But a central insight is the connection to semiparametric regression, which takes advantage of a mixed model formulation to obtain an equivalent ridge regression and estimate tuning parameters in terms of variance components. 
+
+NOTE: this is a point Ciprian's comments emphasize, and we should trace idea of casting penalized spline SoFR as a mixed model (in refund or mgcv) back to the pfr paper. 
+
+
+```{r}
+B_bspline = splines::bs(epoch_arg, df = 30, intercept = TRUE)
+sec_deriv = splines2::bSpline(epoch_arg, df = 30, intercept = TRUE, derivs = 2)
+P = t(sec_deriv) %*% sec_deriv * (1 / 60)
+
+X = cbind(1, (nhanes_df$MIMS_mat %*% B_bspline) * (1 / 60))
+D = rbind(0, cbind(0, P))
+
+y = nhanes_df$BMI
+
+lambda_high = 10e6
+lambda_low = 100
+
+coef_high = solve(t(X) %*% X + lambda_high * D) %*% t(X) %*% y
+coef_low = solve(t(X) %*% X + lambda_low * D) %*% t(X) %*% y
+```
+
+```{r, echo = FALSE}
+pen_spline_coef_df = 
+  tibble(
+    method = c("Low Penalty", "High Penalty"),
+    estimate = 
+      c(tfd(t(B_bspline %*% coef_low[-1]), arg = epoch_arg),
+        tfd(t(B_bspline %*% coef_high[-1]), arg = epoch_arg)))
+
+group.colors <- c("High Penalty" = "#fde725", "Low Penalty" = "#21918c")
+
+ggp_penlow_v_penhigh_coef_compare = 
+  pen_spline_coef_df %>% 
+  mutate(method = fct_inorder(method)) %>% 
+  ggplot(aes(y = estimate, color = method)) + 
+  geom_spaghetti(alpha = 1, linewidth = 1.2)  + 
+  scale_color_manual(values=group.colors) +
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "Coefficient")
+
+ggp_penlow_v_penhigh_coef_compare
+
+ggsave(
+  here::here("figures", "ch04_sofr", "ch4_penlow_v_penhigh_coef_compare.pdf"),
+  plot = ggp_penlow_v_penhigh_coef_compare,
+  width = 8, height = 4.5)
+```
+
+
+```{r}
+C = (nhanes_df$MIMS_mat %*% B_bspline) * (1 / 60)
+
+fit_REML_penalty = 
+  gam(y ~ 1 + C, paraPen = list(C = list(P)), 
+      method = "REML")
+```
+
+
+```{r, echo = FALSE}
+REML_penalty_df = 
+  tibble(
+    method = "REML Penalty",
+    estimate = tfd(t(B_bspline %*% coef(fit_REML_penalty)[-1]), arg = epoch_arg))
+
+ggp_pen_coef_compare = 
+  bind_rows(REML_penalty_df, pen_spline_coef_df) %>% 
+  mutate(method = fct_inorder(method)) %>% 
+  ggplot(aes(y = estimate, color = method)) + 
+  geom_spaghetti(alpha = 1, linewidth = 1.2) +
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "Coefficient")
+
+ggp_pen_coef_compare
+
+ggsave(
+  here::here("figures", "ch04_sofr", "ch4_pen_coef_compare.pdf"),
+  plot = ggp_pen_coef_compare,
+  width = 8, height = 4.5)
+```
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+pfr_fit = 
+  pfr(
+    BMI ~ lf(MIMS_mat, argvals = seq(1/60, 24, length = 1440)), 
+    method = "REML", data = nhanes_df)
+
+pfr_coef_df = 
+  coef(pfr_fit) %>% 
+  mutate(method = "refund::pfr()") %>% 
+  tf_nest(.id = method, .arg = MIMS_mat.argvals) %>% 
+  rename(estimate = value)
+```
+
+```{r, echo = FALSE}
+ggp_unpen_v_pen_coef_compare = 
+  bind_rows(bspline_coef_df, REML_penalty_df, pfr_coef_df) %>% 
+  ggplot(aes(y = estimate, color = method)) + 
+  geom_spaghetti(alpha = 1, linewidth = 1.2) +
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "Coefficient")
+
+
+ggp_unpen_v_pen_coef_compare
+
+ggsave(
+  here::here("figures", "ch04_sofr", "ch4_unpen_v_pen_coef_compare.pdf"),
+  plot = ggp_unpen_v_pen_coef_compare,
+  width = 8, height = 4.5)
+```
+
+
+
+Quick table showing Adjusted R2 for each of these models
+
+```{r}
+adj_r2_table = 
+  tibble(
+    method = c("bin", "quad", "bspline8"),
+    model = list(fit_binned, fit_quad, fit_bspline)
+  ) %>% 
+  mutate(
+    glance = map(model, broom::glance),
+    adjr2 = map_dbl(glance, "adj.r.squared")
+  ) %>% 
+  select(method, adjr2)
+```
+
+
+### Other basis approaches
+
+If your basis is data-driven, the integrals in the expansion aren't approximated using numeric integration; they're the scores from the FPCA expansion. Therefore you're effectively regressing on FPC scores. This can be good if it's hard to do that integration -- if curves are sparse or very noisy, for example. 
+
+```{r}
+nhanes_fpca = 
+  rfr_fpca("MIMS_tf", data = nhanes_df, npc = 4)
+
+B_fpca = nhanes_fpca$efunctions * sqrt(60)
+colnames(B_fpca) = str_c("efunc_", 1:4)
+
+num_int_df = 
+  as_tibble(
+    (nhanes_df$MIMS_mat %*% B_fpca) * (1/60), 
+    rownames = "SEQN") %>% 
+  mutate(SEQN = as.numeric(SEQN))
+
+nhanes_fpcr_df = 
+  left_join(nhanes_df, num_int_df, by = "SEQN") %>% 
+  select(BMI, efunc_1:efunc_5)
+
+fit_fpcr_int = 
+  lm(BMI ~ 1 + ., data = nhanes_fpcr_df)
+```
+
+
+Different way of doing the same thing.
+
+```{r, eval = FALSE}
+C = nhanes_fpca$scores * (sqrt(60) / 60)
+
+colnames(C) = str_c("score_", 1:4)
+rownames(C) = nhanes_df$SEQN
+
+nhanes_score_df = 
+  as_tibble(
+    C, rownames = "SEQN") %>% 
+  mutate(SEQN = as.numeric(SEQN))
+
+nhanes_fpcr_df = 
+  left_join(nhanes_df, nhanes_score_df, by = "SEQN") %>% 
+  select(BMI, score_1:score_5)
+
+fit_fpcr_score = 
+  lm(BMI ~ 1 + ., data = nhanes_fpcr_df)
+```
+
+
+```{r, echo = FALSE, eval = FALSE}
+fpcr_int_coef_lm = 
+  fit_fpcr_int %>% 
+  broom::tidy() %>% 
+  select(estimate, term) %>% 
+  mutate(
+    method = "Numeric Integration",
+    term = str_replace(term, "efunc_", "Coef. "))
+
+fpcr_score_coef_lm = 
+  fit_fpcr_score %>% 
+  broom::tidy() %>% 
+  select(estimate, term) %>% 
+  mutate(
+    method = "FPCA Score",
+    term = str_replace(term, "score_", "Coef. "))
+
+bind_rows(fpcr_int_coef_lm, fpcr_score_coef_lm) %>% 
+  pivot_wider(
+    names_from = term, 
+    values_from = estimate) %>% 
+  knitr::kable(format = "latex", digits = 3)
+```
+
+
+
+
+```{r, echo = FALSE}
+fpcr_coef_df = 
+  tibble(
+    npc = c(4, 12)
+  ) %>% 
+  mutate(
+    fit = map(npc, nhanes_fpcr, df = nhanes_df)
+  ) %>% 
+  unnest(fit) 
+
+ggp_fpcr_compare = 
+  bind_rows(fpcr_coef_df, stepfun_coef_df) %>% 
+  mutate(method = fct_inorder(method)) %>% 
+  ggplot(aes(y = estimate, color = method)) + 
+  geom_spaghetti(alpha = 1, linewidth = 1.2) +
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "Coefficient")
+
+ggp_fpcr_compare
+
+ggsave(
+  here::here("figures", "ch04_sofr", "ch4_fpcr_compare.pdf"),
+  plot = ggp_fpcr_compare,
+  width = 8, height = 4.5)
+```
+
+
+Regressing only on scores doesn't explicitly penalize for smoothness. You can choose the number of components, or maybe start with many and do a variable selection, but both of those have issues. Or you can do a penalized approach, where now you're doing numeric second derivatives and integration to get the penalty matrix. 
+
+```{r}
+fit_fpcr_int %>% 
+  broom::tidy()
+```
+
+
+
+### Inference
+
+Construction of (pointwise) confidence intervals.
+
+Need covariance thing.
+
+Here's FPCR with 5 basis functions.
+
+```{r}
+var_basis_coef = vcov(fit_fpcr_int)[-1,-1]
+var_coef_func = B_fpca %*% var_basis_coef %*% t(B_fpca)
+
+fpcr_inf_df = 
+  tibble(
+    method = c("FPCR: 5"),
+    estimate = tfd(t(B_fpca %*% coef(fit_fpcr_int)[-1]), arg = epoch_arg),
+    se = tfd(sqrt(diag(var_coef_func)), arg = epoch_arg)
+  ) %>% 
+  mutate(
+    ub = estimate + 1.96 * se,
+    lb = estimate - 1.96 * se) 
+```
+
+
+
+PFR inference comes from pfr; that's in the coef above.
+
+```{r}
+pfr_inf_df = 
+  pfr_coef_df %>% 
+  mutate(
+    ub = estimate + 1.96 * se,
+    lb = estimate - 1.96 * se) 
+```
+
+```{r}
+bind_rows(pfr_inf_df, fpcr_inf_df) %>% 
+  ggplot(aes(y = estimate)) + 
+  geom_spaghetti() +
+  geom_errorband(aes(ymax = ub, ymin = lb)) + 
+  facet_grid(.~method)
+```
+
+
+```{r, echo = FALSE}
+fpcr_inf_df = 
+  tibble(
+    npc = c(4, 8, 12)
+  ) %>% 
+  mutate(
+    fit = map(npc, nhanes_fpcr, df = nhanes_df)
+  ) %>% 
+  unnest(fit) 
+
+ggp_inf = 
+  bind_rows(pfr_inf_df, fpcr_inf_df) %>% 
+  mutate(method = fct_inorder(method)) %>% 
+  ggplot(aes(y = estimate)) + 
+  geom_spaghetti() +
+  geom_errorband(aes(ymax = ub, ymin = lb)) + 
+  facet_wrap(~method, nrow = 2, ncol = 2) +
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "Coefficient")
+
+ggp_inf
+
+ggsave(
+  here::here("figures", "ch04_sofr", "ch4_inf.pdf"),
+  plot = ggp_inf,
+  width = 8, height = 4.5)
+```
+
+
+
+### Identifiability
+
+We may want to do a little on identifiability. removing the mean from Xi(t) and maybe some of the work that Fabian and Sonja did (essentially showing that only particular types of beta coefficients are estimable).
+
+
+## Sparse Estimation
+
+I lean towards dedicating a section to this, rather than folding it in elsewhere. But it might be a short section ...
+
+Introduce CONTENT data, and explain that SoFR can easily become a dynamic prediction problem. 
+
+My understanding of the approach is: FPCA to expand predictors, still splines for coefficient, numeric integration and penalized estimation. 
+
+May need to revisit identifiability? 
+
+
+
+
+## Extensions of linear SoFR
+
+Many subsections extend 
+
+### Adding scalar covariates
+
+Just popping stuff in a non-penalized design matrix. 
+
+Show some results, interpret coefficients, done.
+
+```{r}
+pfr_adj_fit = 
+  pfr(
+    BMI ~ age + gender + lf(MIMS_mat, argvals = seq(1/60, 24, length = 1440)), 
+    data = nhanes_df)
+```
+
+```{r, echo = FALSE}
+pfr_adj_inf_df = 
+  coef(pfr_adj_fit) %>% 
+  rename(estimate = value) %>% 
+  mutate(
+    method = "pfr_adj",
+    ub = estimate + 1.96 * se,
+    lb = estimate - 1.96 * se) %>% 
+  tf_nest(.id = method, .arg = MIMS_mat.argvals)
+
+ggp_pfr_adj_v_unadj_coef_compare = 
+  bind_rows(pfr_adj_inf_df, pfr_inf_df) %>% 
+  ggplot(aes(y = estimate)) + 
+  geom_spaghetti(alpha = 1, linewidth = 1.2) +
+  geom_errorband(aes(ymax = ub, ymin = lb)) + 
+  facet_grid(.~method) +
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "Coefficient")
+
+
+ggp_pfr_adj_v_unadj_coef_compare
+
+ggsave(
+  here::here("figures", "ch04_sofr", "ch4_pfr_adj_vs_unadj_coef_compare.pdf"),
+  plot = ggp_pfr_adj_v_unadj_coef_compare,
+  width = 8, height = 4.5)
+
+summary(pfr_adj_fit)
+```
+
+
+Could do some additional work to get mediation ...
+
+### Multiple functional predictors
+
+```{r}
+pfr_mult_fit = 
+  pfr(
+    BMI ~ age + gender + 
+      lf(MIMS_mat, argvals = seq(1/60, 24, length = 1440)) + 
+      lf(MIMS_sd_mat, argvals = seq(1/60, 24, length = 1440)), 
+    data = nhanes_df)
+```
+
+
+```{r, echo = FALSE}
+pfr_mult_inf_df = 
+  bind_rows(
+    coef(pfr_mult_fit, select = 1) %>% mutate(coef = "MIMS") %>% rename(argvals = MIMS_mat.argvals),
+    coef(pfr_mult_fit, select = 2) %>% mutate(coef = "MIMS SD") %>% rename(argvals = MIMS_sd_mat.argvals)) %>% 
+  rename(estimate = value) %>% 
+  mutate(
+    ub = estimate + 1.96 * se,
+    lb = estimate - 1.96 * se) %>% 
+  tf_nest(.id = coef, .arg = argvals)
+
+ggp_pfr_mult_coef = 
+  pfr_mult_inf_df %>% 
+  ggplot(aes(y = estimate)) + 
+  geom_spaghetti(alpha = 1, linewidth = 1.2) +
+  geom_errorband(aes(ymax = ub, ymin = lb), linetype = 0) + 
+  facet_grid(.~coef) +
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "Coefficient")
+
+ggp_pfr_mult_coef
+
+ggsave(
+  here::here("figures", "ch04_sofr", "ch4_pfr_mult_coef.pdf"),
+  plot = ggp_pfr_mult_coef,
+  width = 8, height = 4.5)
+
+summary(pfr_mult_fit)
+```
+
+
+
+### Exponential family outcomes
+
+
+fit the model:
+
+```{r}
+pfr_mort_fit = 
+  pfr(
+    death_2yr ~ age + gender + BMI + 
+      lf(MIMS_mat, argvals = seq(1/60, 24, length = 1440)),
+    family = binomial(), method = "REML", data = nhanes_df)
+```
+
+```{r, echo = FALSE}
+pfr_mort_inf_df = 
+  coef(pfr_mort_fit) %>% 
+  rename(estimate = value) %>% 
+  mutate(
+    method = "pfr_adj",
+    ub = estimate + 1.96 * se,
+    lb = estimate - 1.96 * se) %>% 
+  tf_nest(.id = method, .arg = MIMS_mat.argvals)
+
+ggp_pfr_mort_coef = 
+  pfr_mort_inf_df %>% 
+  ggplot(aes(tf = estimate)) + 
+  geom_spaghetti(alpha = 1, linewidth = 1.2) +
+  geom_errorband(aes(ymax = ub, ymin = lb)) +
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), ":00")) + 
+  labs(x = "Time of day (hours)", y = "Coefficient")
+
+
+ggp_pfr_mort_coef
+
+```
+
+
+
+
+## Other SoFR models
+
+Not sure how far we go in this direction -- there are *tons* of models, and interpreting the results can be hard. Maybe this is where we show some options in pfr() and then do a lit review? 
+
+
+### FGAM
+
+I'm calling this an extension of linear SoFR, but I guess could go in other models. 
+
+
+
+
+
+
+
