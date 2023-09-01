@@ -7,22 +7,24 @@ navbar:
     href: overview.html
   - text: Datasets
     menu:
-    - text: NHANES
+    - text: "NHANES"
       href: dataset_nhanes.html
-    - text: Content
+    - text: "Content"
       href: dataset_content.html
   - text: Chapters
     menu:
-    - text: Chapter 1
+    - text: "Chapter 1"
       href: chapter_01.html
-    - text: Chapter 2: 
+    - text: "Chapter 2"
       href: chapter_02.html
-    - text: Chapter 3: FPCA
+    - text: "Chapter 3: FPCA"
       href: chapter_03.html
-    - text: Chapter 4: SoFR
+    - text: "Chapter 4: SoFR"
       href: chapter_04.html
-    - text: Chapter 4: FoSR
+    - text: "Chapter 4: FoSR"
       href: chapter_05.html
+  - text: Scripts
+    href: scripts.html
   - icon: fa-github
     href: https://github.com/FDAwithR
 output:

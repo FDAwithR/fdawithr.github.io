@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Chapter 4: SoFR</title>
+
+<script src="site_libs/header-attrs-2.16/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
+<script defer src="https://use.fontawesome.com/releases/v5.0.3/js/all.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.0/js/v4-shims.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics 
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151578452-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-151578452-1');
+</script>
+-->
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">FDA with R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="overview.html">Overview</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Datasets
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="dataset_nhanes.html">NHANES</a>
+    </li>
+    <li>
+      <a href="dataset_content.html">Content</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Chapters
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="chapter_01.html">Chapter 1</a>
+    </li>
+    <li>
+      <a href="chapter_02.html">Chapter 2</a>
+    </li>
+    <li>
+      <a href="chapter_03.html">Chapter 3: FPCA</a>
+    </li>
+    <li>
+      <a href="chapter_04.html">Chapter 4: SoFR</a>
+    </li>
+    <li>
+      <a href="chapter_05.html">Chapter 4: FoSR</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="scripts.html">Scripts</a>
+</li>
+<li>
+  <a href="https://github.com/FDAwithR">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Chapter 4: SoFR</h1>
+
+</div>
+
+
+<div id="ch-intro" class="section level2">
+<h2>Ch Intro</h2>
+<p>Thinking of complete functions as individual data points, which is
+the basic conceptual framework for FDA, suggests the need to include
+these observations in standard analyses. Regression models with scalar
+outcomes avoid reducing functional predictors to single-number summaries
+or treating each observed grid point separately. Instead, this class of
+approaches generally seeks to smooth estimate coefficient functions that
+flexibly capture the time-dependent structure in the associations.</p>
+</div>
+<div id="motivating-scalar-on-function-regression"
+class="section level2">
+<h2>Motivating Scalar-on-Function Regression</h2>
+<p>The goal of this Chapter is to introduce FDA methods for modeling the
+effect of functional predictors on scalar outcomes. We start with a
+direct but non-functional approach which serves to build intuition for
+later functional methods. This approach, where bin-level averages are
+used as predictors in standard regression models, is useful in itself as
+an exploratory and interpretable analysis.</p>
+<pre class="r"><code># import and organize the data
+
+nhanes_df = 
+  readRDS(
+    here::here(&quot;data&quot;, &quot;nhanes_fda_with_r.rds&quot;)) %&gt;% 
+  mutate(
+    death_2yr = ifelse(event == 1 &amp; time &lt;= 24, 1, 0)) %&gt;% 
+  select(
+    SEQN, BMI, age, gender, death_2yr,
+    MIMS_mat = MIMS, MIMS_sd_mat = MIMS_sd) %&gt;% 
+  filter(age &gt;= 25) %&gt;% 
+  drop_na(BMI) %&gt;% 
+  tibble()</code></pre>
+<pre class="r"><code>nhanes_df = 
+  nhanes_df %&gt;% 
+  mutate(
+    MIMS_tf = matrix(MIMS_mat, ncol = 1440),
+    MIMS_tf = tfd(MIMS_tf, arg = seq(1/60, 24, length = 1440)),
+    MIMS_sd_tf = matrix(MIMS_sd_mat, ncol = 1440),
+    MIMS_sd_tf = tfd(MIMS_sd_tf, arg = seq(1/60, 24, length = 1440)))</code></pre>
+<p>Doing 12 2-hour bins.</p>
+<pre class="r"><code>nhanes_bin_df = 
+  nhanes_df %&gt;% 
+  mutate(
+    MIMS_binned = 
+      tf_smooth(MIMS_tf, method = &quot;rollmean&quot;, k = 120, align = &quot;center&quot;),
+    MIMS_binned = tfd(MIMS_binned, arg = seq(1, 23, by = 2))) %&gt;% 
+  select(BMI, MIMS_binned) 
+## setting fill = &#39;extend&#39; for start/end values.
+## Warning: There was 1 warning in `mutate()`.
+## ℹ In argument: `MIMS_binned = tf_smooth(MIMS_tf, method = &quot;rollmean&quot;, k = 120,
+##   align = &quot;center&quot;)`.
+## Caused by warning in `tf_smooth.tfd()`:
+## ! non-equidistant arg-values in &#39;MIMS_tf&#39; ignored by rollmean.
+
+fit_binned = 
+  lm(BMI ~ ., 
+     data = nhanes_bin_df %&gt;% tf_spread(MIMS_binned))</code></pre>
+<pre class="r"><code>nhanes_bin_df %&gt;% 
+  slice(1:500) %&gt;% 
+  ggplot(aes(y = MIMS_binned, color = BMI)) + 
+  geom_spaghetti() + 
+  geom_meatballs()</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-3-1.png" width="90%" /></p>
+<pre class="r"><code>
+fit_binned %&gt;% 
+  broom::tidy() %&gt;% 
+  filter(term != &quot;(Intercept)&quot;) %&gt;% 
+  mutate(
+    hour = str_replace(term, &quot;MIMS_binned_&quot;, &quot;&quot;),
+    hour = as.numeric(hour),
+    ub = estimate + 1.96 * std.error,
+    lb = estimate - 1.96 * std.error) %&gt;% 
+  ggplot(aes(x = hour, y = estimate)) + 
+  geom_point() + geom_path() +
+  geom_errorbar(aes(ymin = lb, ymax = ub), width = .5)</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-3-2.png" width="90%" /></p>
+<p>Not shown: code plotting and saving results</p>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-4-1.png" width="90%" /></p>
+<p>Binned vs daily average, comparing adjusted R squared</p>
+<pre class="r"><code>nhanes_df %&gt;% 
+  mutate(mean_mims = tf_integrate(MIMS_tf)) %&gt;% 
+  lm(BMI ~ mean_mims, data = .) %&gt;% 
+  broom::glance() %&gt;% 
+  select(adj.r.squared)
+## # A tibble: 1 × 1
+##   adj.r.squared
+##           &lt;dbl&gt;
+## 1        0.0167
+
+fit_binned %&gt;% 
+  broom::glance() %&gt;% 
+  select(adj.r.squared)
+## # A tibble: 1 × 1
+##   adj.r.squared
+##           &lt;dbl&gt;
+## 1        0.0267</code></pre>
+<p>Showing the binned regression as a step function – begin to shift
+towards coefficient function interpretation</p>
+<pre class="r"><code>stepfun_coef_df = 
+  fit_binned %&gt;% 
+  broom::tidy() %&gt;% 
+  filter(term != &quot;(Intercept)&quot;) %&gt;% 
+  select(estimate, std.error) %&gt;% 
+  slice(rep(1:12, each = 120)) %&gt;% 
+  mutate(
+    method = &quot;Step&quot;, 
+    estimate = .5 * estimate,
+    arg = seq(1/60, 24, length = 1440)) %&gt;% 
+  tf_nest(.id = method)</code></pre>
+<p>Not shown: code for plots similar to above</p>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-7-1.png" width="90%" /></p>
+<div id="simple-linear-scalar-on-function" class="section level3">
+<h3>“Simple Linear” Scalar-on-Function</h3>
+<p>Probably most important overall approach; very flexible, and with
+many model extensions. Start with a single functional coefficient to get
+things going.</p>
+</div>
+<div id="model-specification-and-interpretation" class="section level3">
+<h3>Model specification and interpretation</h3>
+<p>Would then introduce functional form of a “simple” SoFR, including
+intercept and integral term only. Discuss interpretation of the
+functional coefficient, drawing on EDA for intuition.</p>
+<p>Note that interpretation in more complex settings is similar – would
+need to “hold scalar covariates” constant or think in terms of log ORs
+(for logit regression), but key ideas hold.</p>
+<p>Key challenge in this model is choosing a form for coefficient
+function and developing an estimation approach.</p>
+</div>
+<div id="parametric-estimation-of-the-coefficient-function"
+class="section level3">
+<h3>Parametric estimation of the coefficient function</h3>
+<p>Clearly the novelty in the SoFR, compared to nonfunctional models, is
+the coefficient function that integrates with observed functions to
+produce scalar terms in the linear predictor.</p>
+<p>Can start with a parametric basis expansion – linear or quadratic –
+to walk through the conversion of model to estimating a small number of
+parameters. This will include the integration of each basis function and
+functional predictor (and numeric approximations of that integration),
+which creates a known design matrix.</p>
+<p>OPTION: Is it worthwhile to do this estimation using lm() with a
+fixed basis expansion? That would emphasize this is “just” regression
+after recasting the model.</p>
+<p>This has some limitations, though, and is not so flexible</p>
+<p>Code for creating basis.</p>
+<pre class="r"><code>epoch_arg = seq(1/60, 24, length = 1440)
+
+B = cbind(1, epoch_arg, epoch_arg^2)
+colnames(B) = c(&quot;int&quot;, &quot;lin&quot;, &quot;quad&quot;)
+
+num_int_df = 
+  as_tibble(
+    (nhanes_df$MIMS_mat %*% B) * (1/ 60), 
+    rownames = &quot;SEQN&quot;) %&gt;% 
+  mutate(SEQN = as.numeric(SEQN))</code></pre>
+<p>Code for fitting model.</p>
+<pre class="r"><code>nhanes_quad_df = 
+  left_join(nhanes_df, num_int_df, by = &quot;SEQN&quot;) %&gt;% 
+  select(BMI, int, lin, quad)
+
+fit_quad = 
+  nhanes_quad_df %&gt;% 
+  lm(BMI ~ 1 + int + lin + quad, data = .)
+
+quad_coef_df = 
+  tibble(
+    method = &quot;Quadratic&quot;,
+    estimate = tfd(t(B %*% coef(fit_quad)[-1]), arg = epoch_arg))</code></pre>
+<p>Not shown: code for doing integration via <code>tf_integrate</code>
+and confirming this is similar.</p>
+<p>Slight change in code, using BS with 8 DoF</p>
+<pre class="r"><code>B_bspline = splines::bs(epoch_arg, df = 8, intercept = TRUE)
+colnames(B_bspline) = str_c(&quot;BS_&quot;, 1:8)
+
+num_int_df = 
+  as_tibble(
+    (nhanes_df$MIMS_mat %*% B_bspline) * (1/ 60), 
+    rownames = &quot;SEQN&quot;) %&gt;% 
+  mutate(SEQN = as.numeric(SEQN))
+
+nhanes_bspline_df = 
+  left_join(nhanes_df, num_int_df, by = &quot;SEQN&quot;) %&gt;% 
+  select(BMI, BS_1:BS_8)
+
+fit_bspline = 
+  lm(BMI ~ 1 + ., data = nhanes_bspline_df)
+
+bspline_coef_df = 
+  tibble(
+    method = &quot;B-Spline&quot;,
+    estimate = 
+      tfd(t(B_bspline %*% coef(fit_bspline)[-1]), arg = epoch_arg))</code></pre>
+<pre class="r"><code>bind_rows(stepfun_coef_df, quad_coef_df, bspline_coef_df) %&gt;% 
+  ggplot(aes(y = estimate, color = method)) + 
+  geom_spaghetti(alpha = 1, linewidth = 1.2) </code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-13-1.png" width="90%" /></p>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-14-1.png" width="90%" /></p>
+</div>
+<div id="penalized-spline-estimation" class="section level3">
+<h3>Penalized spline estimation</h3>
+<p>Broadly, we favor expanding in terms of a known basis and explicitly
+controlling smoothness using penalties, although other approaches are
+available. Simply using a low dimension spline basis works the same way
+as the parametric approach, but need to increase degrees of freedom and
+shift to penalized regression.</p>
+<p>Recalling some preliminary information on smoothing, our goal is to
+estimate coefficient function in a way that explicitly penalizes
+wiggliness; we’ve seen how to do this in scatterplot smoothing, but the
+idea translates to this setting. In particular, we want to estimate
+coefficient function subject to a smoothness penalty controlled by a
+single tuning parameter.</p>
+<p>Can write the resulting penalized likelihood for “simple” SoFR; note
+tuning parameter could be chosen in a variety of ways. But a central
+insight is the connection to semiparametric regression, which takes
+advantage of a mixed model formulation to obtain an equivalent ridge
+regression and estimate tuning parameters in terms of variance
+components.</p>
+<p>NOTE: this is a point Ciprian’s comments emphasize, and we should
+trace idea of casting penalized spline SoFR as a mixed model (in refund
+or mgcv) back to the pfr paper.</p>
+<pre class="r"><code>B_bspline = splines::bs(epoch_arg, df = 30, intercept = TRUE)
+sec_deriv = splines2::bSpline(epoch_arg, df = 30, intercept = TRUE, derivs = 2)
+P = t(sec_deriv) %*% sec_deriv * (1 / 60)
+
+X = cbind(1, (nhanes_df$MIMS_mat %*% B_bspline) * (1 / 60))
+D = rbind(0, cbind(0, P))
+
+y = nhanes_df$BMI
+
+lambda_high = 10e6
+lambda_low = 100
+
+coef_high = solve(t(X) %*% X + lambda_high * D) %*% t(X) %*% y
+coef_low = solve(t(X) %*% X + lambda_low * D) %*% t(X) %*% y</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-16-1.png" width="90%" /></p>
+<pre class="r"><code>C = (nhanes_df$MIMS_mat %*% B_bspline) * (1 / 60)
+
+fit_REML_penalty = 
+  gam(y ~ 1 + C, paraPen = list(C = list(P)), 
+      method = &quot;REML&quot;)</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-18-1.png" width="90%" /></p>
+<pre class="r"><code>pfr_fit = 
+  pfr(
+    BMI ~ lf(MIMS_mat, argvals = seq(1/60, 24, length = 1440)), 
+    method = &quot;REML&quot;, data = nhanes_df)
+
+pfr_coef_df = 
+  coef(pfr_fit) %&gt;% 
+  mutate(method = &quot;refund::pfr()&quot;) %&gt;% 
+  tf_nest(.id = method, .arg = MIMS_mat.argvals) %&gt;% 
+  rename(estimate = value)</code></pre>
+<pre><code>## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
+## grids.
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
+## result has resolution =0.001</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-20-1.png" width="90%" /></p>
+<p>Quick table showing Adjusted R2 for each of these models</p>
+<pre class="r"><code>adj_r2_table = 
+  tibble(
+    method = c(&quot;bin&quot;, &quot;quad&quot;, &quot;bspline8&quot;),
+    model = list(fit_binned, fit_quad, fit_bspline)
+  ) %&gt;% 
+  mutate(
+    glance = map(model, broom::glance),
+    adjr2 = map_dbl(glance, &quot;adj.r.squared&quot;)
+  ) %&gt;% 
+  select(method, adjr2)</code></pre>
+</div>
+<div id="other-basis-approaches" class="section level3">
+<h3>Other basis approaches</h3>
+<p>If your basis is data-driven, the integrals in the expansion aren’t
+approximated using numeric integration; they’re the scores from the FPCA
+expansion. Therefore you’re effectively regressing on FPC scores. This
+can be good if it’s hard to do that integration – if curves are sparse
+or very noisy, for example.</p>
+<pre class="r"><code>nhanes_fpca = 
+  rfr_fpca(&quot;MIMS_tf&quot;, data = nhanes_df, npc = 4)
+## Warning in new_tfb_fpc(data, domain = domain, method = method, resolution = resolution, : domain for tfb_fpc can&#39;t be larger than observed arg-range -- extrapolating FPCs is a bad idea.
+##  domain reset to [0.017,24]
+
+B_fpca = nhanes_fpca$efunctions * sqrt(60)
+colnames(B_fpca) = str_c(&quot;efunc_&quot;, 1:4)
+
+num_int_df = 
+  as_tibble(
+    (nhanes_df$MIMS_mat %*% B_fpca) * (1/60), 
+    rownames = &quot;SEQN&quot;) %&gt;% 
+  mutate(SEQN = as.numeric(SEQN))
+
+nhanes_fpcr_df = 
+  left_join(nhanes_df, num_int_df, by = &quot;SEQN&quot;) %&gt;% 
+  select(BMI, efunc_1:efunc_4)
+
+fit_fpcr_int = 
+  lm(BMI ~ 1 + ., data = nhanes_fpcr_df)</code></pre>
+<p>Different way of doing the same thing.</p>
+<pre class="r"><code>C = nhanes_fpca$scores * (sqrt(60) / 60)
+
+colnames(C) = str_c(&quot;score_&quot;, 1:4)
+rownames(C) = nhanes_df$SEQN
+
+nhanes_score_df = 
+  as_tibble(
+    C, rownames = &quot;SEQN&quot;) %&gt;% 
+  mutate(SEQN = as.numeric(SEQN))
+
+nhanes_fpcr_df = 
+  left_join(nhanes_df, nhanes_score_df, by = &quot;SEQN&quot;) %&gt;% 
+  select(BMI, score_1:score_5)
+
+fit_fpcr_score = 
+  lm(BMI ~ 1 + ., data = nhanes_fpcr_df)</code></pre>
+<pre><code>## Warning: There were 2 warnings in `mutate()`.
+## The first warning was:
+## ℹ In argument: `fit = map(npc, nhanes_fpcr, df = nhanes_df)`.
+## Caused by warning in `new_tfb_fpc()`:
+## ! domain for tfb_fpc can&#39;t be larger than observed arg-range -- extrapolating FPCs is a bad idea.
+##  domain reset to [0.017,24]
+## ℹ Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-25-1.png" width="90%" /></p>
+<p>Regressing only on scores doesn’t explicitly penalize for smoothness.
+You can choose the number of components, or maybe start with many and do
+a variable selection, but both of those have issues. Or you can do a
+penalized approach, where now you’re doing numeric second derivatives
+and integration to get the penalty matrix.</p>
+<pre class="r"><code>fit_fpcr_int %&gt;% 
+  broom::tidy()
+## # A tibble: 5 × 5
+##   term        estimate std.error statistic  p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept) 32.4       0.275      118.   0       
+## 2 efunc_1      0.0668    0.00509     13.1  6.88e-39
+## 3 efunc_2     -0.00835   0.00759     -1.10 2.72e- 1
+## 4 efunc_3      0.0524    0.0115       4.56 5.16e- 6
+## 5 efunc_4      0.0677    0.0147       4.60 4.33e- 6</code></pre>
+</div>
+<div id="inference" class="section level3">
+<h3>Inference</h3>
+<p>Construction of (pointwise) confidence intervals.</p>
+<p>Need covariance thing.</p>
+<p>Here’s FPCR with 5 basis functions.</p>
+<pre class="r"><code>var_basis_coef = vcov(fit_fpcr_int)[-1,-1]
+var_coef_func = B_fpca %*% var_basis_coef %*% t(B_fpca)
+
+fpcr_inf_df = 
+  tibble(
+    method = c(&quot;FPCR: 5&quot;),
+    estimate = tfd(t(B_fpca %*% coef(fit_fpcr_int)[-1]), arg = epoch_arg),
+    se = tfd(sqrt(diag(var_coef_func)), arg = epoch_arg)
+  ) %&gt;% 
+  mutate(
+    ub = estimate + 1.96 * se,
+    lb = estimate - 1.96 * se) </code></pre>
+<p>PFR inference comes from pfr; that’s in the coef above.</p>
+<pre class="r"><code>pfr_inf_df = 
+  pfr_coef_df %&gt;% 
+  mutate(
+    ub = estimate + 1.96 * se,
+    lb = estimate - 1.96 * se) </code></pre>
+<pre class="r"><code>bind_rows(pfr_inf_df, fpcr_inf_df) %&gt;% 
+  ggplot(aes(y = estimate)) + 
+  geom_spaghetti() +
+  geom_errorband(aes(ymax = ub, ymin = lb)) + 
+  facet_grid(.~method)
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
+## grids.
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
+## result has resolution =0.01
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
+## grids.
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
+## result has resolution =0.01
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
+## grids.
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
+## result has resolution =0.01
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
+## grids.
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
+## result has resolution =0.01</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-29-1.png" width="90%" /></p>
+<pre><code>## Warning: There were 3 warnings in `mutate()`.
+## The first warning was:
+## ℹ In argument: `fit = map(npc, nhanes_fpcr, df = nhanes_df)`.
+## Caused by warning in `new_tfb_fpc()`:
+## ! domain for tfb_fpc can&#39;t be larger than observed arg-range -- extrapolating FPCs is a bad idea.
+##  domain reset to [0.017,24]
+## ℹ Run `dplyr::last_dplyr_warnings()` to see the 2 remaining warnings.
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
+## grids.
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
+## result has resolution =0.01
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
+## grids.
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
+## result has resolution =0.01
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
+## grids.
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
+## result has resolution =0.01
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
+## grids.
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
+## result has resolution =0.01</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-30-1.png" width="90%" /></p>
+</div>
+<div id="identifiability" class="section level3">
+<h3>Identifiability</h3>
+<p>We may want to do a little on identifiability. removing the mean from
+Xi(t) and maybe some of the work that Fabian and Sonja did (essentially
+showing that only particular types of beta coefficients are
+estimable).</p>
+</div>
+</div>
+<div id="sparse-estimation" class="section level2">
+<h2>Sparse Estimation</h2>
+<p>I lean towards dedicating a section to this, rather than folding it
+in elsewhere. But it might be a short section …</p>
+<p>Introduce CONTENT data, and explain that SoFR can easily become a
+dynamic prediction problem.</p>
+<p>My understanding of the approach is: FPCA to expand predictors, still
+splines for coefficient, numeric integration and penalized
+estimation.</p>
+<p>May need to revisit identifiability?</p>
+</div>
+<div id="extensions-of-linear-sofr" class="section level2">
+<h2>Extensions of linear SoFR</h2>
+<p>Many subsections extend</p>
+<div id="adding-scalar-covariates" class="section level3">
+<h3>Adding scalar covariates</h3>
+<p>Just popping stuff in a non-penalized design matrix.</p>
+<p>Show some results, interpret coefficients, done.</p>
+<pre class="r"><code>pfr_adj_fit = 
+  pfr(
+    BMI ~ age + gender + lf(MIMS_mat, argvals = seq(1/60, 24, length = 1440)), 
+    data = nhanes_df)</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-32-1.png" width="90%" /></p>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## BMI ~ age + gender + s(x = MIMS_mat.tmat, by = L.MIMS_mat)
+## 
+## Parametric coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  34.766073   0.496659  70.000  &lt; 2e-16 ***
+## age          -0.039074   0.005599  -6.979 3.22e-12 ***
+## genderFemale  1.683539   0.161064  10.453  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Approximate significance of smooth terms:
+##                              edf Ref.df    F p-value    
+## s(MIMS_mat.tmat):L.MIMS_mat 7.21  8.208 38.1  &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## R-sq.(adj) =  0.0459   Deviance explained =  4.7%
+## -REML =  25271  Scale est. = 46.861    n = 7553</code></pre>
+<p>Could do some additional work to get mediation …</p>
+</div>
+<div id="multiple-functional-predictors" class="section level3">
+<h3>Multiple functional predictors</h3>
+<pre class="r"><code>pfr_mult_fit = 
+  pfr(
+    BMI ~ age + gender + 
+      lf(MIMS_mat, argvals = seq(1/60, 24, length = 1440)) + 
+      lf(MIMS_sd_mat, argvals = seq(1/60, 24, length = 1440)), 
+    data = nhanes_df)</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-34-1.png" width="90%" /></p>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## BMI ~ age + gender + s(x = MIMS_mat.tmat, by = L.MIMS_mat) + 
+##     s(x = MIMS_sd_mat.tmat, by = L.MIMS_sd_mat)
+## 
+## Parametric coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  36.253053   0.647002  56.032  &lt; 2e-16 ***
+## age          -0.048196   0.005893  -8.178 3.35e-16 ***
+## genderFemale  1.709442   0.160691  10.638  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Approximate significance of smooth terms:
+##                                     edf Ref.df     F p-value    
+## s(MIMS_mat.tmat):L.MIMS_mat       3.802  4.399 18.63  &lt;2e-16 ***
+## s(MIMS_sd_mat.tmat):L.MIMS_sd_mat 7.114  8.145 13.07  &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## R-sq.(adj) =  0.0564   Deviance explained = 5.81%
+## -REML =  25238  Scale est. = 46.342    n = 7553</code></pre>
+</div>
+<div id="exponential-family-outcomes" class="section level3">
+<h3>Exponential family outcomes</h3>
+<p>fit the model:</p>
+<pre class="r"><code>pfr_mort_fit = 
+  pfr(
+    death_2yr ~ age + gender + BMI + 
+      lf(MIMS_mat, argvals = seq(1/60, 24, length = 1440)),
+    family = binomial(), method = &quot;REML&quot;, data = nhanes_df)</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-36-1.png" width="90%" /></p>
+</div>
+</div>
+<div id="other-sofr-models" class="section level2">
+<h2>Other SoFR models</h2>
+<p>Not sure how far we go in this direction – there are <em>tons</em> of
+models, and interpreting the results can be hard. Maybe this is where we
+show some options in pfr() and then do a lit review?</p>
+<div id="fgam" class="section level3">
+<h3>FGAM</h3>
+<p>I’m calling this an extension of linear SoFR, but I guess could go in
+other models.</p>
+</div>
+</div>
+
+<br><br>
+<footer>
+  <p class="copyright text-muted" align="center">Copyright &copy; 2023</p>
+</footer>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

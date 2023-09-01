@@ -611,7 +611,7 @@ num_int_df =
 
 nhanes_fpcr_df = 
   left_join(nhanes_df, num_int_df, by = "SEQN") %>% 
-  select(BMI, efunc_1:efunc_5)
+  select(BMI, efunc_1:efunc_4)
 
 fit_fpcr_int = 
   lm(BMI ~ 1 + ., data = nhanes_fpcr_df)
@@ -922,7 +922,7 @@ pfr_mort_inf_df =
 
 ggp_pfr_mort_coef = 
   pfr_mort_inf_df %>% 
-  ggplot(aes(tf = estimate)) + 
+  ggplot(aes(y = estimate)) + 
   geom_spaghetti(alpha = 1, linewidth = 1.2) +
   geom_errorband(aes(ymax = ub, ymin = lb)) +
   scale_x_continuous(

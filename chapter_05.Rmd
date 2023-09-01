@@ -1026,7 +1026,9 @@ ggp_coefplot_fui_bootstrap =
     lb = est - 1.96 * se) %>% 
   ggplot(aes(y = est, color = term)) + 
   geom_spaghetti(size = 1.2, alpha = .9) + 
-  geom_spaghetti(data = filter(fui_bootstrap_results, iteration <= 25), aes(tf = smooth_coef), alpha = .25, size = .5) +
+  geom_spaghetti(
+    data = filter(fui_bootstrap_results, iteration <= 25), 
+    aes(y = smooth_coef), alpha = .25, size = .5) +
   geom_errorband(aes(ymax = ub, ymin = lb, fill = term), alpha = .15)  + 
   facet_wrap(~term, scales = "free")  + 
   scale_x_continuous(
