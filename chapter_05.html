@@ -471,11 +471,11 @@ nhanes_df %&gt;%
   facet_grid(.~gender) + 
   scale_x_continuous(breaks = seq(0, 24, length = 5)) + 
   labs(x = &quot;Time of day (hours)&quot;, y = &quot;Average MIMS&quot;)
-## `summarise()` has grouped output by &#39;age_cat&#39;. You can override using the
-## `.groups` argument.</code></pre>
+## `summarise()` has grouped output by &#39;age_cat&#39;. You can
+## override using the `.groups` argument.</code></pre>
 <p><img src="chapter_05_files/figure-html/unnamed-chunk-2-1.png" width="90%" /></p>
-<pre><code>## `summarise()` has grouped output by &#39;age_cat&#39;. You can override using the
-## `.groups` argument.</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;age_cat&#39;. You can
+## override using the `.groups` argument.</code></pre>
 <p>Exploratory plots like this one are useful for beginning to
 understand the effects of covariates on physical activity, but are
 limited in their scope. We are unable, from this Figure, to adjust for
@@ -506,8 +506,8 @@ nhanes_df =
     MIMS_hour = tfd(MIMS_hour, arg = seq(.5, 23.5, by = 1))) 
 ## setting fill = &#39;extend&#39; for start/end values.
 ## Warning: There was 1 warning in `mutate()`.
-## ℹ In argument: `MIMS_hour = tf_smooth(MIMS_tf, method = &quot;rollmean&quot;, k = 60,
-##   align = &quot;center&quot;)`.
+## ℹ In argument: `MIMS_hour = tf_smooth(MIMS_tf, method =
+##   &quot;rollmean&quot;, k = 60, align = &quot;center&quot;)`.
 ## Caused by warning in `tf_smooth.tfd()`:
 ## ! non-equidistant arg-values in &#39;MIMS_tf&#39; ignored by rollmean.</code></pre>
 <p>The resulting <code>MIMS_hour</code> data are shown for a subset of
@@ -643,8 +643,8 @@ therefore omit this code and focus on the results produced in these
 settings.</p>
 <pre><code>## setting fill = &#39;extend&#39; for start/end values.
 ## Warning: There was 1 warning in `mutate()`.
-## ℹ In argument: `MIMS_ten = tf_smooth(MIMS_tf, method = &quot;rollmean&quot;, k = 10,
-##   align = &quot;center&quot;)`.
+## ℹ In argument: `MIMS_ten = tf_smooth(MIMS_tf, method =
+##   &quot;rollmean&quot;, k = 10, align = &quot;center&quot;)`.
 ## Caused by warning in `tf_smooth.tfd()`:
 ## ! non-equidistant arg-values in &#39;MIMS_tf&#39; ignored by rollmean.</code></pre>
 <p>Results for pointwise regression analyses using 10-minute epochs are
@@ -1423,8 +1423,8 @@ in other chapters. Also – this is unexpected a lot slower than gam …</p>
   pivot_wider(names_from = epoch, values_from = MIMS_hour)
 ## setting fill = &#39;extend&#39; for start/end values.
 ## Warning: There was 1 warning in `mutate()`.
-## ℹ In argument: `MIMS_hour_tf = tf_smooth(MIMS_tf, method = &quot;rollmean&quot;, k = 60,
-##   align = &quot;center&quot;)`.
+## ℹ In argument: `MIMS_hour_tf = tf_smooth(MIMS_tf, method
+##   = &quot;rollmean&quot;, k = 60, align = &quot;center&quot;)`.
 ## Caused by warning in `tf_smooth.tfd()`:
 ## ! non-equidistant arg-values in &#39;MIMS_tf&#39; ignored by rollmean.
 
@@ -1446,7 +1446,8 @@ nhanes_famm_df &lt;-
 ## using seWithMean for  s(yindex.vec):genderMale .
 ## using seWithMean for  s(yindex.vec):genderFemale .
 ## Scale for x is already present.
-## Adding another scale for x, which will replace the existing scale.</code></pre>
+## Adding another scale for x, which will replace the
+## existing scale.</code></pre>
 <p><img src="chapter_05_files/figure-html/unnamed-chunk-44-1.png" width="90%" /></p>
 </div>
 </div>
