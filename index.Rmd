@@ -2,7 +2,12 @@
 title: "Functional Data Analysis with R"
 ---
 
-<br><br><img src="images/cover.pdf" alt="logo" style="float:left; width:35%; padding:20px"><br>
+<br><br><img src="images/cover.jpg" alt="logo" style="float:left; width:38%; padding:20px"><br>
 
+Modern Functional Data Analysis consists of the development of robust statistical methods and reproducible software for model implementation and visualization. The goal of this website is to provide the code and software to implement statistical methods and reproduce the analysis presented in the book "Functional Data Analysis with R" by Crainiceanu, Goldsmith, Leroux, Cui. 
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+In the "Datasets" section, we provide an overview of the datasets used in the book and the way to access them. 
+In the "Chapters" section, we provide the code and software and show how to reproduce the analysis presented in the book.
+In the "Scripts" section, we provide some scripts or functions that the code depends on that are not shown in the book.
+
+The website will be updated from time to time as the software develops. 
