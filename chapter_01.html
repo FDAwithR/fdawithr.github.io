@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Chapter 1</title>
+
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
+<script defer src="https://use.fontawesome.com/releases/v5.0.3/js/all.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.0/js/v4-shims.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics 
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151578452-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-151578452-1');
+</script>
+-->
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">FDA with R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="overview.html">Overview</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Datasets
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="dataset_nhanes.html">NHANES</a>
+    </li>
+    <li>
+      <a href="dataset_content.html">Content</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Chapters
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="chapter_01.html">Chapter 1</a>
+    </li>
+    <li>
+      <a href="chapter_02.html">Chapter 2</a>
+    </li>
+    <li>
+      <a href="chapter_03.html">Chapter 3: FPCA</a>
+    </li>
+    <li>
+      <a href="chapter_04.html">Chapter 4: SoFR</a>
+    </li>
+    <li>
+      <a href="chapter_05.html">Chapter 4: FoSR</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="scripts.html">Scripts</a>
+</li>
+<li>
+  <a href="https://github.com/FDAwithR">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Chapter 1</h1>
+
+</div>
+
+
+<div id="nhanes-2011-2014-accelerometry-data" class="section level2">
+<h2>NHANES 2011-2014 Accelerometry Data</h2>
+<p>The NHANES 2011-2014 Accelerometry Data is a very large data set.
+(NEED TO UPDATE) For now, we load it locally and provide exploratory
+plots shown in the book.</p>
+<pre class="r"><code>library(tidyverse)
+library(ggplot2)
+library(gridExtra)
+library(ggpubr)
+
+## load NHANES data
+data &lt;- readRDS(&quot;./../NHANES/data/nhanes_fda_with_r_ml.rds&quot;) ## need to change once deciding where to put NHANES data
+
+## plot NHANES data
+id &lt;- c(75111,77936,82410)
+unit &lt;- &quot;MIMS&quot;
+upper &lt;- 80
+
+dow &lt;- c(&quot;Sunday&quot;,&quot;Monday&quot;,&quot;Tuesday&quot;,&quot;Wednesday&quot;,&quot;Thursday&quot;,&quot;Friday&quot;,&quot;Saturday&quot;)
+col_pal &lt;- c(&quot;#EC5565&quot;, &quot;#F26E53&quot;, &quot;#6798D0&quot;, &quot;#FFCE55&quot;, &quot;#5BC1A6&quot;, &quot;#E788B8&quot;, &quot;#9EBFC9&quot;)
+## layout matrix for the plot
+layout_subj &lt;- layout_all &lt;- matrix(NA, nrow = length(dow), ncol = length(id))
+
+plt &lt;- list() ## a list storing the entire plot
+ind_all &lt;- 1 ## the panel number of the entire plot
+for(i in 1:length(id)){
+  ind_subj &lt;- 1 ## the panel number within each subject
+  id_ind &lt;- which(data$SEQN == id[i])
+  
+  ## extract subject level data and organize them into long format
+  df_wide &lt;- data.frame(unclass(data[id_ind,unit]), 
+                        dow = dow[as.numeric(data$dayofweek[id_ind])])
+  colnames(df_wide)[1:1440] &lt;- 1:1440
+  df_long &lt;- pivot_longer(df_wide, cols = 1:1440, names_to = &quot;minute&quot;, values_to = &quot;value&quot;)
+  df_long$minute &lt;- as.numeric(df_long$minute)
+  df_long$dow &lt;- factor(df_long$dow, levels = dow)
+  df_long$id &lt;- id[i]
+  
+  ## make the plot panel by panel
+  for(j in dow){
+    df_plt &lt;- df_long %&gt;% filter(dow == j)
+    if(nrow(df_plt) != 0){ ## if the subject has data on this day of week
+      plt[[ind_all]] &lt;- ggplot(df_plt) +
+        theme_classic() +
+        geom_line(aes(x = minute, y = value, group = dow), lwd = 0.1, col = col_pal[which(dow == j)]) +
+        facet_wrap(.~dow, ncol = 1, scales = &quot;fixed&quot;) +
+        theme(strip.text = element_text(size = 10, face = &quot;bold&quot;, margin = margin(0.2, 0, 0.05, 0, &quot;cm&quot;)),
+              strip.background = element_blank(),
+              axis.title = element_blank(),
+              axis.text = element_text(size = 8),
+              plot.margin = margin(1,10,2,1)) +
+        scale_x_continuous(breaks = c(1,6,12,18,23)*60, 
+                           labels = c(&quot;01:00&quot;,&quot;06:00&quot;,&quot;12:00&quot;,&quot;18:00&quot;,&quot;23:00&quot;)) +
+        ylim(0, upper)
+    }else{
+      plt[[ind_all]] &lt;- ggplot(df_plt) + theme_void()
+    }
+    layout_subj[ind_subj, i] &lt;- ind_subj
+    layout_all[ind_subj, i] &lt;- ind_all
+    ind_all &lt;- ind_all + 1
+    ind_subj &lt;- ind_subj + 1
+  }
+  
+}
+
+## plot all panels of the plot
+grid.arrange(grobs = lapply(1:length(id), function(i) {
+  arrangeGrob(grobs = plt[layout_all[,i]], 
+              top = text_grob(paste0(&quot;SEQN &quot;,id[i]), face = &quot;bold&quot;, size = 12),
+              bottom = text_grob(&quot;Time of Day&quot;, size = 10), 
+              left = text_grob(unit, size = 10, rot = 90), ncol = 1, 
+              layout_matrix = layout_subj[,i,drop = FALSE])}), ncol = length(id))</code></pre>
+<p><img src="chapter_01_files/figure-html/unnamed-chunk-1-1.png" width="90%" /></p>
+<p>Having multiple days of data for the same individual adds structure
+and increases its complexity and size. A potential solution is to take
+averages at the same time of the day within study participants. Here we
+show the average physical activity data measured in MIMS in NHANES
+2011-2014 as a function of the minute of the day in different
+groups.</p>
+<pre class="r"><code>library(ggplot2)
+library(gridExtra)
+library(dplyr)
+library(stringr)
+library(tidyr)
+library(mgcv)
+
+nhanes_lite &lt;- readRDS(&quot;./../NHANES/data/nhanes_fda_with_r.rds&quot;)
+
+## subset data to create MIMS-by-age plot
+nhanes_age &lt;- nhanes_lite
+nhanes_age$age_group &lt;- cut(nhanes_age$age, breaks = c(18,35,50,65,80), include.lowest = TRUE)
+nhanes_age &lt;- nhanes_age[which(!is.na(nhanes_age$age_group)),]
+
+## subset data to create MIMS-by-mortality plot
+nhanes_mort &lt;- nhanes_lite[which(!is.na(nhanes_lite$event)),]
+
+########################################################################################
+## calculate average MIMS at each age group between male and female
+########################################################################################
+nhanes_plot &lt;- nhanes_age %&gt;% group_by(gender, age_group) %&gt;% summarise(n = n())
+MIMS_group &lt;- c()
+for(i in 1:nrow(nhanes_plot)){
+  SEQN_group &lt;- nhanes_age$SEQN[which(nhanes_age$gender == nhanes_plot$gender[i] &amp; 
+                           nhanes_age$age_group == nhanes_plot$age_group[i])]
+  MIMS_group &lt;- rbind(MIMS_group, colMeans(nhanes_age$MIMS[which(nhanes_age$SEQN %in% SEQN_group),], 
+                                           na.rm = TRUE))
+}
+colnames(MIMS_group) &lt;- 1:1440
+
+# smooth MIMS for each group
+for(i in 1:nrow(MIMS_group)){
+  dat_sm &lt;- data.frame(MIMS = MIMS_group[i,], time = 1:1440)
+  fit &lt;- gam(MIMS ~ s(time, bs = &quot;cc&quot;), data = dat_sm)
+  MIMS_group[i,] &lt;- fit$fitted.values
+}
+
+nhanes_plot &lt;- data.frame(nhanes_plot, MIMS_group)
+
+## covert to long format to make the plot
+nhanes_plot1 &lt;- pivot_longer(nhanes_plot, cols = paste0(&quot;X&quot;,1:1440), names_to = &quot;minute&quot;, values_to = &quot;MIMS&quot;)
+nhanes_plot1$minute &lt;- as.numeric(str_sub(nhanes_plot1$minute, start = 2))
+
+plot1 &lt;- ggplot(nhanes_plot1) +
+  theme_classic() +
+  geom_line(aes(x = minute, y = MIMS, color = age_group, lty = gender)) +
+  scale_linetype_manual(values=c(1,2)) +
+  scale_x_continuous(breaks = c(1,6,12,18,23)*60, 
+                     labels = c(&quot;01:00&quot;,&quot;06:00&quot;,&quot;12:00&quot;,&quot;18:00&quot;,&quot;23:00&quot;)) +
+  labs(x = &quot;Time of Day&quot;, y = &quot;MIMS&quot;, color = &quot;Age Group&quot;, lty = &quot;Gender&quot;) +
+  scale_y_continuous(breaks = c(4,8,12,16), limits = c(0, 16)) +
+  scale_color_brewer(palette = &quot;RdYlBu&quot;)
+
+########################################################################################
+## calculate average MIMS between alive and deceased group
+########################################################################################
+nhanes_plot &lt;- nhanes_mort %&gt;% group_by(event) %&gt;% summarise(n = n())
+MIMS_group &lt;- c()
+MIMS_day &lt;- list()
+for(i in 1:nrow(nhanes_plot)){
+  SEQN_group &lt;- nhanes_mort$SEQN[which(nhanes_mort$event == nhanes_plot$event[i])]
+  MIMS_group &lt;- rbind(MIMS_group, colMeans(nhanes_mort$MIMS[which(nhanes_mort$SEQN %in% SEQN_group),], 
+                                           na.rm = TRUE))
+}
+colnames(MIMS_group) &lt;- 1:1440
+
+# smooth MIMS for each group
+for(i in 1:nrow(MIMS_group)){
+  dat_sm &lt;- data.frame(MIMS = MIMS_group[i,], time = 1:1440)
+  fit &lt;- gam(MIMS ~ s(time, bs = &quot;cc&quot;), data = dat_sm)
+  MIMS_group[i,] &lt;- fit$fitted.values
+}
+
+nhanes_plot &lt;- data.frame(nhanes_plot, MIMS_group)
+
+## covert to long format to make the plot
+nhanes_plot2 &lt;- pivot_longer(nhanes_plot, cols = paste0(&quot;X&quot;,1:1440), names_to = &quot;minute&quot;, values_to = &quot;MIMS&quot;)
+nhanes_plot2$minute &lt;- as.numeric(str_sub(nhanes_plot2$minute, start = 2))
+nhanes_plot2$event &lt;- as.factor(nhanes_plot2$event)
+
+plot2 &lt;- ggplot() +
+  theme_classic() +
+  geom_line(data = nhanes_plot2, aes(x = minute, y = MIMS, color = event)) +
+  scale_x_continuous(breaks = c(1,6,12,18,23)*60, 
+                     labels = c(&quot;01:00&quot;,&quot;06:00&quot;,&quot;12:00&quot;,&quot;18:00&quot;,&quot;23:00&quot;)) +
+  scale_y_continuous(breaks = c(4,8,12,16), limits = c(0, 16)) +
+  labs(x = &quot;Time of Day&quot;, y = &quot;MIMS&quot;, color = &quot;Mortality&quot;)
+
+grid.arrange(plot2, plot1, nrow = 1)</code></pre>
+<p><img src="chapter_01_files/figure-html/unnamed-chunk-2-1.png" width="90%" /></p>
+</div>
+<div id="covid-19-us-mortality-data" class="section level2">
+<h2>COVID-19 US Mortality Data</h2>
+<div id="weekly-all-cause-mortality-data" class="section level3">
+<h3>Weekly all-cause mortality data</h3>
+<p>Here we provide exploratory plots for all-cause and COVID-19 weekly
+mortality data in the US. The all-cause mortality data is weekly
+mortality (week ending on 2017-01-14 to week ending on 2021-04-10) for a
+total of <span class="math inline">\(222\)</span> weeks. Data are made
+available by the National Center for Health Statistics. More precisely,
+the dataset link is called National and State Estimates of Excess
+Deaths. It can be accessed from <a
+href="https://www.cdc.gov/nchs/nvss/vsrr/covid19/excess_deaths.htm#data-tables">this
+website</a>. A direct link to the file can be <a
+href="https://data.cdc.gov/api/views/xkkf-xrst/rows.csv?accessType=DOWNLOAD&amp;bom=true&amp;format=true%20target=">accessed
+here</a>.</p>
+<p>The COVID-19 mortality data is weekly mortality with COVID-19 as
+cause of death (week ending on 2020-01-04 to week ending on 2021-04-17)
+for a total of <span class="math inline">\(68\)</span> weeks. Data are
+made available by the National Center for Health Statistics. More
+precisely, the dataset link is called National and State Estimates of
+Excess Deaths. It can be accessed from <a
+href="https://healthdata.gov/dataset/provisional-covid-19-death-counts-week-ending-date-and-state">this
+website</a>. A direct link to the file can be <a
+href="https://data.cdc.gov/api/views/r8kw-7aab/rows.csv?accessType=DOWNLOAD">accessed
+here</a>.</p>
+<p>A third data set contains the estimated population size for all US
+states and teritories as of 2020-07-01. The source for these data is <a
+href="https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population">Wickipedia</a>.</p>
+<p>Our overall goal is to visualize this data with special emphasis on
+the year 2020. We have two main objectves: (1) to visualize all-cause
+total and excess mortality (mortality in a week in 2020 minus mortality
+in the coresponding week in 2019); and (2) to visualize total COVID-19
+mortality as a function of time.</p>
+<p>Read the data and show the variable names in the list.</p>
+<pre class="r"><code>#Load all-cause US mortality data
+library(refund)
+data(&quot;COVID19&quot;)
+CV19 &lt;- COVID19
+names(CV19)
+##  [1] &quot;US_weekly_mort&quot;                      &quot;US_weekly_mort_dates&quot;               
+##  [3] &quot;US_weekly_mort_CV19&quot;                 &quot;US_weekly_mort_CV19_dates&quot;          
+##  [5] &quot;US_weekly_excess_mort_2020&quot;          &quot;US_weekly_excess_mort_2020_dates&quot;   
+##  [7] &quot;US_states_names&quot;                     &quot;US_states_population&quot;               
+##  [9] &quot;States_excess_mortality&quot;             &quot;States_excess_mortality_per_million&quot;
+## [11] &quot;States_CV19_mortality&quot;               &quot;States_CV19_mortality_per_million&quot;</code></pre>
+</div>
+<div id="weekly-all-cause-mortality-in-the-us" class="section level3">
+<h3>Weekly all-cause mortality in the US</h3>
+<pre class="r"><code>#Extract weekly all-cause excess mortality between 
+#2017-01-14 and 2020-12-26
+counts_state &lt;- CV19$US_weekly_mort
+date_state &lt;- CV19$US_weekly_mort_dates
+#Set the labels for the plot
+ylabel &lt;- paste(&quot;Weekly all-cause deaths in the US (thousands)&quot;)
+xlabel &lt;- &quot;Weeks starting in January 2017&quot;
+
+#Plot weekly all-cause US mortality 2017/2020
+#Divide by 1000 to indicate numbers in thousands
+par(bg = &quot;white&quot;)
+plot(date_state, counts_state / 1000, pch = 19,
+     col = &quot;blue&quot;, cex = 0.8, xlab = xlabel,
+     ylab = ylabel, bty = &quot;n&quot;)
+
+#Define the shaded areas that are compared
+#The red area is 2020 and the blue area is 2019
+#These two areas are used to calculate the excess mortality
+conty &lt;- c(rep(floor(min(counts_state / 1000)), 2),
+        rep(ceiling(max(counts_state / 1000)), 2))
+contx_2019 &lt;- c(as.Date(&quot;2019-01-01&quot;), comp_time, 
+             comp_time, as.Date(&quot;2019-01-01&quot;))
+contx_2020 &lt;- c(as.Date(&quot;2020-01-01&quot;), end_time,
+             end_time, as.Date(&quot;2020-01-01&quot;))
+polygon(contx_2019, conty, col = rgb(0, 0, 1, alpha = 0.1), 
+        border = NA)
+polygon(contx_2020, conty, col = rgb(1, 0, 0, alpha = 0.1), 
+        border = NA)</code></pre>
+<p><img src="chapter_01_files/figure-html/state_weekly-1.png" width="90%" /></p>
+<p>Figure 1 displays the weekly number of deaths in the US from
+2017-01-14 to 2020-12-26. Each dot represents one week and the number of
+deaths is expressed in thousands. For example, there were 61,114 in the
+US in the week ending on 2017-01-14.</p>
+</div>
+<div id="weekly-us-covid-19-mortality-data" class="section level3">
+<h3>Weekly US COVID-19 mortality data</h3>
+<pre class="r"><code>#Extract the Covid-19 associated deaths in the US from
+#01-04-2020 to 12-26-2020
+cv19_deaths &lt;- CV19$US_weekly_mort_CV19
+cv19_dates &lt;- CV19$US_weekly_mort_CV19_dates</code></pre>
+<p>The COVID-19 mortality data is weekly mortality with COVID-19 as
+cause of death for a total of 52 weeks between 01/04/2020 and
+12/26/2020.</p>
+<div id="visualization-of-covid-19-and-all-cause-mortality"
+class="section level4">
+<h4>Visualization of COVID-19 and all-cause mortality</h4>
+<pre class="r"><code>
+#Obtain the US weekly excess mortality between 2020 and 2019
+week_diff &lt;- CV19$US_weekly_excess_mort_2020
+current_date &lt;- CV19$US_weekly_excess_mort_2020_dates
+
+#Define the labels
+ylabel &lt;- paste(&quot;All-cause excess and COVID-19 deaths in the US&quot;)
+xlabel &lt;- paste(&quot;Weeks starting in January 2020&quot;)
+
+#Plot excess weekly US all-cause excess mortality and COVID-19 mortality in 2019
+par(bg = &quot;white&quot;)
+plot(current_date, week_diff, pch = 19,
+     col = &quot;blue&quot;, cex = 1, xlab = xlabel, 
+     ylab = ylabel, bty = &quot;n&quot;)
+points(current_date, cv19_deaths, pch = 19, 
+       col = &quot;red&quot;, cex = 1)
+legend(x = as.Date(&quot;2020-01-01&quot;), y = 25000, 
+       c(&quot;COVID-19&quot;, &quot;All-cause excess&quot;), 
+       col = c(&quot;red&quot;, &quot;blue&quot;), 
+       pch = 19, cex = 0.75, bty = &quot;n&quot;)</code></pre>
+<p><img src="chapter_01_files/figure-html/unnamed-chunk-6-1.png" width="90%" /></p>
+<p>There are a total of 496,204 excess deaths and 365,122 in 2020 before
+the week ending on 2020-12-26. Thus, there are 35.9% more excess deaths
+than COVID-19 deaths before 2020-12-26 in 2020.</p>
+</div>
+</div>
+<div id="plot-of-all-cause-cumulative-excess-data"
+class="section level3">
+<h3>Plot of all-cause cumulative excess data</h3>
+<p>Here we show how to plot the all-cause US excess mortality data for
+year 2020. Data are show as deaths per one million individuals for <span
+class="math inline">\(52\)</span> weeks. Some states ae emphasized in
+color: New Jersey (green), Louisiana (red), California (plum), Maryland
+(blue), and Texas (salmon).</p>
+<pre class="r"><code>#Names of states + Puerto Rico + DC
+new_states &lt;- CV19$US_states_names
+state_population &lt;- CV19$US_states_population
+states_excess &lt;- CV19$States_excess_mortality
+
+#Loop over all states and plot the number of weekly all-cause mortality deaths per million
+for(i in 1:length(new_states)){
+  #Excess mortality 
+  week_diff &lt;- states_excess[i,]
+  
+  #Normalize to rate per 1000000 people
+  week_diff &lt;- 1000000 * week_diff / state_population[i]
+  
+  ylabel &lt;- paste(&quot;US states cumulative excess deaths/million&quot;)
+  xlabel &lt;- paste(&quot;Weeks starting January 2020&quot;)
+  #Plot only for first state. For others add lines
+  if(i == 1){
+    par(bg = &quot;white&quot;)
+    #Here plot the date versus cumulative excess mortality (hence the cumsum)
+    plot(current_date, cumsum(week_diff), type = &quot;l&quot;, lwd = 1.5,
+         col = rgb(0, 0, 0, alpha = 0.1), cex = 1, xlab = xlabel,
+         ylab = ylabel, ylim = c(-50, 2500), bty = &quot;n&quot;)
+  }else{
+    lines(current_date,cumsum(week_diff),lwd=1,col=rgb(0, 0, 0, alpha = 0.1))
+  }
+}
+
+#Overplotting New Jersey, Louisiana, California, Maryland, and Texas
+#We add this to emphasize some states, as overploting can become an issue even with only 50 states
+emphasize &lt;- c(&quot;New Jersey&quot;, &quot;Louisiana&quot;, &quot;California&quot;, &quot;Maryland&quot;, &quot;Texas&quot;)
+col_emph &lt;- c(&quot;darkseagreen3&quot;, &quot;red&quot;, &quot;plum3&quot;, &quot;deepskyblue4&quot;, &quot;salmon&quot;)
+for(i in 1:length(emphasize)){
+  state_n &lt;- emphasize[i]
+  index_state &lt;- which(new_states == state_n)
+
+  #Extract variables to be plotted
+  counts_state &lt;- states_excess[index_state,]
+  week_diff &lt;- 1000000*counts_state / state_population[index_state]
+  lines(current_date, cumsum(week_diff), lwd = 2.5, col = col_emph[i])
+}</code></pre>
+<p><img src="chapter_01_files/figure-html/unnamed-chunk-8-1.png" width="90%" /></p>
+</div>
+<div id="plot-of-covid-19-cumulative-data" class="section level3">
+<h3>Plot of COVID-19 cumulative data</h3>
+<pre class="r"><code>states_CV19_mort &lt;- CV19$States_CV19_mortality
+#Loop over all states and plot the number of weekly cumulative all-cause mortality deaths per million
+for(i in 1:length(new_states)){
+  cv19_deaths &lt;- states_CV19_mort[i,]
+  cv19_deaths &lt;- 1000000 * cv19_deaths / state_population[i]
+  cv19_deaths &lt;- cumsum(replace_na(cv19_deaths, 0))
+  
+  ylabel &lt;- paste(&quot;US states cumulative COVID-19 deaths/million&quot;)
+  xlabel &lt;- paste(&quot;Weeks starting January 2020&quot;)
+  if(i == 1){
+    par(bg = &quot;white&quot;)
+    plot(current_date, cv19_deaths, type = &quot;l&quot;, lwd = 1.5,
+         col = rgb(0, 0, 0, alpha = 0.1), cex = 1, xlab = xlabel, 
+         ylab = ylabel, ylim = c(-50, 2500), bty = &quot;n&quot;)
+  }else{
+    lines(current_date, cv19_deaths, lwd = 1, col = rgb(0, 0, 0, alpha = 0.1))
+  }
+}
+
+#Overplotting Maryland, California, Florida, New York
+emphasize &lt;- c(&quot;New Jersey&quot;, &quot;Louisiana&quot;, &quot;California&quot;, &quot;Maryland&quot;, &quot;Texas&quot;)
+col_emph &lt;- c(&quot;darkseagreen3&quot;, &quot;red&quot;, &quot;plum3&quot;, &quot;deepskyblue4&quot;, &quot;salmon&quot;)
+for(i in 1:length(emphasize)){
+  state_n &lt;- emphasize[i]
+  index_state &lt;- which(new_states == state_n)
+
+  #Extract variables to be plotted
+  cv19_deaths &lt;- states_CV19_mort[index_state,]
+  cv19_deaths &lt;- 1000000 * cv19_deaths / state_population[index_state]
+  cv19_deaths &lt;- cumsum(replace_na(cv19_deaths, 0))
+  lines(current_date, cv19_deaths, lwd = 2.5, col = col_emph[i])
+}</code></pre>
+<p><img src="chapter_01_files/figure-html/unnamed-chunk-9-1.png" width="90%" /></p>
+</div>
+</div>
+<div id="cd4-counts-data" class="section level2">
+<h2>CD4 Counts Data</h2>
+<p>This document shows how to visualize the CD4 counts data for Chapter
+1 in the Functional Data Analysis with R book. It uses the
+<code>face::face.sparse</code> function to obtain a smooth estimator of
+the mean. The same function will be used in later Chapters to conduct
+sparse functional PCA.</p>
+<pre class="r"><code>library(refund)
+library(face)
+library(fields)</code></pre>
+<pre class="r"><code>#Load the data
+data(cd4)
+n &lt;- nrow(cd4) 
+T &lt;- ncol(cd4)
+
+#Construct a vectorized form of the data
+id &lt;- rep(1:n, each = T)
+t &lt;- rep(-18:42, times = n) 
+y &lt;- as.vector(t(cd4))
+
+#Indicator for NA observations. This takes advantage of the sparse nature of the data
+sel &lt;- which(is.na(y))
+#Organize data as outcome, time, subject ID 
+data &lt;- data.frame(y = log(y[-sel]), argvals = t[-sel],
+subj &lt;- id[-sel])
+data &lt;- data[data$y &gt; 4.5,]
+#Provide the structure of the transformed data
+head(data)
+##          y argvals subj....id..sel.
+## 1 6.306275      -9                1
+## 2 6.794587      -3                1
+## 3 6.487684       3                1
+## 4 6.622736      -3                2
+## 5 6.129050       3                2
+## 6 5.198497       9                2</code></pre>
+<p>Apply the function from the package. This function uses penalized
+splines smoothing to estimate the covariance and correlation and produce
+predictions.</p>
+<pre class="r"><code>#Fit FACEs to the CD4 data
+fit_face &lt;- face.sparse(data, argvals.new = c(-20:40))
+data.h &lt;- data
+tnew &lt;- fit_face$argvals.new
+id &lt;- data.h$subj
+uid &lt;- unique(id)</code></pre>
+<p>We are now making a plot of all trajectories and emphasize five
+subjects using different colors. This is used to provide an overall
+visualization of within and between subject heterogeneity of
+observations as well as of sampling times.</p>
+<pre class="r"><code>## scatter plots
+Xlab &lt;- &quot;Months since seroconversion&quot;
+Ylab &lt;- &quot;log(CD4 count)&quot;
+#Plotting all subjects shown as gray lines 
+par(mfrow = c(1, 1), mar = c(4.5, 4.5, 3, 2))
+
+plot(data.h$argvals, data.h$y, type = &quot;n&quot;, ylim = c(4.5, 8), 
+     xlab = Xlab, ylab = Ylab, bty = &quot;n&quot;)
+
+for(i in 1:366){
+  seq &lt;- which(id == uid[i])
+  lines(data.h$argvals[seq], data.h$y[seq], lty=1, col = rgb(0, 0, 0, alpha = 0.1), lwd = 1, type = &quot;l&quot;) 
+}
+#Displaying another five subjects using color
+col_emph &lt;- c(&quot;darkseagreen3&quot;, &quot;red&quot;, &quot;plum3&quot;, &quot;deepskyblue4&quot;, &quot;salmon&quot;)
+Sample &lt;- seq(1, 366, by = 75)
+for(i in 1:5){
+  seq &lt;- which(id == uid[Sample[i]])
+  lines(data.h$argvals[seq], data.h$y[seq], lty = 1, col = col_emph[i], lwd = 3, type = &quot;l&quot;) 
+}</code></pre>
+<p><img src="chapter_01_files/figure-html/unnamed-chunk-13-1.png" width="90%" /></p>
+<p>We now produce the same plot, but we emphasize the empirical mean as
+well as the smooth estimator of the mean obtained using
+<code>face:face.sparse</code> function.</p>
+<pre class="r"><code>par(mfrow = c(1, 1), mar = c(4.5, 4.5, 3, 2))
+
+plot(data.h$argvals, data.h$y, type = &quot;n&quot;, ylim = c(4.5, 8), 
+     xlab = Xlab, ylab = Ylab, bty = &quot;n&quot;)
+
+for(i in 1:366){
+  seq &lt;- which(id == uid[i])
+  lines(data.h$argvals[seq], data.h$y[seq], lty = 1, col = rgb(0, 0, 0, alpha = 0.1), lwd = 1, type = &quot;l&quot;) 
+}
+
+rmean &lt;- colMeans(log(cd4), na.rm = TRUE)
+points(-18:42, rmean, pch = 19, col = &quot;cyan&quot;)
+lines(-18:42, fit_face$mu.new, col = &quot;darkred&quot;, lwd = 2.5)</code></pre>
+<p><img src="chapter_01_files/figure-html/unnamed-chunk-14-1.png" width="90%" /></p>
+</div>
+<div id="the-content-child-growth-study" class="section level2">
+<h2>The CONTENT Child Growth Study</h2>
+<pre class="r"><code>library(tidyverse)
+library(refund)
+library(face)
+library(fields)
+library(tidyfun)</code></pre>
+<div id="obtain-and-describe-the-data" class="section level3">
+<h3>Obtain and describe the data</h3>
+<p>The CONTENT data set can be accessed from the <code>refund</code>
+package. Its format is displayed below.</p>
+<pre class="r"><code>data(&quot;content&quot;)
+content_df &lt;- content
+head(content_df)
+##   id ma1fe0 weightkg height agedays     cbmi  zlen zwei zwfl zbmi
+## 1  1      0    5.618   56.0      61 17.91454 -0.53 0.70 1.64 1.37
+## 2  1      0    5.990   56.2      65 18.96506 -0.62 1.05 2.18 1.93
+## 3  1      0    5.974   56.5      71 18.71407 -0.75 0.81 1.99 1.69
+## 4  1      0    6.290   57.4      77 19.09092 -0.57 1.01 2.03 1.83
+## 5  1      0    6.618   58.6      84 19.27221 -0.28 1.20 1.94 1.85
+## 6  1      0    6.530   58.8      91 18.88681 -0.46 0.89 1.70 1.56</code></pre>
+<p>We now plot the histogram of the times (expressed as days from birth)
+when observations were obtained from all babies in the study. Each study
+participant contributed multiple observations as this was a longitudinal
+study of human growth. There were a total of 4405 observations for 197
+babies in the study for an average of approximately 22 observations per
+baby.</p>
+<pre class="r"><code>hist(content_df$agedays, breaks = 30, 
+     xlab = &quot;Days from birth&quot;,
+     ylab = &quot;Number of observations&quot;, 
+     main = &quot;&quot;, 
+     col = rgb(0, 0, 1, alpha = 0.2))</code></pre>
+<p><img src="chapter_01_files/figure-html/unnamed-chunk-18-1.png" width="90%" /></p>
+<p>The histogram indicates that the distribution of visit times is
+highly skewed towards the beginning of the study. This partially
+reflects the sampling design which established more intensive sampling
+during the first <span class="math inline">\(3\)</span> months after the
+birth of the baby. However, some babies had shorter periods of follow up
+from birth and missed some appointment.</p>
+<p>We now prepare and display a plot that shows that z-score for length
+(zlen, left panels) and z score for weight (zwei, right panels)
+separated for males (top panels) and females (bottom panels). Data for
+two males (red shades) and two females (blue shades) is highlighted. The
+same shade of the color indicates the same person the zlen and the zwei
+plots.</p>
+<p>The first code chunk imports and cleans the data, retaining only a
+few variables and formatting the functional observations as a
+<code>tf</code> vector.</p>
+<pre class="r"><code>content_df &lt;- 
+  content_df %&gt;% 
+  select(id, ma1fe0, agedays, zlen, zwei) %&gt;% 
+  mutate(
+    gender = 
+      factor(ma1fe0, levels = c(1, 0), 
+             labels = c(&quot;male&quot;, &quot;female&quot;))) %&gt;% 
+  tf_nest(zlen:zwei, .id = id, .arg = agedays)</code></pre>
+<p>Making the desired plot means faceting by gender and outcome, so we
+will need variables in the plotting data frame for both of those. We
+also want to highlight two subjects, so we create a small data frame
+with two male and two female participants.</p>
+<pre class="r"><code>plot_df &lt;- 
+  content_df %&gt;% 
+  pivot_longer(
+    zlen:zwei,
+    names_to = &quot;var&quot;,
+    values_to = &quot;outcome&quot;
+  ) 
+
+plot_subset_df_m_1 = 
+  plot_df %&gt;% 
+  filter(id %in% c(2))
+
+plot_subset_df_m_2 = 
+  plot_df %&gt;% 
+  filter(id %in% c(3))
+
+plot_subset_df_f_1 = 
+  plot_df %&gt;% 
+  filter(id %in% c(1))
+
+plot_subset_df_f_2 = 
+  plot_df %&gt;% 
+  filter(id %in% c(6))</code></pre>
+<p>The next code chunk creates the plot.</p>
+<pre class="r"><code>ggp_content &lt;- 
+  plot_df %&gt;% 
+  ggplot(aes(y = outcome)) + 
+  geom_spaghetti(alpha = 0.15) + 
+  geom_spaghetti(data = plot_subset_df_m_1, color = &quot;red4&quot;, size = 1.5, alpha = 0.6) +
+  geom_spaghetti(data = plot_subset_df_m_2, color = &quot;red&quot;, size = 1.5, alpha = 0.6) +
+  geom_spaghetti(data = plot_subset_df_f_1, color = &quot;royalblue4&quot;, size = 1.5, alpha = 0.8) +
+  geom_spaghetti(data = plot_subset_df_f_2, color = &quot;steelblue2&quot;, size = 1.5, alpha = 0.8) +
+  theme_classic() +
+  facet_grid(gender~var) +
+  theme(strip.background = element_blank(),
+        strip.text = element_text(size = 12))
+
+ggp_content</code></pre>
+<p><img src="chapter_01_files/figure-html/unnamed-chunk-22-1.png" width="90%" /></p>
+</div>
+</div>
+
+<br><br>
+<footer>
+  <p class="copyright text-muted" align="center">Copyright &copy; 2023</p>
+</footer>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
