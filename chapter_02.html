@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Chapter 2</title>
+
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
+<script defer src="https://use.fontawesome.com/releases/v5.0.3/js/all.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.0/js/v4-shims.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics 
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151578452-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-151578452-1');
+</script>
+-->
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">FDA with R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="overview.html">Overview</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Datasets
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="dataset_nhanes.html">NHANES</a>
+    </li>
+    <li>
+      <a href="dataset_content.html">Content</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Chapters
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="chapter_01.html">Chapter 1</a>
+    </li>
+    <li>
+      <a href="chapter_02.html">Chapter 2</a>
+    </li>
+    <li>
+      <a href="chapter_03.html">Chapter 3: FPCA</a>
+    </li>
+    <li>
+      <a href="chapter_04.html">Chapter 4: SoFR</a>
+    </li>
+    <li>
+      <a href="chapter_05.html">Chapter 4: FoSR</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="scripts.html">Scripts</a>
+</li>
+<li>
+  <a href="https://github.com/FDAwithR">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Chapter 2</h1>
+
+</div>
+
+
+<div id="svd-for-us-excess-mortality" class="section level2">
+<h2>SVD for US Excess Mortality</h2>
+<pre class="r"><code>#Load packages
+library(readxl)
+library(dplyr)
+library(knitr)
+library(formattable)
+library(lubridate)
+library(tidyr)</code></pre>
+<div id="weekly-all-cause-mortality-data" class="section level3">
+<h3>Weekly all-cause mortality data</h3>
+<p>Here we focus on showing how to conduct SVD and PCA decompositions
+based on the cumulative weekly all cause mortality in <span
+class="math inline">\(52\)</span> states and territories in the US. For
+this we need to upload the processed data available in file
+<code>US_mortality.Rdata</code></p>
+<pre class="r"><code>library(refund)
+data(&quot;COVID19&quot;)
+CV19 &lt;- COVID19
+names(CV19)
+##  [1] &quot;US_weekly_mort&quot;                      &quot;US_weekly_mort_dates&quot;               
+##  [3] &quot;US_weekly_mort_CV19&quot;                 &quot;US_weekly_mort_CV19_dates&quot;          
+##  [5] &quot;US_weekly_excess_mort_2020&quot;          &quot;US_weekly_excess_mort_2020_dates&quot;   
+##  [7] &quot;US_states_names&quot;                     &quot;US_states_population&quot;               
+##  [9] &quot;States_excess_mortality&quot;             &quot;States_excess_mortality_per_million&quot;
+## [11] &quot;States_CV19_mortality&quot;               &quot;States_CV19_mortality_per_million&quot;
+
+Wd &lt;- CV19$States_excess_mortality_per_million
+current_date &lt;- CV19$US_weekly_excess_mort_2020_dates
+new_states &lt;- CV19$US_states_names</code></pre>
+</div>
+<div id="singular-value-decomposition" class="section level3">
+<h3>Singular value decomposition</h3>
+<p>This is used to illustrate the singular value decomposition (SVD).
+SVD is applied to all-cause cumulative excess mortality data as a
+function of the week of 2020. Each row in the data matrix corresponds to
+a state or territory (District of Columbia and Puerto Rico). Every
+column contains the cumulative weekly number of all-cause excess deaths
+per one million residents since the beginning of 2020. So, the data
+matrix is <span class="math inline">\(52\times 52\)</span> dimensional
+because there are <span class="math inline">\(50\)</span> states and
+<span class="math inline">\(2\)</span> teritories (Puerto Rico and
+District of Columbia) and <span class="math inline">\(52\)</span> weeks.
+We start by downloading the data.</p>
+<pre class="r"><code>#Obtain the cumulative excess mortality per million in every stat and territory
+Wr &lt;- Wd
+for(i in 1:dim(Wd)[1]){
+  Wr[i,] &lt;- cumsum(Wd[i,])
+}</code></pre>
+<p>Calculate the mean and the centered data matrix <span
+class="math inline">\(W\)</span>.</p>
+<pre class="r"><code>#Column mean 
+mW &lt;- colMeans(Wr)
+
+#Construct a matrix of same dimension as Wr with the mean of Wr on each row
+mW_mat &lt;- matrix(rep(mW, each = nrow(Wr)), ncol = ncol(Wr))
+
+#Construct the de-meaned data. The columns of W have mean zero
+W &lt;- Wr - mW_mat</code></pre>
+</div>
+<div id="plot-the-data-and-the-mean" class="section level3">
+<h3>Plot the data and the mean</h3>
+<p>We start by illustrating the data for each state and territory (gray
+solid lines) and the mean (dark red solid lines).</p>
+<pre class="r"><code>for(i in 1:length(new_states)){
+  ylabel &lt;- paste(&quot;US states cumulative excess deaths/million&quot;)
+  xlabel &lt;- paste(&quot;Weeks starting January 2020&quot;)
+  #Plot only for first state. For others add lines
+  if(i == 1){
+    par(bg = &quot;white&quot;)
+    #Here plot the date versus cumulative excess mortality (hence the cumsum)
+    plot(current_date, Wr[i,], type = &quot;l&quot;, lwd = 1.5, 
+         col = rgb(0, 0, 0, alpha = 0.1), cex = 1, xlab = xlabel, 
+         ylab = ylabel, ylim = c(-50, 2500), bty = &quot;n&quot;)
+  }else{
+    lines(current_date, Wr[i,], lwd = 1, col = rgb(0, 0, 0, alpha = 0.1))
+  }
+}
+
+lines(current_date, mW, lwd = 2.5, col = &quot;darkred&quot;)</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-5-1.png" width="90%" /></p>
+</div>
+<div id="display-the-de-meaned-data" class="section level3">
+<h3>Display the de-meaned data</h3>
+<p>We now show the effect of the subtracting the mean from the original
+data. We also emphasize a few states: New Jersey (green), Louisiana
+(red), California (plum), Maryland (blue), and Texas (salmon).</p>
+<pre class="r"><code>for(i in 1:length(new_states)){
+  ylabel=paste(&quot;US states centered cumulative excess deaths/million&quot;)
+  xlabel=paste(&quot;Weeks starting January 2020&quot;)
+  #Plot only for first state. For others add lines
+  if(i==1){
+    par(bg = &quot;white&quot;)
+    #Here plot the date versus cumulative excess mortality (hence the cumsum)
+    plot(current_date, W[i,], type = &quot;l&quot;, lwd = 1.5,
+         col = rgb(0, 0, 0, alpha = 0.1), cex = 1, xlab = xlabel, 
+         ylab = ylabel, ylim = c(-1500, 1500), bty = &quot;n&quot;)
+  }else{
+    lines(current_date, W[i,], lwd = 1, col = rgb(0, 0, 0, alpha = 0.1))
+  }
+}
+
+#Emphasize 5 states
+emphasize &lt;- c(&quot;New Jersey&quot;, &quot;Louisiana&quot;, &quot;California&quot;, &quot;Maryland&quot;, &quot;Texas&quot;)
+col_emph &lt;- c(&quot;darkseagreen3&quot;, &quot;red&quot;, &quot;plum3&quot;, &quot;deepskyblue4&quot;, &quot;salmon&quot;)
+
+emph_state_ind &lt;- match(emphasize, new_states)
+
+for(i in 1:length(emphasize)){
+  lines(current_date, W[emph_state_ind[i],], lwd = 2.5, col = col_emph[i])
+}</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-6-1.png" width="90%" /></p>
+<p>Calculate the SVD of <span class="math inline">\(W\)</span>, the
+corresponding eigenvalues, <span
+class="math inline">\(\lambda_k=d_k^2\)</span>, as well as the
+individual and cumulative proportion of variance explained.</p>
+<pre class="r"><code>SVDofW &lt;- svd(W)
+V &lt;- SVDofW$v
+lambda &lt;- SVDofW$d ^ 2
+propor_var &lt;- round(100 * lambda / sum(lambda), digits = 1)
+cumsum_var &lt;- cumsum(propor_var)</code></pre>
+<p>Display the first two right singular vectors</p>
+<pre class="r"><code>plot(current_date, V[,1], type = &quot;l&quot;, lwd = 2.5, 
+     col = &quot;coral&quot;, cex = 1, xlab = xlabel, ylim = c(-0.35, 0.35), 
+     ylab = &quot;Right singular vectors&quot;, bty = &quot;n&quot;)
+
+lines(current_date, V[,2], lwd = 2.5, col = &quot;coral4&quot;)</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-8-1.png" width="90%" /></p>
+</div>
+<div id="reconstruction-of-the-original-data" class="section level3">
+<h3>Reconstruction of the original data</h3>
+<p>We will use a rank <span class="math inline">\(K_0=2\)</span>
+reconstruction of the original data, which explains <span
+class="math inline">\(95.9\)</span>% of the de-meaned data
+variability.</p>
+<pre class="r"><code>#Set the approximation rank
+K0 &lt;- 2
+
+#Reconstruct the de-meaned data using the first K0 right singular vectors
+rec &lt;- SVDofW$u[,1:K0] %*% diag(SVDofW$d[1:K0]) %*% t(V[,1:K0])
+
+#Add the mean to the rank K0 approximation of W
+WK0 &lt;- mW_mat+rec</code></pre>
+</div>
+<div id="compare-the-real-and-reconstructed-data"
+class="section level3">
+<h3>Compare the real and reconstructed data</h3>
+<pre class="r"><code>ylabel &lt;- paste(&quot;US states cumulative excess deaths/million&quot;)
+
+plot(current_date, Wr[emph_state_ind[1],], type = &quot;l&quot;, lwd = 2.5, 
+     col = col_emph[1], cex = 1, xlab = xlabel, 
+     ylab = ylabel, ylim = c(-50, 2500), bty = &quot;n&quot;)
+
+lines(current_date, WK0[emph_state_ind[1],], lwd = 2.5, col = col_emph[1], lty = 2)
+
+for(i in 2:length(emphasize)){
+  lines(current_date, Wr[emph_state_ind[i],], lwd = 2.5, col = col_emph[i])
+  lines(current_date, WK0[emph_state_ind[i],], lwd = 2.5, col = col_emph[i], lty = 2)
+}</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-10-1.png" width="90%" /></p>
+</div>
+<div id="plot-the-scores-on-the-first-and-second-singular-vectors"
+class="section level3">
+<h3>Plot the scores on the first and second singular vectors</h3>
+<pre class="r"><code>U &lt;- SVDofW$u
+plot(U[,1], U[,2], pch = 19, cex = 0.8, 
+     xlab = &quot;Scores on first right singular vector&quot;,
+     ylab = &quot;Scores on second right singular vector&quot;, bty = &quot;n&quot;)
+
+points(U[emph_state_ind, 1], U[emph_state_ind, 2], col = col_emph, pch = 19, cex = 1.5)</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-11-1.png" width="90%" /></p>
+</div>
+</div>
+<div id="penalized-spline-smoothing-in-nhanes" class="section level2">
+<h2>Penalized Spline Smoothing in NHANES</h2>
+<p>We now show how to do penalized spline smoothing on the NHANES data
+set. We provide two smoothing examples: scatter plot smoothing, and
+nonparametric regression with standard covariates and multiple
+predictors with smooth effects.</p>
+<div id="mean-pa-among-deceased-and-alive-individuals"
+class="section level3">
+<h3>Mean PA Among Deceased and Alive Individuals</h3>
+<p>The code below shows how to create a figure demonstrating raw
+averages (black dots) and corresponding smooth averages of physical
+activity data at every minute of the day in the NHANES study.</p>
+<pre class="r"><code>library(mgcv)
+library(ggplot2)
+library(gridExtra)
+
+#load data
+nhanes_mortality &lt;- readRDS(&quot;./../../FDA-with-R/NHANES/data/nhanes_fda_with_r.rds&quot;)
+
+nhanes_plot &lt;- nhanes_mortality %&gt;% group_by(event) %&gt;% summarise(n = n())
+nhanes_plot &lt;- nhanes_plot[which(!is.na(nhanes_plot$event)),]
+MIMS_group &lt;- c()
+MIMS_day &lt;- list()
+for(i in 1:nrow(nhanes_plot)){
+  SEQN_group &lt;- nhanes_mortality$SEQN[which(nhanes_mortality$event == nhanes_plot$event[i])]
+  MIMS_group &lt;- rbind(MIMS_group, 
+                      colMeans(nhanes_mortality$MIMS[which(nhanes_mortality$SEQN %in% SEQN_group),], 
+                               na.rm = TRUE))
+}
+colnames(MIMS_group) &lt;- 1:1440
+nhanes_plot &lt;- data.frame(nhanes_plot, MIMS_group)
+
+#covert to long format to make the plot
+nhanes_plot2 &lt;- pivot_longer(nhanes_plot, cols = paste0(&quot;X&quot;,1:1440), names_to = &quot;minute&quot;, values_to = &quot;MIMS&quot;)
+nhanes_plot2$minute &lt;- as.numeric(str_sub(nhanes_plot2$minute, start = 2))
+nhanes_plot2$event &lt;- as.factor(nhanes_plot2$event)
+
+#smooth raw average PA among deceased and alive group, respectively
+MIMS_sm &lt;- rep(NA, nrow(nhanes_plot2))
+ind_alive &lt;- which(nhanes_plot2$event == 0)
+ind_deceased &lt;- which(nhanes_plot2$event == 1)
+MIMS_sm[ind_alive] &lt;- gam(nhanes_plot2$MIMS[ind_alive] ~ s(nhanes_plot2$minute[ind_alive], bs = &quot;cc&quot;), 
+                          method = &quot;REML&quot;)$fitted.values
+MIMS_sm[ind_deceased] &lt;- gam(nhanes_plot2$MIMS[ind_deceased] ~ s(nhanes_plot2$minute[ind_deceased], bs = &quot;cc&quot;), 
+                             method = &quot;REML&quot;)$fitted.values
+
+nhanes_plot2$MIMS_sm &lt;- MIMS_sm
+rm(MIMS_sm, ind_alive, ind_deceased)
+
+#make a plot
+ggplot() +
+  theme_classic() +
+  geom_point(data = nhanes_plot2, aes(x = minute, y = MIMS)) +
+  geom_line(data = nhanes_plot2, aes(x = minute, y = MIMS_sm, color = event), size = 1.5) +
+  scale_x_continuous(breaks = c(1,6,12,18,23)*60, 
+                     labels = c(&quot;01:00&quot;,&quot;06:00&quot;,&quot;12:00&quot;,&quot;18:00&quot;,&quot;23:00&quot;)) +
+  scale_y_continuous(breaks = c(4,8,12,16), limits = c(0, 16)) +
+  scale_color_manual(values = c(&quot;#FF6A6A&quot;, &quot;#00BEFF&quot;)) +
+  guides(color=&quot;none&quot;) +
+  labs(x = &quot;Time of Day&quot;, y = &quot;MIMS&quot;) +
+  theme(plot.title = element_text(hjust = 0.5, face = &quot;bold&quot;))</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-12-1.png" width="90%" /></p>
+</div>
+<div id="regression-of-mean-pa" class="section level3">
+<h3>Regression of Mean PA</h3>
+<p>Consider now a slightly more complex model, where the outcome is the
+average MIMS for every study participant across all days and all minutes
+of the day. The predictors are age, BMI, gender, and poverty-income
+ratio (PIR), where the effect of age and BMI is allowed to vary
+smoothly. The code below shows how to create Figure 2.7 in the book.</p>
+<pre class="r"><code>library(mvtnorm)
+
+nhanes_use &lt;- nhanes_mortality %&gt;%
+  filter(age &gt; 18 &amp; !is.na(age) &amp; !is.na(BMI) &amp; !is.na(gender) &amp; !is.na(PIR))
+nhanes_use$MIMS_mean &lt;- nhanes_use$TMIMS/1440 # obtain average MIMS as the outcome
+
+#fit a gam model
+fit_mims &lt;- gam(MIMS_mean ~ s(age, k = 51) + s(BMI, k = 51) + gender + PIR, data = nhanes_use)
+plot_fit &lt;- plot(fit_mims, select = 0)
+
+#get qn for joint CI
+ind_age &lt;- which(str_detect(colnames(vcov(fit_mims)), &quot;age&quot;)) # indices corresponding to age
+ind_BMI &lt;- which(str_detect(colnames(vcov(fit_mims)), &quot;BMI&quot;))
+
+#obtain design matrix at specified locations of age and BMI
+mat_design &lt;- predict(fit_mims, newdata = data.frame(gender = nhanes_use$gender[1:length(seq(1, 100, 2))],
+                                       PIR = nhanes_use$PIR[1:length(seq(1, 100, 2))],
+                                       age = plot_fit[[1]]$x[seq(1, 100, 2)],
+                                       BMI = plot_fit[[2]]$x[seq(1, 100, 2)]),
+        type = &quot;lpmatrix&quot;)
+
+#obtain covariance matrices at selected locations
+cov_age &lt;- mat_design[,ind_age] %*% fit_mims$Vp[ind_age, ind_age] %*% t(mat_design[,ind_age]) # covariance matrix of age
+cov_BMI &lt;- mat_design[,ind_BMI] %*% fit_mims$Vp[ind_BMI, ind_BMI] %*% t(mat_design[,ind_BMI]) # covariance matrix of BMI
+cov_use &lt;- list(cov_age, cov_BMI) 
+
+alpha &lt;- 0.05
+qn &lt;- rep(0, length(plot_fit))
+#obtain quantiles
+for(i in 1:length(qn)){
+  qn[i] &lt;- qmvnorm(1 - alpha, corr = cov2cor(cov_use[[i]]), tail = &quot;both.tails&quot;)$quantile
+}
+
+#make a plot
+p1 &lt;- ggplot() +
+  theme_classic() +
+  geom_point(data = nhanes_use, aes(x = age, y = MIMS_mean), alpha = 0.1, size = 0.5) +
+  labs(x = &quot;Age (years)&quot;, y = &quot;MIMS&quot;)
+p2 &lt;- ggplot() +
+  theme_classic() +
+  geom_point(data = nhanes_use, aes(x = BMI, y = MIMS_mean), alpha = 0.1, size = 0.5) +
+  labs(x = &quot;BMI&quot;, y = &quot;MIMS&quot;)
+p3 &lt;- ggplot() +
+  theme_classic() +
+  labs(x = &quot;Age (years)&quot;, y = &quot;f(age)&quot;) +
+  geom_polygon(aes(x = c(plot_fit[[1]]$x, rev(plot_fit[[1]]$x)), 
+                   y = c(plot_fit[[1]]$fit + plot_fit[[1]]$se/2*qn[1], rev(plot_fit[[1]]$fit - plot_fit[[1]]$se/2*qn[1]))), 
+               fill = &quot;gray20&quot;, alpha = 0.2) +
+  geom_polygon(aes(x = c(plot_fit[[1]]$x, rev(plot_fit[[1]]$x)), 
+                   y = c(plot_fit[[1]]$fit + plot_fit[[1]]$se, rev(plot_fit[[1]]$fit - plot_fit[[1]]$se))), 
+               fill = &quot;gray10&quot;, alpha = 0.4) +
+  geom_line(aes(x = plot_fit[[1]]$x, y = plot_fit[[1]]$fit), lty = 1) +
+  geom_hline(yintercept = 0, color = &quot;lightgray&quot;, alpha = 0.7, lty = 2, lwd = 0.3)
+p4 &lt;- ggplot() +
+  theme_classic() +
+  labs(x = &quot;BMI&quot;, y = &quot;g(BMI)&quot;) +
+  geom_polygon(aes(x = c(plot_fit[[2]]$x, rev(plot_fit[[2]]$x)), 
+                   y = c(plot_fit[[2]]$fit + plot_fit[[2]]$se/2*qn[2], rev(plot_fit[[2]]$fit - plot_fit[[2]]$se/2*qn[2]))), 
+               fill = &quot;gray10&quot;, alpha = 0.2) +
+  geom_polygon(aes(x = c(plot_fit[[2]]$x, rev(plot_fit[[2]]$x)), 
+                   y = c(plot_fit[[2]]$fit + plot_fit[[2]]$se, rev(plot_fit[[2]]$fit - plot_fit[[2]]$se))), 
+               fill = &quot;gray20&quot;, alpha = 0.4) +
+  geom_line(aes(x = plot_fit[[2]]$x, y = plot_fit[[2]]$fit), lty = 1) +
+  geom_hline(yintercept = 0, color = &quot;lightgray&quot;, alpha = 0.7, lty = 2, lwd = 0.3)
+grid.arrange(p1, p2, p3, p4, nrow = 2)</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-13-1.png" width="90%" /></p>
+</div>
+</div>
+<div id="svd-with-noisy-data" class="section level2">
+<h2>SVD with noisy data</h2>
+<p>Singular value decomposition is a powerful method, but it essentially
+assumes that data are observed without error. Even when the truncated
+SVD is used as an approximation, this is done because the remaining
+variation is small, not because it is important or large. We are now
+investigating what happens when SVD is applied, incorrectly, to a data
+generating process that contains substantial noise.</p>
+<p>Simulate samples of curves from the model <span
+class="math display">\[y_{ij}=b_{1i}v_1(j)+b_{2i}v_2(j)+\epsilon_{ij}\;,\]</span>
+for <span class="math inline">\(j=1,\ldots,p+1\)</span> where <span
+class="math inline">\(\epsilon_{ij}\sim N(0,\sigma^2_\epsilon)\)</span>,
+<span class="math inline">\(b_{1i}\sim N(0,\sigma^2_1)\)</span>, and
+<span class="math inline">\(b_{2i}\sim N(0,\sigma^2_2)\)</span>. Here
+<span class="math inline">\(v_1=x_1/||x_1||\)</span> and <span
+class="math inline">\(v_2=x_2/||x_2||\)</span>, where <span
+class="math inline">\(x_1(j)=1\)</span> and <span
+class="math inline">\(x_2(j)=\frac{j-1}{p}-\frac{1}{2}\)</span>, for
+<span class="math inline">\(j=1,\ldots,p+1\)</span>. This ensures that
+<span class="math inline">\(v_1\)</span> and <span
+class="math inline">\(v_2\)</span> are orthonormal vectors. We use <span
+class="math inline">\(p=100\)</span> and generate <span
+class="math inline">\(n=150\)</span> samples with <span
+class="math inline">\(\sigma^2_1=4\)</span> and <span
+class="math inline">\(\sigma^2_1=1\)</span>.</p>
+<pre class="r"><code>#setting error variance
+sigma2eps &lt;- 1
+#setting the means of the random effects
+mu &lt;- c(0, 0)
+#setting the correlation of random effects
+rho &lt;- 0
+#setting the random effects variances
+sigma11 &lt;- 4
+sigma22 &lt;- 1
+sigma12 &lt;- rho * sqrt(sigma11 * sigma22)
+
+#build the covariance matrix
+Sigma &lt;- matrix(c(sigma11, sigma12, sigma12, sigma22), ncol = 2)</code></pre>
+<p>Simulate from the model</p>
+<pre class="r"><code>set.seed(5272021)
+#grid size
+p &lt;- 100
+#sample_size
+n &lt;- 150
+#Define the v1, v2 vectors. They are orthonormal: the sum of squares of their entries = 1
+v1 &lt;- rep(1, p + 1)
+v1 &lt;- v1 / sqrt(sum(v1 ^ 2))
+v2 &lt;- (0:p) / p - 0.5
+v2 &lt;- v2 / sqrt(sum(v2 ^ 2))
+#This is the matrix design
+Z &lt;- cbind(v1, v2)
+#Simulate the random effects
+b &lt;- mvrnorm(n, mu, Sigma)
+#Simulate errors
+epsilon &lt;- matrix(rnorm(n * (p + 1), 0, sqrt(sigma2eps)), ncol = n)
+#Simulate data
+Y &lt;- Z %*% t(b) + epsilon</code></pre>
+<p>Apply SVD to the data matrix</p>
+<pre class="r"><code>Wr &lt;- t(Y)
+mW &lt;- colMeans(Wr)
+#Construct a matrix with the mean repeated on each row
+mWmat &lt;- matrix(rep(mW, each = nrow(Wr)), ncol = ncol(Wr))
+#Center the data
+W &lt;- Wr-mWmat
+
+#Calculate the SVD of W
+SVDofW &lt;- svd(W)
+#Left singular vectors stored by columns
+U &lt;- SVDofW$u
+#Singular values
+d &lt;- SVDofW$d
+#Right singular vectors stored by columns
+V &lt;- SVDofW$v</code></pre>
+<div id="including-plots" class="section level3">
+<h3>Including Plots</h3>
+<p>Plotting the data. This is used to illustrate how the generated data
+look like. In particular, it shows the effect of of noise on linear
+trends for each study participant.</p>
+<pre class="r"><code>#Plot the first study participant
+plot(v2, Y[,1], type = &quot;l&quot;, lwd = 2, 
+     col = rgb(0, 0, 0, alpha = 0.1), bty = &quot;n&quot;, 
+     ylim = c(min(Y), max(Y)), 
+     xlim = c(min(v2), max(v2)), 
+     xlab = &quot;Covariate&quot;, ylab = &quot;Functional outcome&quot;)
+#Add the data for the other study partcipants. They are all in gray
+for(i in 2:dim(Y)[2]){
+  lines(v2, Y[,i], lwd = 1, col = rgb(0, 0, 0, alpha = 0.1))
+}
+#Two study participants are highlighted
+lines(v2, Y[,1], lwd = 2, col = &quot;cadetblue2&quot;)
+lines(v2, Y[,100], lwd = 2, col = &quot;salmon&quot;)</code></pre>
+<p><img src="chapter_02_files/figure-html/pressure-1.png" width="90%" /></p>
+<p>Plotting the true and estimated eigenfunctions</p>
+<pre class="r"><code>plot(v2, v1, type = &quot;l&quot;, lwd = 4, bty = &quot;n&quot;, 
+     ylim = c(min(-V[,1:2]), max(-V[,1:2])), xlab = &quot;Covariate&quot;, ylab = &quot;Right singular vectors&quot;, col = &quot;cadetblue4&quot;)
+lines(v2, v2, lwd = 4, col = &quot;cadetblue2&quot;)
+lines(v2, -V[,1], lwd = 2, col = &quot;coral&quot;)
+lines(v2, -V[,2], lwd = 2, col = &quot;coral4&quot;)</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-18-1.png" width="90%" /></p>
+<p>Scaled eigenvalues</p>
+<pre class="r"><code>round(d[1:5] ^ 2 / n, digits = 3)
+## [1] 5.296 3.312 3.071 2.931 2.895</code></pre>
+<p>Plot the percent variance explained by each estimated right
+eigenvector</p>
+<pre class="r"><code>plot(d ^ 2 / sum(d ^ 2), bty = &quot;n&quot;, 
+     type = &quot;p&quot;, pch = 19, cex = 0.8, 
+     xlab = &quot;Right singular vector number&quot;, 
+     ylab = &quot;Percent variance explained&quot;)</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-20-1.png" width="90%" /></p>
+</div>
+</div>
+<div id="covariance-smoothing-in-nhanes" class="section level2">
+<h2>Covariance Smoothing in NHANES</h2>
+<p>We now illustrate covariance smoothing for dense functional data
+using the NHANES accelerometry data. The code below creates the
+estimated raw covariance and smooth covariance functions.</p>
+<pre class="r"><code>library(fields)
+
+#do FPCA on the data to obtain eigenfunctions and eigenvalues
+MIMS &lt;- unclass(nhanes_use$MIMS[, seq(10, 1440, 10)])
+fit_fpca_0.01 &lt;- fpca.face(Y = MIMS, lambda = 0.01)
+fit_fpca_1 &lt;- fpca.face(Y = MIMS, lambda = 1)
+fit_fpca_100 &lt;- fpca.face(Y = MIMS, lambda = 100)
+
+#calculate smoothed covariance
+cov_unsmoothed &lt;- cov(MIMS, use = &quot;pairwise.complete.obs&quot;)
+cov_smoothed_0.01 &lt;- tcrossprod(fit_fpca_0.01$efunctions %*% diag(sqrt(fit_fpca_0.01$evalues)))
+cov_smoothed_1 &lt;- tcrossprod(fit_fpca_1$efunctions %*% diag(sqrt(fit_fpca_1$evalues)))
+cov_smoothed_100 &lt;- tcrossprod(fit_fpca_100$efunctions %*% diag(sqrt(fit_fpca_100$evalues)))
+
+#make a plot
+par(mfrow = c(2, 2), mgp=c(2.4,1,0), mar = c(3.5, 4, 3, 3), oma = c(0.5, 0.5, 0, 0))
+image.plot(cov_unsmoothed, axes = F, 
+           # xlab = &quot;Time of day&quot;, ylab = &quot;Time of day&quot;, 
+           main = &quot;Unsmoothed&quot;, zlim = c(-12, 72), legend.mar = 6)
+axis(1, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+axis(2, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+
+image.plot(cov_smoothed_0.01, axes = F, 
+           # xlab = &quot;Time of day&quot;, ylab = &quot;Time of day&quot;, 
+           main = bquote(bold(&quot;Smoothed (&quot; ~ lambda ~ &quot;= 0.01)&quot; )), 
+           zlim = c(-12, 72), legend.mar = 6)
+axis(1, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+axis(2, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+
+image.plot(cov_smoothed_1, axes = F, 
+           # xlab = &quot;Time of day&quot;, ylab = &quot;Time of day&quot;, 
+           main = bquote(bold(&quot;Smoothed (&quot; ~ lambda ~ &quot;= 1)&quot; )), 
+           zlim = c(-12, 72), legend.mar = 6)
+axis(1, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+axis(2, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+
+image.plot(cov_smoothed_100, axes = F, 
+           # xlab = &quot;Time of day&quot;, ylab = &quot;Time of day&quot;, 
+           main = bquote(bold(&quot;Smoothed (&quot; ~ lambda ~ &quot;= 100)&quot; )), 
+           zlim = c(-12, 72), legend.mar = 6)
+axis(1, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+axis(2, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+
+mtext(&quot;Time of day&quot;, side = 1, line = -1, outer = TRUE)
+mtext(&quot;Time of day&quot;, side = 2, line = -1, outer = TRUE)</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-21-1.png" width="90%" /></p>
+<p>Similarly, the code below shows how to calculate smoothed correlation
+functions and reproduce Figure 2.12 in the book.</p>
+<pre class="r"><code>#calculate smoothed correlation
+cor_unsmoothed &lt;- cor(MIMS, use = &quot;pairwise.complete.obs&quot;)
+cor_smoothed_0.01 &lt;- cov2cor(cov_smoothed_0.01)
+cor_smoothed_1 &lt;- cov2cor(cov_smoothed_1)
+cor_smoothed_100 &lt;- cov2cor(cov_smoothed_100)
+
+#make a plot
+par(mfrow = c(2, 2), mgp=c(2.4,1,0), mar = c(3.5, 4, 3, 3), oma = c(0.5, 0.5, 0, 0))
+image.plot(cor_unsmoothed, axes = F, 
+           # xlab = &quot;Time of day&quot;, ylab = &quot;Time of day&quot;, 
+           main = &quot;Unsmoothed&quot;, zlim = c(-1, 1), legend.mar = 6)
+axis(1, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+axis(2, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+
+image.plot(cor_smoothed_0.01, axes = F, 
+           # xlab = &quot;Time of day&quot;, ylab = &quot;Time of day&quot;, 
+           main = bquote(bold(&quot;Smoothed (&quot; ~ lambda ~ &quot;= 0.01)&quot; )), zlim = c(-1, 1), legend.mar = 6)
+axis(1, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+axis(2, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+
+image.plot(cor_smoothed_1, axes = F, 
+           # xlab = &quot;Time of day&quot;, ylab = &quot;Time of day&quot;, 
+           main = bquote(bold(&quot;Smoothed (&quot; ~ lambda ~ &quot;= 1)&quot; )), zlim = c(-1, 1), legend.mar = 6)
+axis(1, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+axis(2, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+
+image.plot(cor_smoothed_100, axes = F, 
+           # xlab = &quot;Time of day&quot;, ylab = &quot;Time of day&quot;, 
+           main = bquote(bold(&quot;Smoothed (&quot; ~ lambda ~ &quot;= 100)&quot; )), zlim = c(-1, 1), legend.mar = 6)
+axis(1, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+axis(2, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+
+mtext(&quot;Time of day&quot;, side = 1, line = -1, outer = TRUE)
+mtext(&quot;Time of day&quot;, side = 2, line = -1, outer = TRUE)</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-22-1.png" width="90%" /></p>
+</div>
+<div id="covariance-smoothing-for-cd4-counts" class="section level2">
+<h2>Covariance Smoothing for CD4 Counts</h2>
+<p>This document shows how to visualize the CD4 counts data, its raw and
+smooth covariance operators.</p>
+<pre class="r"><code>library(refund)
+library(face)
+library(fields)</code></pre>
+<pre class="r"><code>#Load the data
+data(cd4)
+n &lt;- nrow(cd4) 
+T &lt;- ncol(cd4)
+
+#Construct a vectorized form of the data
+id &lt;- rep(1:n, each = T)
+t &lt;- rep(-18:42, times = n) 
+y &lt;- as.vector(t(cd4))
+
+#Indicator for NA observations. This takes advantage of the sparse nature of the data
+sel &lt;- which(is.na(y))
+#Organize data as outcome, time, subject ID 
+data &lt;- data.frame(y = log(y[-sel]), argvals = t[-sel],
+subj &lt;- id[-sel])
+data &lt;- data[data$y &gt; 4.5,]
+#Provide the structure of the transformed data
+head(data)
+##          y argvals subj....id..sel.
+## 1 6.306275      -9                1
+## 2 6.794587      -3                1
+## 3 6.487684       3                1
+## 4 6.622736      -3                2
+## 5 6.129050       3                2
+## 6 5.198497       9                2</code></pre>
+<p>Apply the function from the package. This function uses penalized
+splines smothing to estimate the covariance and correlation and produce
+predictions.</p>
+<pre class="r"><code>#Fit FACEs to the CD4 counts data
+fit_face &lt;- face.sparse(data, argvals.new = (-20:40))
+data.h &lt;- data
+tnew &lt;- fit_face$argvals.new</code></pre>
+<pre class="r"><code>#Estimated covariance
+Cov &lt;- fit_face$Chat.new
+#Estimated variance
+Cov_diag &lt;- diag(Cov)
+#Estimated correlation
+Cor &lt;- fit_face$Cor.new</code></pre>
+<p>Plot the covariance as a function of time.</p>
+<pre class="r"><code>Xlab &lt;- &quot;Months since seroconversion&quot;
+Ylab &lt;- &quot;log (CD4 count)&quot;
+#Plot the smooth variance estimate
+par(mfrow = c(1, 1), mar = c(4.5, 4.5, 3, 2))
+
+plot(tnew, Cov_diag, type=&quot;l&quot;, xlab = Xlab, ylab = &quot;&quot;,
+     main = &quot;CD4: variance function&quot;, cex.axis = 1.25, 
+     cex.lab = 1.25, cex.main = 1.25, lwd = 2)</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-27-1.png" width="90%" /></p>
+<p>How does one plot the raw covariance and correlation? We build a
+matrix of submatrices, each corresponding to one study participant. Each
+row of the submatrix corresponding to a study participant, <span
+class="math inline">\(i\)</span>, contains (<span
+class="math inline">\(j_i\)</span>, <span
+class="math inline">\(k_i\)</span>,<span class="math inline">\(r_i
+r_j\)</span>), <span class="math inline">\(j_i,k_i=1,\ldots,p_i\)</span>
+and <span class="math inline">\(r_i r_j\)</span> is the product of these
+residuals.</p>
+<pre class="r"><code>#First calculate the matrix of residuals
+tcd4 &lt;- log(cd4)
+tcd4[tcd4 &lt;= 4.5] &lt;- NA
+
+#Compute the matrix wih the estimated mean on each row
+mtcd4 &lt;- matrix(rep(fit_face$mu.new, nrow(tcd4)), ncol = ncol(tcd4), byrow = TRUE)
+
+#Calculate the centered residuals
+res_cd4 &lt;- (tcd4 - mtcd4) </code></pre>
+<pre class="r"><code>#Build the pair-wise residual products
+#Build the matrix of residuals
+for(i in 1:dim(res_cd4)[1]){
+  td &lt;- res_cd4[i,]
+  tt &lt;- which(!is.na(td))
+  wo &lt;- td[tt]
+  
+  tmat &lt;- matrix(rep(NA, 3 * length(tt) ^ 2), ncol = 3)
+  tmat[,1] &lt;- c(kronecker(wo, t(wo)))
+  tmat[,2] &lt;- rep(tt, each = length(tt)) - 19
+  tmat[,3] &lt;- rep(tt, length(tt)) - 19
+  
+  if(i==1){
+    pmat &lt;- tmat
+  }else{
+    pmat &lt;- rbind(pmat, tmat)
+  }
+}</code></pre>
+<p>Plot the products of residuals</p>
+<pre class="r"><code>#Find the quantiles of the products of residuals
+col_pal &lt;- viridis(125)
+qcol &lt;- c(quantile(abs(pmat[,1]), probs = seq(0.01, 0.75, length = length(col_pal) - 1)), 1)
+ind_col &lt;- rep(NA, dim(pmat)[1])
+
+#Assign the color palette to quantiles
+for(i in 1:dim(pmat)[1]){
+  ii_col &lt;- which.min(abs(pmat[i, 1]) - qcol &gt; 0)
+  ind_col[i] &lt;- col_pal[ii_col]
+}
+
+qcol &lt;- format(round(qcol, 2), nsmall = 2)
+par(mar = c(4.1, 4.1, 4.1, 6.1), xpd = TRUE)
+
+#The seed is set here for jittering the data
+set.seed(632021)
+plot(jitter(pmat[,2], 3), jitter(pmat[,3], 3), pch = 19, col = ind_col, cex = 0.15, 
+     xlab = Xlab, ylab = Xlab)
+legend(&quot;right&quot;, inset = c(-0.3, 0), legend = c(qcol[124], qcol[95], qcol[70], qcol[50], qcol[1]), 
+       pch = c(19, 19), col = c(col_pal[125], col_pal[95], col_pal[70], col_pal[50], col_pal[1]), 
+       pt.cex = rep(0.75, 5), cex = rep(0.75, 5), bty = &quot;n&quot;)</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-30-1.png" width="90%" /></p>
+<div id="covariance-plot" class="section level3">
+<h3>Covariance plot</h3>
+<pre class="r"><code>id &lt;- data.h$subj
+uid &lt;-unique(id)
+#Plot the smooth covariance function
+brk &lt;- c(0.03, quantile(as.vector(Cov), probs = seq(0.01, 0.99, length = 127)), 0.26)
+par(mfrow = c(1, 1), mar = c(4.5, 4.5, 2, 3))
+image.plot(tnew, tnew, Cov, xlab = Xlab, ylab = Xlab, 
+           col = viridis(128), breaks = brk, 
+           axis.args = list(at = c(0.05, 0.1, 0.15, 0.2, 0.25)), 
+           legend.shrink = 0.75, legend.line = -1.5, legend.width = 0.5)</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-31-1.png" width="90%" /></p>
+</div>
+<div id="correlation-plot" class="section level3">
+<h3>Correlation plot</h3>
+<pre class="r"><code>id &lt;- data.h$subj
+uid &lt;- unique(id)
+#Plot the smooth correlation function
+brk &lt;- c(0.2, seq(0.21, 0.9, length = 69), seq(0.91, 0.99, length = 58), 1.001)
+par(mfrow = c(1, 1), mar = c(4.5, 4.5, 2, 3))
+image.plot(tnew, tnew, Cor, xlab = Xlab, ylab = Xlab, 
+           col = viridis(128), breaks = brk,
+           axis.args = list(at = c(0.2, 0.4, 0.6, 0.8, 1)), 
+           legend.shrink = 0.75, legend.line = -1.5, legend.width = 0.5)</code></pre>
+<p><img src="chapter_02_files/figure-html/unnamed-chunk-32-1.png" width="90%" /></p>
+</div>
+</div>
+
+<br><br>
+<footer>
+  <p class="copyright text-muted" align="center">Copyright &copy; 2023</p>
+</footer>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -50,7 +50,7 @@ library(gridExtra)
 library(ggpubr)
 
 ## load NHANES data
-data <- readRDS("./../NHANES/data/nhanes_fda_with_r_ml.rds") ## need to change once deciding where to put NHANES data
+data <- readRDS("./../../FDA-with-R/NHANES/data/nhanes_fda_with_r_ml.rds") ## need to change once deciding where to put NHANES data
 
 ## plot NHANES data
 id <- c(75111,77936,82410)
@@ -124,7 +124,7 @@ library(stringr)
 library(tidyr)
 library(mgcv)
 
-nhanes_lite <- readRDS("./../NHANES/data/nhanes_fda_with_r.rds")
+nhanes_lite <- readRDS("./../../FDA-with-R/NHANES/data/nhanes_fda_with_r.rds")
 
 ## subset data to create MIMS-by-age plot
 nhanes_age <- nhanes_lite
