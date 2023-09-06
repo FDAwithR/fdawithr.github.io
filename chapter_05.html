@@ -13,7 +13,7 @@
 
 <title>Chapter 5: FoSR</title>
 
-<script src="site_libs/header-attrs-2.16/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -29,14 +29,14 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
 <script defer src="https://use.fontawesome.com/releases/v5.0.3/js/all.js"></script>
 <script defer src="https://use.fontawesome.com/releases/v5.0.0/js/v4-shims.js"></script>
@@ -198,8 +198,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -207,16 +207,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -410,95 +403,80 @@ div.tocify {
 </div>
 
 
-<p>We now consider the use of functions as responses in models with
-scalar predictors. This setting is widespread in applications of
-functional data analysis, and builds on specific tools and broader
-intuition developed in previous chapters. We will focus on the linear
-Function-on-Scalar Regression (FoSR) model, with a brief overview of
-alternative approaches in later sections.</p>
+<p>This book Chapter and the code in this page considers functions as
+responses in models with scalar predictors. This setting is widespread
+in applications of functional data analysis; we will focus on the linear
+Function-on-Scalar Regression (FoSR) model.</p>
 <div id="motivation-and-exploratory-analysis-of-mims-profiles"
 class="section level2">
 <h2>Motivation and Exploratory Analysis of MIMS Profiles</h2>
-<p>The code below imports and organizes data that will be used in this
-Chapter. As elsewhere, we begin with the processed NHANES data. The
-<code>MIMS</code> variable is converted to a <code>tidyfun</code> object
-and stored as a single column of functional observations; we retain a
-small number of scalar covariates (<code>gender</code> and
-<code>age</code>, as well as the participant ID in <code>SEQN</code>
-which we convert to a factor variable) and create a categorical age
-variable. Subjects who are missing covariate information are dropped. To
-keep the examples in this section computationally feasible, we use the
-first 250 subjects in this dataset.</p>
-<pre class="r"><code># import and organize the data
-
-nhanes_df = 
+<p>The code below imports and organizes data the processed NHANES data
+<code>nhanes_fda_with_r.rds</code> and available <a
+href="dataset_nhanes.html">here</a>. This code assumes the data are
+stored in the directory <code>./data/</code>. We retain a small number
+of scalar covariates (<code>gender</code> and <code>age</code>, as well
+as the participant ID in <code>SEQN</code> which we convert to a factor
+variable) and create a categorical age variable. Subjects who are
+missing covariate information are dropped. To keep the examples in this
+section computationally feasible, we use the first 250 subjects in this
+dataset.</p>
+<pre class="r"><code>nhanes_df = 
   readRDS(
     here::here(&quot;data&quot;, &quot;nhanes_fda_with_r.rds&quot;)) %&gt;% 
   select(SEQN, gender, age, MIMS_mat = MIMS) %&gt;% 
   mutate(
     age_cat = 
       cut(age, breaks = c(18, 35, 50, 65, 80), 
-          include.lowest = TRUE)) %&gt;% 
+          include.lowest = TRUE),
+    SEQN = as.factor(SEQN)) %&gt;% 
   drop_na(age, age_cat) %&gt;% 
-  filter(age &gt;= 25) %&gt;% 
   tibble() %&gt;% 
   slice(1:250) </code></pre>
+<p>In the next code chunk, the <code>MIMS</code> variable is converted
+to a <code>tidyfun</code> object and stored as a single column of
+functional observations.</p>
 <pre class="r"><code>nhanes_df = 
   nhanes_df %&gt;% 
   mutate(
     MIMS_tf = matrix(MIMS_mat, ncol = 1440),
     MIMS_tf = tfd(MIMS_tf, arg = seq(1/60, 24, length = 1440)))</code></pre>
-<p>Physical activity trajectories observed over 24 hours are shaped by
-subject-level characteristics, and better understanding of the drivers
-of activity may provide useful insights into health behaviors or
-potential interventions that promote physical activity. One way to
-explore these complex associations is to consider the MIMS profile as a
-response that varies according to scalar predictors like age and gender.
-The Figure below is similar to one shown in the Introduction, and shows
-minute-level averages for participants in each age category separately
-for male and female. From this, we observe a clear diurnal pattern of
-activity, and note a decrease in physical activity in the afternoon and
-evening as age increases this is particularly noticeable for male
-participants. We also see that female participants generally have a
-higher mean activity than male participants in the same age
-category.</p>
-<pre class="r"><code># exploratory data analysis and plot
-nhanes_df %&gt;% 
+<p>One way to explore the associations between subject-level
+characteristics and 24-hour activity is to consider the MIMS profile as
+a response that varies according to scalar predictors like age and
+gender. The Figure below shows minute-level averages for participants in
+each age category, separately for male and female. From this, we observe
+a clear diurnal pattern of activity, and note a decrease in physical
+activity in the afternoon and evening as age increases this is
+particularly noticeable for male participants.</p>
+<pre class="r"><code>nhanes_df %&gt;% 
   group_by(age_cat, gender) %&gt;% 
   summarize(mean_mims = mean(MIMS_tf)) %&gt;% 
   ggplot(aes(y = mean_mims, color = age_cat)) + 
   geom_spaghetti() + 
   facet_grid(.~gender) + 
-  scale_x_continuous(breaks = seq(0, 24, length = 5)) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
   labs(x = &quot;Time of day (hours)&quot;, y = &quot;Average MIMS&quot;)
-## `summarise()` has grouped output by &#39;age_cat&#39;. You can
-## override using the `.groups` argument.</code></pre>
+## `summarise()` has grouped output by &#39;age_cat&#39;. You can override using the
+## `.groups` argument.</code></pre>
 <p><img src="chapter_05_files/figure-html/unnamed-chunk-2-1.png" width="90%" /></p>
-<pre><code>## `summarise()` has grouped output by &#39;age_cat&#39;. You can
-## override using the `.groups` argument.</code></pre>
 <p>Exploratory plots like this one are useful for beginning to
 understand the effects of covariates on physical activity, but are
-limited in their scope. We are unable, from this Figure, to adjust for
-covariates or understand issues like confounding, and there is no direct
-mechanism to assess statistical significance or make inferences.
-Although the means in adjacent minutes are similar due to the underlying
-structure of the observations, simple minute-level averages do not
-explicitly leverage that structure. These are some of the issues that
-more formal approaches to function-on-scalar regression are intended to
-address.</p>
+limited in their scope; more formal approaches to function-on-scalar
+regression adjust for covariates and ensure smoothness across adjacent
+time points.</p>
 <div id="regressions-using-binned-data" class="section level3">
 <h3>Regressions using Binned Data</h3>
 <p>To build intuition for functional response model interpretations,
 identify practical challenges, and motivate later developments, we fit a
 series of regressions to MIMS profiles using binned or aggregate
-observations. As a first step, we aggregate minute-level data into
-hour-length bins, so that each MIMS profile consists as 24 observations.
+observations. The next code chunk aggregates minute-level data into
+hour-length bins, so that each MIMS profile consists of 24 observations.
 To obtain hourly trajectories, we “smooth” minute-level data using a
-rolling mean with a 60-minute bandwidth, and evaluate the resulting
+rolling mean with a 60-minute bandwidth and evaluate the resulting
 functions at the midpoint of each hour.</p>
-<pre class="r"><code>#Construct a variable that contains average MIMS for each hour
-
-nhanes_df = 
+<pre class="r"><code>nhanes_df = 
   nhanes_df %&gt;% 
   mutate(
     MIMS_hour = 
@@ -506,68 +484,96 @@ nhanes_df =
     MIMS_hour = tfd(MIMS_hour, arg = seq(.5, 23.5, by = 1))) 
 ## setting fill = &#39;extend&#39; for start/end values.
 ## Warning: There was 1 warning in `mutate()`.
-## ℹ In argument: `MIMS_hour = tf_smooth(MIMS_tf, method =
-##   &quot;rollmean&quot;, k = 60, align = &quot;center&quot;)`.
+## ℹ In argument: `MIMS_hour = tf_smooth(MIMS_tf, method = &quot;rollmean&quot;, k = 60,
+##   align = &quot;center&quot;)`.
 ## Caused by warning in `tf_smooth.tfd()`:
 ## ! non-equidistant arg-values in &#39;MIMS_tf&#39; ignored by rollmean.</code></pre>
 <p>The resulting <code>MIMS_hour</code> data are shown for a subset of
 participants in the Figure below. As before, we are interested in the
 effects of <code>age</code>, now treated as a continuous variable, and
-<code>gender</code>. The binning process retains a level of granularity
-that is informative regarding diurnal patterns of activation but
-reflects a substantial reduction in the dimension and detail in the
-data.</p>
-<pre class="r"><code>#Plot subject-specific MIMS average within each hour
-
-nhanes_df %&gt;% 
+<code>gender</code>.</p>
+<pre class="r"><code>nhanes_df %&gt;% 
   ggplot(aes(y = MIMS_hour, color = age)) + 
   geom_spaghetti(alpha = .2) + 
   geom_meatballs(alpha = .2) + 
-  facet_grid(.~gender)</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-5-1.png" width="90%" /></p>
+  facet_grid(.~gender) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;MIMS&quot;)</code></pre>
+<p><img src="chapter_05_files/figure-html/unnamed-chunk-4-1.png" width="90%" /></p>
 <p>These data can be analyzed using hour-specific linear models that
 regress bin-average MIMS values on <code>age</code> and
-<code>gender</code>. This collection of linear models does not account
-for the temporal structure of the diurnal profiles except through the
-binning that aggregates data to an hour level, but taken together will
-illustrate the association between the outcome and predictors over the
-course of the day.</p>
-<p>As a first example, we’ll fit a standard linear model for with the
-average MIMS value between 1:00 and 2:00pm as a response. To do this, we
-unnest the hour-level functional observations and subset to the interval
-of current interest. These data are shown as a scatterplot below, with
-the fit from a linear model overlaid.</p>
-<pre class="r"><code>#Fit a linear model for average MIMS between 1.00 and 2.00pm
-
-linear_fit = 
+<code>gender</code>. This does not account for the temporal structure of
+the diurnal profiles except through the binning that aggregates data.We
+fit a standard linear model for with the average MIMS value between 1:00
+and 2:00pm as a response by we unnesting the hour-level functional
+observations and subset to the interval of current interest.</p>
+<pre class="r"><code>linear_fit = 
   nhanes_df %&gt;% 
   select(SEQN, age, gender, MIMS_hour) %&gt;% 
   tf_unnest(MIMS_hour) %&gt;% 
   filter(MIMS_hour_arg == 13.5) %&gt;% 
   lm(MIMS_hour_value ~ age + gender, data = .)</code></pre>
-<p>Make a table of results.</p>
-<p>Make a plot of results</p>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-9-1.png" width="90%" /></p>
-<p>The scatterplot and regression results are consistent with our
-previous observations: the binned-average MIMS values decrease with age,
-and female participants may have somewhat higher values than male
-participants. The benefit of this analysis over visualization-based
-exploratory techniques is that it provides a formal statistical
-assessment of these effects and their significance.</p>
+<p>Here is a table showing regression results.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">16.836</td>
+<td align="right">0.883</td>
+<td align="right">19.059</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">age</td>
+<td align="right">-0.079</td>
+<td align="right">0.016</td>
+<td align="right">-4.939</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">genderFemale</td>
+<td align="right">1.041</td>
+<td align="right">0.608</td>
+<td align="right">1.714</td>
+<td align="right">0.088</td>
+</tr>
+</tbody>
+</table>
+<p>And here is a scatterplot illustrating the regression at this time
+point.</p>
+<pre class="r"><code>nhanes_df %&gt;% 
+  select(SEQN, age, gender, MIMS_hour) %&gt;% 
+  tf_unnest(MIMS_hour) %&gt;% 
+  filter(MIMS_hour_arg == 13.5) %&gt;% 
+  modelr::add_predictions(linear_fit) %&gt;% 
+  ggplot(aes(x = age, y = MIMS_hour_value, color = gender)) + 
+  geom_point(alpha = .5, size = .9) + 
+  geom_line(aes(y = pred), linewidth = 1.1) + 
+      labs(x = &quot;Age&quot;, y = &quot;Hour Average MIMS&quot;)</code></pre>
+<p><img src="chapter_05_files/figure-html/unnamed-chunk-7-1.png" width="90%" /></p>
+<p>In this plot, the binned-average MIMS values decrease with age, and
+female participants may have somewhat higher values than male
+participants.</p>
 <p>Associations between binned-average MIMS values and <code>age</code>
-and <code>gender</code> will vary by hour, and the next step in our
-exploratory analysis is to fit separate regressions at each hour
-separately. We accomplish this using data nested within hour. First,
-we’ll unnest the subject-specific functional observation and then
-re-nest within hour; the result is a dataframe containing 24 rows, one
-for each hour, with a column that contains a list of hour-specific
-dataframes containing the <code>MIMS_hour_value</code>,
-<code>age</code>, and <code>gender</code>. By mapping over the entries
-in this list, we can fit hour-specific linear models and extract tidied
-results. The code chunk below implements this analysis.</p>
-<pre class="r"><code>#Fit a linear model for average MIMS at each hour of the day
-
-hourly_regressions = 
+and <code>gender</code> will vary by hour. Next we unnest the
+subject-specific functional observation and then re-nest within hour;
+the result is a dataframe containing 24 rows, one for each hour, with a
+column that contains a list of hour-specific dataframes containing the
+<code>MIMS_hour_value</code>, <code>age</code>, and <code>gender</code>.
+By mapping over the entries in this list, we can fit hour-specific
+linear models and extract tidied results.</p>
+<pre class="r"><code>hourly_regressions = 
   nhanes_df %&gt;% 
   select(SEQN, age, gender, MIMS_hour) %&gt;% 
   tf_unnest(MIMS_hour) %&gt;% 
@@ -578,15 +584,13 @@ hourly_regressions =
     result = map(model, broom::tidy)
   ) %&gt;% 
   select(hour, result)</code></pre>
-<p>Before visualizing the results, we do some data processing to obtain
-hourly confidence intervals and then structure coefficient estimates and
-confidence bands as <code>tf</code> objects. The result is a three-row
-dataframe, with rows for the intercept, age, and gender effects; columns
-include the term name as well as the coefficient estimates and the upper
-and lower limits of the confidence bands.</p>
-<pre class="r"><code>#Obtain confidence intervals and organize regression results
-
-hour_bin_coefs = 
+<p>We process these results obtain hourly confidence intervals and then
+structure coefficient estimates and confidence bands as <code>tf</code>
+objects. The result is a three-row dataframe, with rows for the
+intercept, age, and gender effects; columns include the term name as
+well as the coefficient estimates and the upper and lower limits of the
+confidence bands.</p>
+<pre class="r"><code>hour_bin_coefs = 
   hourly_regressions %&gt;% 
   unnest(cols = result) %&gt;% 
   rename(coef = estimate, se = std.error) %&gt;% 
@@ -596,76 +600,86 @@ hour_bin_coefs =
   ) %&gt;% 
   select(hour, term, coef, ub, lb) %&gt;% 
   tf_nest(coef:lb, .id = term, .arg = hour)</code></pre>
-<p>We show the analysis results using <code>ggplot</code> and
-<code>tidyfun</code> functions. Because the coefficient estimates in
-<code>coef</code> are <code>tf</code> objects, we can plot these using
-<code>geom_spaghetti</code>; to emphasize the estimates at each hour, we
-add points using <code>geom_meatballs</code>. Confidence bands are shown
-by specifying the upper and lower limits, and we facet by term to see
-each coefficient separately.</p>
-<pre class="r"><code># plot coefficients and CIs
-
-hour_bin_coefs %&gt;% 
+<p>Because the coefficient estimates in <code>coef</code> are
+<code>tf</code> objects, we can plot these using
+<code>geom_spaghetti</code> in <a
+href="https://tidyfun.github.io/tidyfun/"><code>tidyfun</code></a>; to
+emphasize the estimates at each hour, we add points using
+<code>geom_meatballs</code>. Confidence bands are shown by specifying
+the upper and lower limits, and we facet by term to see each coefficient
+separately.</p>
+<pre class="r"><code>hour_bin_coefs %&gt;% 
   ggplot(aes(y = coef, color = term)) + 
   geom_spaghetti() +  
   geom_meatballs() + 
   geom_errorband(aes(ymax = ub, ymin = lb, fill = term)) + 
-  facet_wrap(&quot;term&quot;, scales = &quot;free&quot;)</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-12-1.png" width="90%" /></p>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-13-1.png" width="90%" /></p>
-<p>Compared to the regression at a single time point, these results
-provide detailed temporal information about covariate effects. The
-intercept shows a fairly typical diurnal pattern, with low activity in
-the night and higher activity in the day. After adjusting for age, women
-are somewhat less active in the middle of the night but more active
-during the daytime hours. Meanwhile, after adjusting for gender, older
-participants are generally less active at all times. The associated
-confidence bands suggest that not all of these effects are significant –
-there may not be a significant effect of age in the early morning, for
-example – but at many times of day there do seem to be significant
-effects of age and gender on the binned-average MIMS values. Finally, we
-note that the confidence bands are narrowest in the nighttime hours and
-widest during the day, which is consistent with the time-varying
-distribution of the outcome shown in earlier Figures.</p>
+  facet_wrap(&quot;term&quot;, scales = &quot;free&quot;) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)</code></pre>
+<p><img src="chapter_05_files/figure-html/unnamed-chunk-10-1.png" width="90%" /></p>
+<p>The intercept shows a fairly typical diurnal pattern, with low
+activity in the night and higher activity in the day. After adjusting
+for age, women are somewhat less active in the middle of the night but
+more active during the daytime hours. Meanwhile, after adjusting for
+gender, older participants are generally less active at all times.</p>
 <p>The hour-level analysis is an informative exploratory approach, but
 has several limitations. Most obviously, it aggregates data within
 prespecified bins, and in doing so loses some of the richness of the
 underlying data. That aggregation induces some smoothness by relying on
 the underlying temporal structure, but this smoothness is implicit and
-dependent on the bins that are chosen – adjacent coefficient estimates
-are similar only because the underlying data are similar, and not
-because of any specific model element. To emphasize these points, we can
-repeat the bin-level analysis using 10-minute and one-minute epochs.
-These can be implemented using only slight modifications to the previous
-code, in particular by changing in the bin width of the rolling average
-and the grid of argument values over which functions are observed. We
-therefore omit this code and focus on the results produced in these
-settings.</p>
-<pre><code>## setting fill = &#39;extend&#39; for start/end values.
-## Warning: There was 1 warning in `mutate()`.
-## ℹ In argument: `MIMS_ten = tf_smooth(MIMS_tf, method =
-##   &quot;rollmean&quot;, k = 10, align = &quot;center&quot;)`.
-## Caused by warning in `tf_smooth.tfd()`:
-## ! non-equidistant arg-values in &#39;MIMS_tf&#39; ignored by rollmean.</code></pre>
-<p>Results for pointwise regression analyses using 10-minute epochs are
-below.</p>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-16-1.png" width="90%" /></p>
+dependent on the bins that are chosen. To emphasize these points, we can
+repeat the bin-level analysis using 1-minute epochs.</p>
+<pre class="r"><code>min_regressions = 
+  nhanes_df %&gt;% 
+  select(SEQN, age, gender, MIMS_tf) %&gt;% 
+  tf_unnest(MIMS_tf) %&gt;% 
+  rename(epoch = MIMS_tf_arg, MIMS = MIMS_tf_value) %&gt;% 
+  nest(data = -epoch) %&gt;% 
+  mutate(
+    model = map(.x = data, ~lm(MIMS ~ age + gender, data = .x)),
+    result = map(model, broom::tidy)
+  ) %&gt;% 
+  select(epoch, result) %&gt;% 
+  unnest(result)
+
+min_regressions =
+  min_regressions %&gt;% 
+  rename(coef = estimate, se = std.error) %&gt;% 
+  mutate(
+    ub = coef + 1.96 * se, 
+    lb = coef - 1.96 * se
+  ) %&gt;% 
+  select(epoch, term, coef, ub, lb) %&gt;% 
+  tf_nest(coef:lb, .id = term, .arg = epoch) %&gt;% 
+  mutate(method = &quot;Pointwise&quot;) %&gt;% 
+  relocate(method)</code></pre>
 <p>Results for one-minute epochs are in the next figure.</p>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-18-1.png" width="90%" /></p>
-<p>In each of these analyses, the qualitative results and their
-interpretations are similar – the intercept suggests a usual circadian
-rhythm, and the age indicates that activity generally decreases with
-increasing age, and the gender effect shows that female participants
-were more active than male participants. But this also shows some
-difficulties inherent in binning-based analyses. These do not leverage
-the temporal structure directly in the estimation process. A correct
-approach to inference is not obvious, both because of the need for some
-degree of smoothness across time and also because within-subject
-residuals will have a temporal correlation structure. A more subtly
-issue is that we implicitly rely on curves being observed over the same
-grid, or at least that a rolling mean is a plausible way to generate
-binned averages, and this approach may not work when data are sparse or
-irregular across subjects.</p>
+<pre class="r"><code>min_regressions %&gt;% 
+  ggplot(aes(y = coef, color = term)) + 
+  geom_spaghetti() +  
+  geom_meatballs() + 
+  geom_errorband(aes(ymax = ub, ymin = lb, fill = term)) + 
+  facet_wrap(&quot;term&quot;, scales = &quot;free&quot;) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)</code></pre>
+<p><img src="chapter_05_files/figure-html/unnamed-chunk-13-1.png" width="90%" /></p>
+<p>The qualitative results and their interpretations are similar – the
+intercept suggests a usual circadian rhythm, and the age indicates that
+activity generally decreases with increasing age, and the gender effect
+shows that female participants were more active than male participants.
+But this also shows some difficulties inherent in binning-based
+analyses. These do not leverage the temporal structure directly in the
+estimation process. A correct approach to inference is not obvious, both
+because of the need for some degree of smoothness across time and also
+because within-subject residuals will have a temporal correlation
+structure. A more subtle issue is that we implicitly rely on curves
+being observed over the same grid, or at least that a rolling mean is a
+plausible way to generate binned averages, and this approach may not
+work when data are sparse or irregular across subjects.</p>
 <p>Solutions to these problems are the goal of various approaches to
 function-on-scalar regression, which seeks to explicitly model
 coefficients in a way that induces smoothness; in some way accounts for
@@ -680,17 +694,17 @@ scenarios.</p>
 participant, <span class="math inline">\(i=1,\ldots,n\)</span>, and
 <span class="math inline">\(x_{i1}\)</span> and <span
 class="math inline">\(x_{i2}\)</span> be two scalar predictors. In the
-setting considered in this Chapter, the functional response is the MIMS
-profile for each participant, and the scalar predictors of interest are
-age in years and a variable indicating whether participant <span
+example on this page, the functional response is the MIMS profile for
+each participant, and the scalar predictors of interest are age in years
+and a variable indicating whether participant <span
 class="math inline">\(i\)</span> is male (<span
 class="math inline">\(x_{i2} = 0\)</span>) or female (<span
 class="math inline">\(x_{i2} = 1\)</span>). The linear
 function-on-scalar regression for this setting is <span
 class="math display">\[E[Y_i(s)] = \beta_0(s) + \beta_1(s) x_{i1} +
 \beta_2(s) x_{i2}\]</span> with coefficients <span
-class="math inline">\(\beta_p:\mathcal{S}\rightarrow
-\mathbb{R}\)</span>, <span class="math inline">\(p \in \{0, 1,
+class="math inline">\(\beta_q:\mathcal{S}\rightarrow
+\mathbb{R}\)</span>, <span class="math inline">\(q \in \{0, 1,
 2\}\)</span> that are functions measured over the same domain as the
 response. Scalar covariates in this model can exhibit the same degree of
 complexity as in non-functional regressions, allowing any number of
@@ -706,15 +720,11 @@ class="math inline">\(x_{i1}\)</span> while holding <span
 class="math inline">\(x_{i2}\)</span> constant; and so on. These are
 often interpreted at specific values of <span class="math inline">\(s
 \in \mathcal{S}\)</span> to gain intuition for the associations of
-interest. In the NHANES data considered so far, for example,
-coefficients functions can be used to compare the effect of increasing
-age in the morning and evening, keeping gender fixed. Residuals in this
-model will contain deviations between the observed responses and the
-expected values based on the linear predictor. These can be complex and
-their impact on estimation and inference will be discussed in
-SUBSECTION.</p>
-<p>The linear FoSR model addresses the concerns our exploratory analysis
-raised. Because coefficients are functions observed on <span
+interest. Residuals in this model will contain deviations between the
+observed responses and the expected values based on the linear
+predictor.</p>
+<p>The linear FoSR model has several advantages. Because coefficients
+are functions observed on <span
 class="math inline">\(\mathcal{S}\)</span>, they can be estimated using
 techniques that explicitly allow for smoothness across the functional
 domain. This smoothness, along with appropriate error correlation
@@ -730,7 +740,7 @@ class="math inline">\(\mathbf{s} = \{s_1, ..., s_J\}\)</span> which, for
 now, we will assume to be common across subjects so that for subject
 <span class="math inline">\(i\)</span> the observed data vector is <span
 class="math inline">\(\mathbf{y}_i^{T} = [y_i(s_1), ...,
-y_i(s_J)]\)</span>. From the FoSR model ZZZZ, we have <span
+y_i(s_J)]\)</span>. From the FoSR, we have <span
 class="math display">\[E[\mathbf{y}_i^{T}] =
 \mathbf{x}_i \begin{bmatrix}
 \beta_{0}(s_1) &amp; ... &amp; \beta_{0}(s_J)\\
@@ -744,12 +754,12 @@ vector to a recognizable row in a standard regression design matrix and
 the matrix of functional coefficients.</p>
 <p>Estimation of coefficients will rely on approaches that have been
 used elsewhere with nuances specific to the FoSR setting. As a starting
-point, we will expand each <span class="math inline">\(\beta_p(s) =
-\sum_{k=1}^K\beta_{pk} B_k(s)\)</span> using the basis <span
+point, we will expand each <span class="math inline">\(\beta_q(s) =
+\sum_{k=1}^K\beta_{qk} B_k(s)\)</span> using the basis <span
 class="math inline">\(B_1(s),\ldots,B_K(s)\)</span>. While many choices
 are possible, we will use a spline expansion. Using this, the <span
 class="math inline">\(3 \times J\)</span> matrix of coefficient
-functions in ZZZZ can be expressed using <span class="math display">\[
+functions can be expressed using <span class="math display">\[
 \begin{bmatrix}
 \beta_{11} &amp; \beta_{21} &amp; \beta_{31}\\
 \vdots     &amp; \vdots     &amp; \vdots    \\
@@ -770,8 +780,8 @@ and <span class="math inline">\(\boldsymbol{B}(\mathbf{s})\)</span> be
 the <span class="math inline">\(K \times J\)</span> matrix containing
 basis functions evaluated over the grid <span
 class="math inline">\(\mathbf{s}\)</span>. Further, let <span
-class="math inline">\(\mathbf{\beta}_{p} = [\beta_{p1}, \ldots,
-\beta_{pK}]^{T}\)</span> be the <span class="math inline">\(K \times
+class="math inline">\(\mathbf{\beta}_{q} = [\beta_{q1}, \ldots,
+\beta_{qK}]^{T}\)</span> be the <span class="math inline">\(K \times
 1\)</span> vector of basis coefficients for function <span
 class="math inline">\(p\)</span> and <span
 class="math inline">\(\boldsymbol{\beta} = [\mathbf{\beta}^{T}_{0},
@@ -816,13 +826,12 @@ standard regression techniques.</p>
 <div id="estimation-using-ordinary-least-squares"
 class="section level4">
 <h4>Estimation using ordinary least squares</h4>
-<p>Estimation the spline coefficients, and therefore the coefficient
-functions, using ZZZ helps to build intuition for the inner workings of
-more complex estimation strategies. We will regress the daily MIMS data
-on age and gender to illustrate this approach. Recall that
-<code>nhanes_df</code> stores <code>MIMS</code> as a <code>tf</code>
-vector; some of the code below relies on extracting information from a
-<code>tf</code> object.</p>
+<p>Estimation the spline coefficients helps to build intuition for the
+inner workings of more complex estimation strategies. We will regress
+the daily MIMS data on age and gender to illustrate this approach.
+Recall that <code>nhanes_df</code> stores <code>MIMS</code> as a
+<code>tf</code> vector; some of the code below relies on extracting
+information from a <code>tf</code> object.</p>
 <p>For this model, the code chunk below defines the standard design
 matrix <span class="math inline">\(\boldsymbol{X}\)</span> and the
 response vector <span class="math inline">\(\mathbf{y}\)</span>. The
@@ -856,12 +865,12 @@ basis =
 X_kron_B = kronecker(X_des, basis)</code></pre>
 <p>Using these, the direct application of usual formulas provides OLS
 estimates of the spline coefficients. Reconstructing coefficient
-functions is possible using ZZZ above, and the results can be converted
-to a <code>tf</code> vector for plotting and manipulation. The code
-chunk below estimates and plots coefficient functions.</p>
-<pre class="r"><code>spline_coefs = solve(t(X_kron_B) %*% X_kron_B) %*% t(X_kron_B) %*% y
-
-OLS_coef_df = 
+functions is possible, and the results can be converted to a
+<code>tf</code> vector for plotting and manipulation. The code chunk
+below estimates spline coefficients.</p>
+<pre class="r"><code>spline_coefs = solve(t(X_kron_B) %*% X_kron_B) %*% t(X_kron_B) %*% y</code></pre>
+<p>We now construct, organize, and plot coefficient functions.</p>
+<pre class="r"><code>OLS_coef_df = 
   tibble(
     method = &quot;OLS&quot;,
     term = colnames(X_des),
@@ -874,43 +883,32 @@ OLS_coef_df =
 OLS_coef_df %&gt;% 
   ggplot(aes(y = coef, color = term)) + 
   geom_spaghetti(size = 1.1, alpha = .75) +  
-  facet_wrap(&quot;term&quot;, scales = &quot;free&quot;)
+  facet_wrap(&quot;term&quot;, scales = &quot;free&quot;) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)
 ## Warning in geom_spaghetti(size = 1.1, alpha = 0.75): Ignoring unknown
 ## parameters: `size`</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-21-1.png" width="90%" /></p>
-<pre><code>## Warning in geom_spaghetti(size = 1.1, alpha = 0.75): Ignoring unknown
-## parameters: `size`</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-22-1.png" width="90%" /></p>
+<p><img src="chapter_05_files/figure-html/unnamed-chunk-17-1.png" width="90%" /></p>
 <p>Comparing these results to those obtained from epoch-specific
 regressions begins to indicate the benefits of a functional perspective.
-Coefficient functions have a smoothness determined by the underlying
-spline expansion, and estimates directly information borrow across
-adjacent time points. Our specification relied on the same observation
-grid, but this can be relaxed: if data contain subject-specific grids
-<span class="math inline">\(\mathbf{s}_i\)</span>, one can replace the
-matrix <span class="math inline">\([\boldsymbol{B}(\mathbf{s}) \otimes
-\boldsymbol{X}]\)</span> with one constructed by row-stacking matrices
-<span class="math inline">\([\mathbf{x}_i \otimes
-\boldsymbol{B}(\mathbf{s}_i)]\)</span> (note that it can take some care
-to ensure the basis is constant across subjects, for example by
-explicitly defining knot points). We will next incorporate smoothness
-penalties and account for complex error correlations, but it is helpful
-to view these as variations on a familiar regression framework.</p>
+We will next incorporate smoothness penalties and account for complex
+error correlations, but it is helpful to view these as variations on a
+familiar regression framework.</p>
 </div>
 <div id="estimation-using-smoothness-penalties" class="section level4">
 <h4>Estimation using smoothness penalties</h4>
 <p>Spline expansions for coefficient functions in the linear FoSR model
 makes the functional nature of the observed data and the model
 parameters explicit, and distinguishes this approach from multivariate
-or epoch-based alternatives. However, as we’ve seen elsewhere, using a
-spline expansion introduces questions about how best to balance
-flexibility with goodness-of-fit. While one could address this through a
-careful selection of the number of basis functions <span
-class="math inline">\(K\)</span>, it is more common to use a large value
-for <span class="math inline">\(K\)</span> and introduce
-smoothness-enforcing penalties to prevent overfitting.</p>
-<p>Solutions obtained in Section ZZZZ using OLS also arise using maximum
-likelihood estimation. Assume that residuals <span
+or epoch-based alternatives. However, using a spline expansion
+introduces questions about how best to balance flexibility with
+goodness-of-fit. It is common to use a large value for <span
+class="math inline">\(K\)</span> and introduce smoothness-enforcing
+penalties to prevent overfitting.</p>
+<p>Solutions obtained using OLS also arise using maximum likelihood
+estimation. Assume that residuals <span
 class="math inline">\(\mathbf{\epsilon}_i^{T} = [\epsilon_i(s_1), ...,
 \epsilon_i(s_J)]\)</span> observed on <span
 class="math inline">\(\mathbf{s}\)</span> are <span
@@ -922,29 +920,28 @@ subjects <span class="math inline">\(i\)</span>. Maximizing the (log)
 likelihood <span class="math inline">\(\mathcal{L}(\boldsymbol{\beta};
 \mathbf{y})\)</span> induced by this assumption with respect to spline
 coefficients is equivalent to the OLS approach. We can add penalties
-<span class="math inline">\(P\left[\beta_{p}(s) \right]\)</span> to
+<span class="math inline">\(P\left[\beta_{q}(s) \right]\)</span> to
 enforce smoothness in estimates of coefficient functions; a common
 choice is the second derivative penalty <span
-class="math inline">\(\int_{\mathcal{S}} \left[\beta_{p}^{&#39;&#39;}(s)
+class="math inline">\(\int_{\mathcal{S}} \left[\beta_{q}^{&#39;&#39;}(s)
 \right]^2 ds\)</span>. The second derivative penalty and many others can
 be expressed in terms of the corresponding coefficient vector, resulting
 in the penalized likelihood <span class="math display">\[
-\mathcal{L}(\boldsymbol{\beta}; \mathbf{y}) + \sum_{p} \lambda_{p}
-P\left[\mathbf{\beta}_{p} \right]\]</span> where tuning parameters <span
-class="math inline">\(\lambda_{p}\)</span> control the balance between
+\mathcal{L}(\boldsymbol{\beta}; \mathbf{y}) + \sum_{q} \lambda_{q}
+P\left[\mathbf{\beta}_{q} \right]\]</span> where tuning parameters <span
+class="math inline">\(\lambda_{q}\)</span> control the balance between
 goodness-of-fit and complexity of the coefficient functions <span
-class="math inline">\(\beta_{p}(s)\)</span>.</p>
-<p>Here we are emphasizing a penalized likelihood approach, rather than
-using the penalized residual sum of squares, even though both are
-possible for the setting we currently consider. Focusing on the
-penalized likelihood makes the extension to non-continuous response
-functions (e.g. binary rest-active trajectories instead of MIMS
-profiles) relatively direct by changing the assumed outcome
-distribution, and will similarly facilitate modeling and including error
-correlation structures. More subtly, it is possible to view the
+class="math inline">\(\beta_{q}(s)\)</span>.</p>
+<p>Here we are emphasizing a penalized likelihood approach rather than
+using the penalized residual sum of squares. Focusing on the penalized
+likelihood makes the extension to non-continuous response functions
+(e.g. binary rest-active trajectories instead of MIMS profiles)
+relatively direct by changing the assumed outcome distribution, and will
+similarly facilitate modeling and including error correlation
+structures. More importantly, it is possible to view the
 likelihood-based framework as a variation on mixed-model approaches to
-penalized spline smooth smoothing introduced in Chapter 2.2.3, a
-connection that underlies several implementations of the FoSR model.</p>
+penalized spline smooth smoothing emphasized throughout the book, and
+which underlies many FoSR implementations.</p>
 <p>We will use the <code>gam</code> function in the well-developed
 <code>mgcv</code> package to fit the FoSR model with smoothness
 penalties. First, we explicitly create the binary indicator variable for
@@ -981,12 +978,11 @@ class="math inline">\([\boldsymbol{B}(\mathbf{s}) \otimes
 \boldsymbol{X}]\)</span>, although <code>gam()</code>’s function
 <code>s()</code> allows users to flexibly specify additional options for
 each basis expansion.</p>
-<p>In contrast the the previous Section’s parameter estimation using
-OLS, smoothness is induced in parameter estimates through explicit
-penalization. By default, <code>gam()</code> uses thin-plate splines
-with second derivative penalties, and selects tuning parameters for each
-coefficient using GCV or REML [cite “thin plate regression
-splines”].</p>
+<p>In contrast to parameter estimation using OLS, smoothness is induced
+in parameter estimates through explicit penalization. By default,
+<code>gam()</code> uses thin-plate splines with second derivative
+penalties, and selects tuning parameters for each coefficient using GCV
+or REML.</p>
 <p>The results contained in <code>gam_fit</code> are not directly
 comparable to those we’ve seen elsewhere, and extracting coefficient
 functions requires some additional work. The <code>predict.gam()</code>
@@ -1012,9 +1008,7 @@ class="math inline">\(1 \cdot \beta_1(\mathbf{s})\)</span>, and <span
 class="math inline">\(1 \cdot \beta_2(\mathbf{s})\)</span>. We convert
 these to <code>tfd</code> objects in the code below. Note that
 <code>gam()</code> includes the overall intercept as a (scalar) fixed
-effect, which must be added to the intercept function. With data
-structured in this way, we can then plot coefficient functions using
-tools seen previously.</p>
+effect, which must be added to the intercept function.</p>
 <pre class="r"><code>gam_coef_df = 
   tibble(
     method = &quot;GAM&quot;,
@@ -1022,16 +1016,19 @@ tools seen previously.</p>
     coef = 
       tfd(t(gam_pred_obj), arg = epoch_arg)) %&gt;% 
   mutate(coef = coef + c(coef(gam_fit)[1], 0, 0))</code></pre>
+<p>With data structured in this way, we can then plot coefficient
+functions using tools seen previously.</p>
 <pre class="r"><code>gam_coef_df %&gt;% 
   ggplot(aes(y = coef, color = term)) + 
   geom_spaghetti(size = 1.1, alpha = .75) +  
-  facet_wrap(vars(term), scales = &quot;free&quot;) 
+  facet_wrap(vars(term), scales = &quot;free&quot;) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)
 ## Warning in geom_spaghetti(size = 1.1, alpha = 0.75): Ignoring unknown
 ## parameters: `size`</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-27-1.png" width="90%" /></p>
-<pre><code>## Warning in geom_spaghetti(size = 1.1, alpha = 0.75): Ignoring unknown
-## parameters: `size`</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-28-1.png" width="90%" /></p>
+<p><img src="chapter_05_files/figure-html/unnamed-chunk-22-1.png" width="90%" /></p>
 <p>The plot below includes estimates obtained from the three approaches
 seen so far, and facilitates a comparison of methods. Each approach –
 separate epoch-level regressions, FoSR using OLS to estimate spline
@@ -1047,84 +1044,44 @@ perhaps less plausible, than the method that includes smoothness
 penalties. As a result, methods that explicitly borrow information
 across time and implement smoothness penalties with data-driven tuning
 parameters are often preferred for formal analyses.</p>
-<pre class="r"><code>ggp_coefplot_compare =
-  ggplot(mapping = aes(y = coef, color = method)) + 
+<pre class="r"><code>ggplot(mapping = aes(y = coef, color = method)) + 
   geom_spaghetti(data = min_regressions, alpha = .5) +
-  geom_spaghetti(data = OLS_coef_df, size = 1.2) +
-  geom_spaghetti(data = gam_coef_df, size = 1.2) +
+  geom_spaghetti(data = OLS_coef_df, linewidth = 1.2) +
+  geom_spaghetti(data = gam_coef_df, linewidth = 1.2) +
   facet_wrap(vars(term), scales = &quot;free&quot;) + 
   scale_x_continuous(
     breaks = seq(0, 24, length = 5),
     labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
-  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)
-## Warning in geom_spaghetti(data = OLS_coef_df, size = 1.2): Ignoring unknown
-## parameters: `size`
-## Warning in geom_spaghetti(data = gam_coef_df, size = 1.2): Ignoring unknown
-## parameters: `size`
-
-ggp_coefplot_compare</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-29-1.png" width="90%" /></p>
-<pre class="r"><code>
-ggsave(
-  here::here(&quot;figures&quot;, &quot;ch05_fosr&quot;, &quot;coefplot_compare.pdf&quot;),
-  plot = ggp_coefplot_compare,
-  width = 8, height = 4.5)</code></pre>
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)</code></pre>
+<p><img src="chapter_05_files/figure-html/unnamed-chunk-23-1.png" width="90%" /></p>
 </div>
 </div>
-<div id="error-correlation-and-inference" class="section level3">
-<h3>Error correlation and inference</h3>
+<div id="accounting-for-error-correlation" class="section level3">
+<h3>Accounting for Error Correlation</h3>
 <p>To this point, we have developed tools for estimating coefficient
-functions in model ZZZ while setting aside concerns about residual
-correlation. Of course, in most FoSR settings residuals are indeed
-correlated; in our example, MIMS values at 10:00am are informative for
-values at 1:00pm.</p>
-<p>Connecting FoSR with techniques for FPCA presented in Chapter 3 is an
-important approach to modeling residual correlation. In FPCA, the goal
-is to separate (mean-zero) functions <span
-class="math inline">\(w_i(s)\)</span> into <span
-class="math inline">\(f_i(s)\)</span> and <span
-class="math inline">\(epsilon_{i}(s)\)</span> under the assumption that
-the <span class="math inline">\(f_{i}(s)\)</span> can be decomposed
-using a low dimensional orthonormal basis. Chapter 3 often assumed a
-population-level mean shared across subjects; here, we will model the
-conditional mean using subject-level covariates and decompose residual
-variation using FPCA. That is, in our example with two scalar covariates
-<span class="math inline">\(x_{i1}\)</span> and <span
-class="math inline">\(x_{i2}\)</span> we will model <span
-class="math display">\[Y_i(s) = \beta_0(s) + \beta_1(s) x_{i1} +
-\beta_2(s) x_{i2} + f_i(s) +\epsilon_i(s)\]</span> using techniques
-based in FPCA to model the functions <span
-class="math inline">\(f_i(s)\)</span>.</p>
-<p>Appropriately accounting for residual correlation affects both
-estimation and inference for coefficient function <span
-class="math inline">\(\beta_{p}(s)\)</span>. In Section ZZZZ, we’ll use
-visual inspection of estimated coefficient functions and their
-confidence bands to build intuition for the impact of various approaches
-to modeling residual correlation. Our approach to constructing pointwise
-confidence intervals is rests on spline-based estimation approaches
-considered so far, as well as the assumption that spline coefficient
-estimates have an approximately Normal distribution. Treating any tuning
-parameters as fixed, for any <span class="math inline">\(s \in
-\mathcal{S}\)</span> the variance of <span
-class="math inline">\(\hat{\beta}_p(s)\)</span> is given by <span
-class="math display">\[\mbox{Var}[\hat{\beta}_p(s)] = \boldsymbol{B}(s)
-\mbox{Var}(\mathbf{\beta}_{p}) \boldsymbol{B}(s)^{T} \]</span> From
-this, one can obtain standard errors and construct a confidence interval
-for <span class="math inline">\(\beta_p(s)\)</span> using the assumption
-of Normality.</p>
-<p>In keeping with the philosophy of this book, models in this section
-will be fit with user-friendly functions that mask a some degree of
-underlying complexity. However, we emphasize that these model fitting
-strategies are grounded in familiar regression techniques: coefficient
-functions are estimated using penalized splines, and the conceptual
-framework for modeling residual correlation is based on FPCA and related
-to similar structures in longitudinal data analysis.</p>
+functions while setting aside concerns about residual correlation. Of
+course, in most FoSR settings residuals are indeed correlated; in our
+example, MIMS values at 10:00am are informative for values at
+1:00pm.</p>
+<p>Most methods focus on modeling the residuals <span
+class="math inline">\(\epsilon_i(s)=X_i(s)+e_i(s)\)</span>, where <span
+class="math inline">\(X_i(s)\)</span> follows a mean zero Gaussian
+Process (GP) with covariance function <span
+class="math inline">\(\boldsymbol{\Sigma}\)</span> and <span
+class="math inline">\(e_{i}(s)\)</span> are independent <span
+class="math inline">\(N(0,\sigma^2_e)\)</span> random errors. There are
+many strategies to model jointly the nonparametric mean and error
+structure of this model including: (1) joint modeling based on FPCA
+decomposition of <span class="math inline">\(X_i(s)\)</span>; (2)
+functional additive mixed models (FAMM) using spline expansions of the
+error term <span class="math inline">\(X_i(\cdot)\)</span>; and (3)
+Bayesian posterior simulations for either type of expansion.</p>
 <div id="modeling-residuals-with-fpca-and-gam" class="section level4">
 <h4>Modeling residuals with FPCA and <code>gam</code></h4>
 <p>Combining FoSR with FPCA for correlated residuals suggests the
 following model structure: <span class="math display">\[Y_i(s) =
 \beta_0(s) + \beta_1(s) x_{i1} + \beta_2(s) x_{i2} + \sum_{k = 1}^{K}
-\xi_{ik}\phi_k(s) + \epsilon_{i}(s)\]</span> <span
+\xi_{ik}\phi_k(s) + e_{i}(s)\]</span> <span
 class="math display">\[\xi_{ik} \sim [0, \lambda_k]; \epsilon_i(s) \sim
 N[0, \sigma^2].\]</span> As before, functions are observed over discrete
 values <span class="math inline">\(\mathbf{s}_i = \{s_1, ...,
@@ -1132,18 +1089,18 @@ s_{J_i}\}\)</span> that can be dense or sparse, regular or irregular,
 and shared across subjects or not.</p>
 <p>Our approach to estimating coefficient functions <span
 class="math inline">\(\beta_0(s)\)</span> will remain essentially
-unchanged from previous sections. The challenge now is how best to
-estimate terms in the sum <span class="math inline">\(\sum_{k = 1}^{K}
-\xi_{ik}\phi_k(s)\)</span>, keeping in mind that both subject level
-scores <span class="math inline">\(\xi_{ik}\)</span> and shared
-directions of variation <span class="math inline">\(\phi_k(s)\)</span>
-are unknown. A key observation in Chapter 3 is that if the <span
+unchanged. The challenge now is how best to estimate terms in the sum
+<span class="math inline">\(\sum_{k = 1}^{K} \xi_{ik}\phi_k(s)\)</span>,
+keeping in mind that both subject level scores <span
+class="math inline">\(\xi_{ik}\)</span> and shared directions of
+variation <span class="math inline">\(\phi_k(s)\)</span> are unknown. A
+key observation is that if the <span
 class="math inline">\(\phi_k(s)\)</span> are known or if estimates <span
 class="math inline">\(\hat{\phi}_k(s)\)</span> are available, then
 scores can be estimated as random effects in a mixed model. Our approach
-to fitting model ZZZ will be to obtain estimates of the <span
+will be to obtain estimates of the <span
 class="math inline">\(\phi_k(s)\)</span>, so that coefficient functions
-<span class="math inline">\(\beta_{p}(s)\)</span> and scores <span
+<span class="math inline">\(\beta_{q}(s)\)</span> and scores <span
 class="math inline">\(\xi_{ik}\)</span> can be simultaneously estimated
 using penalized splines and random effects, respectively. Although it is
 not strictly necessary to fit and interpret the results of a FoSR model,
@@ -1153,13 +1110,14 @@ scores connects these two model components and facilitates
 implementation.</p>
 <p>First, we will assume that <span class="math inline">\(K = 1\)</span>
 and <span class="math inline">\(\phi_{1}(s) = 1\)</span> for all <span
-class="math inline">\(s \in \mathcal{S}\)</span>. This effectively adds
-a subject-level random intercept to the FoSR model, and is a useful
-contrast between longitudinal data analysis and functional data
-analysis: the former typically makes assumptions that limit the
-flexibility of subject-level estimates over the observation interval
-<span class="math inline">\(\mathcal{S}\)</span>, while the latter uses
-data-driven approaches to add flexibility where appropriate.</p>
+class="math inline">\(s \in \mathcal{S}\)</span> as an illustration.
+This effectively adds a subject-level random intercept to the FoSR
+model, and is a useful contrast between longitudinal data analysis and
+functional data analysis: the former typically makes assumptions that
+limit the flexibility of subject-level estimates over the observation
+interval <span class="math inline">\(\mathcal{S}\)</span>, while the
+latter uses data-driven approaches to add flexibility where
+appropriate.</p>
 <p>To fit the random intercept model, we adapt our previous
 implementation for penalized spline estimation in a number of ways.
 Recall that <code>nhanes_for_gam</code> contains a long-form dataframe
@@ -1186,21 +1144,19 @@ changes dramatically decrease computation times.</p>
 <p>Next, we will use a two-step approach to model correlated residuals
 using FPCA. The first step is to fit a FoSR model assuming uncorrelated
 errors to obtain estimates of fixed effects <span
-class="math inline">\(\beta_{p}(s)\)</span> and fitted values <span
+class="math inline">\(\beta_{q}(s)\)</span> and fitted values <span
 class="math inline">\(\hat{Y_i}(s)\)</span> for each subject. From
 these, we compute residuals <span class="math inline">\(\hat{w}_i(s) =
 Y_{i}(s) = \hat{Y_i}(s)\)</span> which can be decomposed using standard
 FPCA methods to produce estimates of FPCs <span
 class="math inline">\(\hat{\phi}_{k}(s)\)</span>. In the second step,
 the <span class="math inline">\(\hat{\phi}_{k}(s)\)</span> are treated
-as “known” in model ZZZZ; coefficient functions <span
-class="math inline">\(\beta_{p}(s)\)</span> and subject-level scores
+as “known”; coefficient functions <span
+class="math inline">\(\beta_{q}(s)\)</span> and subject-level scores
 <span class="math inline">\(\xi_{ik}\)</span> are then estimated
-simultaneously. The NHANES data considered in this Chapter are densely
-measured over a regular grid that is common to all subjects and we
-implement the FPCA step using the FACE method, but the same two-step
-approach can be adapted to other data settings with appropriate model
-choices.</p>
+simultaneously. The NHANES data are densely measured over a regular grid
+that is common to all subjects and we implement the FPCA step using the
+FACE method.</p>
 <p>In the code below, we first construct a dataframe that contains
 fitted values and residuals, and can subsequently be used as the basis
 for FPCA. We start with <code>nhanes_for_gam</code>, and add fitted
@@ -1220,10 +1176,7 @@ conduct FPCA. We specify two additional arguments in this call. First,
 <code>center == FALSE</code> avoids recomputing the mean function since
 we are using residuals from a previous fit. Second, we set the smoothing
 parameter by hand using <code>lambda = 50</code>; this produces smoother
-FPCs than the default implementation. Of course, the same methodology
-can be implemented using <code>refund</code> and
-<code>fpca.face()</code> directly, but here we illustrate a functional
-<code>tidy</code>-friendly approach.</p>
+FPCs than the default implementation.</p>
 <pre class="r"><code>nhanes_fpca_df = 
   nhanes_for_gam %&gt;% 
   mutate(
@@ -1236,7 +1189,6 @@ nhanes_resid_fpca =
   rfr_fpca(&quot;resid&quot;, nhanes_fpca_df, center = FALSE, lambda = 50)
 ## Warning in new_tfb_fpc(data, domain = domain, method = method, resolution = resolution, : domain for tfb_fpc can&#39;t be larger than observed arg-range -- extrapolating FPCs is a bad idea.
 ##  domain reset to [0.017,24]</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-32-1.png" width="90%" /></p>
 <p>The second step in our two-stage approach is to treat the resulting
 FPCs as “known” so that scores can be estimated as random effects. We
 will use a variation on the random intercept implementation to do this.
@@ -1288,35 +1240,31 @@ of several FPCs into a term of the form <span
 class="math inline">\(\sum_{k = 1}^{K} \xi_{ik}\phi_k(s)\)</span> and
 iterating so that FPCs are derived from a model that has accounted for
 residual correlation in the estimation of fixed effects.</p>
-<!--
-#### Modeling residuals with FPCA "by hand"
-
-I don't think this section is necessary but wanted to keep some code:
-
-
-
-
--->
-</div>
-<div id="inference-for-coefficient-functions" class="section level4">
-<h4>Inference for coefficient functions</h4>
-<p>At the beginning of this section, we noted that formulas for <span
-class="math inline">\(\mbox{Var}[\hat{\beta}_p(s)]\)</span> and an
-assumption that spline coefficients are Normally distributed (at least
-for large samples) make it possible to construct pointwise confidence
-intervals for coefficient functions. A critical component is the
-covariance of estimated spline coefficients <span
-class="math inline">\(\mbox{Var}(\mathbf{\beta}_{p})\)</span>, which is
-heavily dependent on the modeling assumptions used to estimate spline
-coefficients. We have fit three FoSR models using penalized splines for
-coefficient functions, with different assumptions about residuals,
-namely that: residuals are uncorrelated with a subject; residual
-correlation can be modeled using a random intercept; and residual
-correlation can be accounted for using FPCA. We now compare the
-estimated coefficient functions and pointwise confidence intervals
-obtained from these methods.</p>
+<p>We now show how to extract the quantities necessary to conduct
+estimation and inference for coefficient function <span
+class="math inline">\(\beta_{q}(s)\)</span>. Our approach to
+constructing pointwise confidence intervals is based on the spline-based
+estimation approaches considered so far, as well as the assumption that
+spline coefficient estimates have an approximately multivariate Normal
+distribution. Treating tuning parameters as fixed, for any <span
+class="math inline">\(s \in S\)</span> the variance of <span
+class="math inline">\(\widehat{\beta}_q(s)\)</span> is given by <span
+class="math display">\[\mbox{Var}\{\widehat{\beta}_q(s)\} =
+\mathbf{B}(s) \mbox{Var}(\widehat{\boldsymbol{\beta}}_q)
+\mathbf{B}(s)^{t}\;, \]</span> where <span
+class="math inline">\(\widehat{\boldsymbol{\beta}}_q\)</span> is the
+vector of estimated spline coefficients. From this, one can obtain
+standard errors and construct a confidence interval for <span
+class="math inline">\(\beta_q(s)\)</span> using the assumption of
+normality. A critical component is the covariance of estimated spline
+coefficients <span
+class="math inline">\(\mbox{Var}(\boldsymbol{\widehat{\beta}}_q)\)</span>,
+which is heavily dependent on the modeling assumptions used to estimate
+spline coefficients. We have fit three FoSR models using penalized
+splines for coefficient functions, with different assumptions about
+residuals.</p>
 <p>To extract coefficient functions and their standard errors from the
-objects produced by <code>mgcv::gam</code>, we again make use of the
+objects produced by <code>mgcv::gam()</code>, we again make use of the
 <code>predict()</code> function. This function takes an input dataframe
 that has all covariates used in the model; here we will use the first
 <code>1440</code> rows of the <code>nhanes_for_gamm</code> dataframe,
@@ -1357,20 +1305,44 @@ coefficient.</p>
   mutate(
     ub = coef + 1.96 * se, 
     lb = coef - 1.96 * se)</code></pre>
-<p>Although we don’t show all steps here, the same approach can be used
-to extract coefficient functions and confidence intervals for the three
-approaches to accounting for residual correlation. The results are
-combined into <code>comparison_plot_df</code> and plotted in the figure
-below. Note the addition of <code>geom_errorband()</code>, which adds
-shaded regions according to each coefficient functions upper and lower
-confidence limits.</p>
+<p>The same approach can be used to extract coefficient functions and
+confidence intervals for the three approaches to accounting for residual
+correlation. We implement this in the code chunk below, using the helper
+function <a href="scripts.html"><code>fosr_gam_res_to_tfd()</code></a>
+to process the <code>gam()</code> results for several fits by mapping
+over a list of <code>gam</code> objects.</p>
+<pre class="r"><code>df = 
+  nhanes_for_gamm[1:1440,] %&gt;% 
+  mutate(gender = 1, age = 1) 
+
+comparison_plot_df = 
+  tibble(
+    method = c(&quot;Independent&quot;, &quot;Random Intercept&quot;, &quot;FPCA&quot;),
+    fit = list(gam_fit, nhanes_gamm_ranint, nhanes_gamm_fpc)
+  ) %&gt;% 
+  mutate(coefs = map(fit, fosr_gam_res_to_tfd, df = df)) %&gt;% 
+  select(method, coefs) %&gt;% 
+  unnest(coefs) %&gt;% 
+  mutate(
+    ub = coef + 1.96 * se, 
+    lb = coef - 1.96 * se) %&gt;% 
+  mutate(
+    method = fct_inorder(method)
+  )</code></pre>
+<p>The results are combined into <code>comparison_plot_df</code> and
+plotted in the figure below. Note the use of
+<code>geom_errorband()</code>, which adds shaded regions according to
+each coefficient functions upper and lower confidence limits.</p>
 <pre class="r"><code>comparison_plot_df %&gt;% 
   ggplot(aes(y = coef, color = term)) + 
   geom_spaghetti() + 
-  geom_errorband(aes(ymax = ub, ymin = lb, fill = term))+ 
-  facet_grid(term ~ method, scales = &quot;free&quot;)</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-40-1.png" width="90%" /></p>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-41-1.png" width="90%" /></p>
+  geom_errorband(aes(ymax = ub, ymin = lb, fill = term)) + 
+  facet_grid(term ~ method, scales = &quot;free&quot;) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)</code></pre>
+<p><img src="chapter_05_files/figure-html/unnamed-chunk-31-1.png" width="90%" /></p>
 <p>The coefficient functions obtained by all methods are similar to each
 other and to those based on epoch-level regressions. The confidence
 bands, meanwhile, differ substantially in a way that is intuitive based
@@ -1399,19 +1371,35 @@ were used, the coefficient function estimates were somewhat attenuated.
 At the same time, the random effects containing FPC scores were
 dependent on the scalar covariates in a way that exactly offset this
 attenuation. This does not appear to be an issue with the
-<code>gam</code> implementation, because “by hand” model fitting showed
-the same sensitivity to smoothness in the FPCs. Instead, we believe this
-issues stems from subtle identifiability issues and the underlying
-complexity of the penalized likelihood.</p>
+<code>gam()</code> implementation, because “by hand” model fitting
+showed the same sensitivity to smoothness in the FPCs. Instead, we
+believe this issues stems from subtle identifiability issues and the
+underlying complexity of the penalized likelihood.</p>
 </div>
 </div>
 <div id="modeling-residuals-using-splines" class="section level3">
 <h3>Modeling residuals using splines</h3>
-<p>This code is basically works but isn’t especially complex. The
-results closely mimic what’s above in gam, although there are some
-differences in the underlying model specifications. Could make this more
-of a precise match, but I think that should be driven by what’s needed
-in other chapters. Also – this is unexpected a lot slower than gam …</p>
+<p>A powerful approach to implementing FoSR is to model both the fixed
+effects parameters <span class="math inline">\(\beta_q(s)\)</span> and
+the structured random residuals using penalized splines. This approach
+has several advantages as it: (1) uses a pre-specified basis, which
+avoids the potential problems associated with the uncertainty of FPCA
+bases that are estimated from the data; (2) avoids the problem of
+estimating an FPCA basis, which is especially useful when dealing with
+non-Gaussian functions; (3) can be implemented in existing software; see
+the <code>refund::pffr()</code>; (4) allows joint analysis of the model
+using a fully specified, explicit likelihood; and (5) is consistent with
+inferential tools for estimation, testing, and uncertainty
+quantification.</p>
+<p>We now show how to use <code>refund::pffr()</code> to fit the FoSR
+model. For computational efficiency, we aggregate minute-level data into
+hour-length bins and reduce each MIMS profile from 1440 to 24
+observations. This step is achieved using the same code introduced to
+implement binned regression. The hour-level MIMS is named
+<code>MIMS_hour_mat</code> and stored as a matrix in a column, and we
+emphasize that this data structure used is different from the data
+structure used in the <code>mgcv::bam()</code> function, where
+functional responses were organized in long format. \</p>
 <pre class="r"><code>nhanes_famm_df &lt;-
   nhanes_df %&gt;%
   mutate(
@@ -1423,8 +1411,8 @@ in other chapters. Also – this is unexpected a lot slower than gam …</p>
   pivot_wider(names_from = epoch, values_from = MIMS_hour)
 ## setting fill = &#39;extend&#39; for start/end values.
 ## Warning: There was 1 warning in `mutate()`.
-## ℹ In argument: `MIMS_hour_tf = tf_smooth(MIMS_tf, method
-##   = &quot;rollmean&quot;, k = 60, align = &quot;center&quot;)`.
+## ℹ In argument: `MIMS_hour_tf = tf_smooth(MIMS_tf, method = &quot;rollmean&quot;, k = 60,
+##   align = &quot;center&quot;)`.
 ## Caused by warning in `tf_smooth.tfd()`:
 ## ! non-equidistant arg-values in &#39;MIMS_tf&#39; ignored by rollmean.
 
@@ -1437,18 +1425,58 @@ nhanes_famm_df &lt;-
   nhanes_famm_df %&gt;%
   select(SEQN, gender, age) %&gt;%
   mutate(MIMS_hour_mat = I(MIMS_hour_mat))</code></pre>
+<p>We now fit the function-on-scalar model using <code>pffr()</code> to
+analyze the association between age and gender on physical activity,
+where each residual is modeled using penalized splines.</p>
 <pre class="r"><code>nhanes_famm = 
   nhanes_famm_df %&gt;%
   pffr(MIMS_hour_mat ~ age + gender + s(SEQN, bs = &quot;re&quot;),
        data = ., algorithm = &quot;bam&quot;, discrete = TRUE,
        bs.yindex = list(bs = &quot;ps&quot;, k = 15, m = c(2, 1)))</code></pre>
-<pre><code>## using seWithMean for  s(yindex.vec) .
+<p>The fitted model is stored as the object <code>nhanes_famm</code>. To
+visualize the fixed effects estimates and confidence bands, we use a
+similar approach to the one that extracted estimates and SE from
+<code>mgcv</code> objects, which is facilitated through the helper
+function <a href="scripts.html"><code>pffrcoef_to_tf()</code></a>. Note
+we again add the population intercept to the intercept function.</p>
+<pre class="r"><code>pffr_coef_df = 
+  tibble(
+    term = c(&quot;(Intercept)&quot;, &quot;age&quot;, &quot;genderFemale&quot;),
+    raw_coef = coef(nhanes_famm)$smterms[1:3]
+  ) %&gt;% 
+  mutate(
+    raw_coef = map(raw_coef, &quot;coef&quot;),
+    coef = map(raw_coef, pffrcoef_to_tf)
+  ) %&gt;% 
+  select(term, coef) %&gt;% 
+  unnest(coef) %&gt;% 
+  mutate(
+    coef = coef + c(nhanes_famm$coef[1], 0, 0),
+    ub = coef + 1.96 * se, 
+    lb = coef - 1.96 * se) 
+## using seWithMean for  s(yindex.vec) .
 ## using seWithMean for  s(yindex.vec):genderMale .
-## using seWithMean for  s(yindex.vec):genderFemale .
+## using seWithMean for  s(yindex.vec):genderFemale .</code></pre>
+<p>The next Figure shows the fixed effects estimates obtained using
+<code>pffr()</code>. Notice that these estimates are similar to those
+using separate epoch-level regressions, and in particular those using
+similar hour-level data. An advantage of this joint modeling approach is
+that it gives smoother estimates and accounts for error
+correlations.</p>
+<pre class="r"><code>pffr_coef_df %&gt;% 
+  ggplot(aes(y = coef, color = term)) + 
+  geom_spaghetti() + 
+  geom_errorband(aes(ymax = ub, ymin = lb, fill = term))  + 
+  facet_wrap(~term, scales = &quot;free&quot;) + 
+  scale_x_continuous(breaks = seq(0, 24, length = 5)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Average MIMS&quot;) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)
 ## Scale for x is already present.
-## Adding another scale for x, which will replace the
-## existing scale.</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-44-1.png" width="90%" /></p>
+## Adding another scale for x, which will replace the existing scale.</code></pre>
+<p><img src="chapter_05_files/figure-html/unnamed-chunk-35-1.png" width="90%" /></p>
 </div>
 </div>
 <div id="a-scalable-approach-based-on-epoch-level-regressions"
@@ -1514,11 +1542,7 @@ columns: <code>term</code> (taking values <code>(Intercept)</code>,
 <code>age</code> and <code>genderFemale</code>, <code>coef</code>
 (containing the unsmoothed results of epoch-level regressions),
 <code>smooth_coef</code> (containing the smoothed versions of values in
-<code>coef</code>). The figure below contains a panel for each term, and
-shows epoch-level and smooth coefficients. Note the similarity between
-the smoothed coefficients and those obtained by “functional” approaches,
-including penalized splines; this suggests that this technique is a
-plausible and scalable approach to FoSR modeling.</p>
+<code>coef</code>).</p>
 <pre class="r"><code>fui_coef_df =
   min_regressions %&gt;%
   select(epoch, term, coef = estimate) %&gt;%
@@ -1533,133 +1557,93 @@ fui_coef_df %&gt;%
 ## Warning in geom_spaghetti(size = 1.2): Ignoring unknown parameters: `size`
 ## Warning in geom_spaghetti(aes(tf = coef), alpha = 0.2): Ignoring unknown
 ## aesthetics: tf</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-46-1.png" width="90%" /></p>
-<pre><code>## Warning in geom_spaghetti(size = 1.2): Ignoring unknown parameters: `size`
+<p><img src="chapter_05_files/figure-html/unnamed-chunk-37-1.png" width="90%" /></p>
+<p>The figure below contains a panel for each term, and shows
+epoch-level and smooth coefficients. Note the similarity between the
+smoothed coefficients and those obtained by “functional” approaches,
+including penalized splines; this suggests that this technique is a
+plausible and scalable approach to FoSR modeling.</p>
+<pre class="r"><code>fui_coef_df %&gt;% 
+  ggplot(aes(y = smooth_coef, color = term)) + 
+  geom_spaghetti(size = 1.2) + 
+  geom_spaghetti(aes(tf = coef), alpha = .2)  + 
+  facet_wrap(~term, scales = &quot;free&quot;) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)
+## Warning in geom_spaghetti(size = 1.2): Ignoring unknown parameters: `size`
 ## Warning in geom_spaghetti(aes(tf = coef), alpha = 0.2): Ignoring unknown
 ## aesthetics: tf</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-47-1.png" width="90%" /></p>
-<p>A main focus of Section AccErrCorr was to model error structures and
-thereby obtain accurate inference. The scalable approach we suggest in
-this section models each epoch separately, but the residual correlation
-is implicit: regression coefficients across epochs are related through
-the residual covariance. This fact, and the scalability of the
-estimation algorithm, suggests that bootstrapping is a plausible
-inferential strategy in this setting. In particular, we suggest to:
-resample participants, including full response functions, with
-replacement to create bootstrap samples; fit epoch-level regressions for
-each bootstrap sample and smooth the results; and construct confidence
-intervals based on the results. This resampling strategy preserves the
-within-subject correlation structure of the full data without making
-additional assumptions on the form of that structure. From a
-computational perspective, bootstrap always increases computation time
-because one needs to refit the same model multiple times. However,
-pointwise regression and smoothing is a simple and relatively fast
-procedure, which makes the entire process much more computationally
-scalable than the joint modeling approaches described in Section
-AccErrCorr. Moreover, the approach is easy to parallelize which can
-further improve computational times.</p>
-<p>Our implementation of this analysis relies on a helper function
-{nhanes_boot_fui}, which has arguments {seed} and {df}. This function
-contains the following steps: first, it sets the seed to ensure
-reproducibility and then creates a bootstrap sample from the provided
-dataframe; second, it creates the hat matrix that is shared across all
-epoch-level regressions; third, it estimates epoch-level coefficients by
-multiplying the hat matrix by the response vector at each epoch; and
-fourth, it smooths these coefficients and returns the results. Because
-these steps are relatively straightforward, we defer the function to a
-supplement. The code chunk below uses {map} and {nhanes_boot_fui} to
-obtain results across 250 bootstrap samples. In practice one may need to
-run more bootstrap iterations, but this suffices for illustration. After
-unnesting, we have smooth coefficients for each iteration.</p>
+<p><img src="chapter_05_files/figure-html/unnamed-chunk-38-1.png" width="90%" /></p>
+<p>An important focus is to model error structures and thereby obtain
+accurate inference. The scalable approach we suggest in this section
+models each epoch separately, but the residual correlation is implicit:
+regression coefficients across epochs are related through the residual
+covariance. This fact, and the scalability of the estimation algorithm,
+suggests that bootstrapping is a plausible inferential strategy in this
+setting. In particular, we suggest to: resample participants, including
+full response functions, with replacement to create bootstrap samples;
+fit epoch-level regressions for each bootstrap sample and smooth the
+results; and construct confidence intervals based on the results. This
+resampling strategy preserves the within-subject correlation structure
+of the full data without making additional assumptions on the form of
+that structure. From a computational perspective, bootstrap always
+increases computation time because one needs to refit the same model
+multiple times. However, pointwise regression and smoothing is a simple
+and relatively fast procedure, which makes the entire process much more
+computationally scalable than joint modeling . Moreover, the approach is
+easy to parallelize which can further improve computational times.</p>
+<p>Our implementation of this analysis relies on a helper function <a
+href="scripts.html"><code>nhanes_boot_fui()</code></a>, which has
+arguments <code>seed</code> and <code>df</code>. This function contains
+the following steps: first, it sets the seed to ensure reproducibility
+and then creates a bootstrap sample from the provided dataframe; second,
+it creates the hat matrix that is shared across all epoch-level
+regressions; third, it estimates epoch-level coefficients by multiplying
+the hat matrix by the response vector at each epoch; and fourth, it
+smooths these coefficients and returns the results.</p>
+<p>The code chunk below obtains results across 250 bootstrap samples. In
+practice one may need to run more bootstrap iterations, but this
+suffices for illustration. After unnesting, we have smooth coefficients
+for each iteration.</p>
 <pre class="r"><code>fui_bootstrap_results = 
   tibble(iteration = 1:250) %&gt;% 
   mutate(
     boot_res = map(iteration, nhanes_boot_fui, df = nhanes_df)
   ) %&gt;% 
   unnest(boot_res)</code></pre>
-<p>Figure ZZZ shows results of this analysis. We include the full-sample
+<p>The next shows results of this analysis. We include the full-sample
 estimates and estimates obtained in 25 bootstrap samples in the
 background. We also show pointwise confidence intervals by adding and
 subtracting <span class="math inline">\(1.96\)</span> times the
 pointwise standard errors obtained via the bootstrap to the full-sample
 estimates. Constructing joint confidence intervals requires one to
 account for the complete joint distribution of the functions.</p>
-<pre><code>## Warning in geom_spaghetti(size = 1.2, alpha = 0.9): Ignoring unknown parameters:
-## `size`
+<pre class="r"><code>fui_bootstrap_results %&gt;% 
+  group_by(term) %&gt;% 
+  summarize(
+    est = mean(smooth_coef), 
+    se = sd(smooth_coef)) %&gt;% 
+  mutate(
+    ub = est + 1.96 * se, 
+    lb = est - 1.96 * se) %&gt;% 
+  ggplot(aes(y = est, color = term)) + 
+  geom_spaghetti(size = 1.2, alpha = .9) + 
+  geom_spaghetti(
+    data = filter(fui_bootstrap_results, iteration &lt;= 25), 
+    aes(y = smooth_coef), alpha = .25, size = .5) +
+  geom_errorband(aes(ymax = ub, ymin = lb, fill = term), alpha = .15)  + 
+  facet_wrap(~term, scales = &quot;free&quot;)  + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)
+## Warning in geom_spaghetti(size = 1.2, alpha = 0.9): Ignoring unknown
+## parameters: `size`
 ## Warning in geom_spaghetti(data = filter(fui_bootstrap_results, iteration &lt;= :
 ## Ignoring unknown parameters: `size`</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-49-1.png" width="90%" /></p>
-</div>
-<div id="bayes_fosr" class="section level2">
-<h2>bayes_fosr()</h2>
-<p>just curious if this works, honestly.</p>
-<p>and … not enough smoothing by default, with error bounds that are too
-narrow. probably won’t include. also i changed variable names and this
-code is broken – should be easy to fix, though.</p>
-<pre class="r"><code>bayes_fosr_fit = 
-  nhanes_for_pffr %&gt;% 
-  bayes_fosr(MIMS ~ gender + age, data = ., Kt = 20, Kp = 2, 
-             est.method = &quot;VB&quot;, cov.method = &quot;FPCA&quot;)
-
-bayes_fosr_coef_df = 
-  tibble(
-    term = c(&quot;(Intercept)&quot;, &quot;genderFemale&quot;, &quot;age&quot;),
-    coef = tfd(bayes_fosr_fit$beta.hat),
-    ub = tfd(bayes_fosr_fit$beta.UB), 
-    lb = tfd(bayes_fosr_fit$beta.LB)
-  )
-
-bayes_fosr_coef_df %&gt;% 
-  ggplot(aes(y = coef, color = term)) + 
-  geom_spaghetti() + 
-  geom_errorband(aes(ymax = ub, ymin = lb, fill = term)) + 
-  facet_wrap(vars(term), scales = &quot;free&quot;)</code></pre>
-</div>
-<div id="gfam" class="section level2">
-<h2>GFAM</h2>
-<p>Trying a GFAM ..</p>
-<p>(also omitting this for now …)</p>
-<pre class="r"><code>pffr_gfam_fit = pffr(MIMS ~ gender + s(age), data = nhanes_famm_df)
-
-pffr_gfam_coef_df = 
-  tibble(
-    term = c(&quot;(Intercept)&quot;, &quot;genderFemale&quot;, &quot;age&quot;),
-    raw_coef = coef(pffr_gfam_fit)$smterms
-  ) %&gt;% 
-  filter(term != &quot;age&quot;) %&gt;% 
-  mutate(
-    raw_coef = map(raw_coef, &quot;coef&quot;),
-    coef = map(raw_coef, pffrcoef_to_tf)
-  ) %&gt;% 
-  select(term, coef) %&gt;% 
-  unnest(coef) %&gt;% 
-  mutate(
-    ub = coef + 1.96 * se, 
-    lb = coef - 1.96 * se) 
-
-ggp_gfam_linear = 
-  pffr_gfam_coef_df %&gt;% 
-  ggplot(aes(y = coef, color = term)) + 
-  geom_spaghetti() + 
-  geom_errorband(aes(ymax = ub, ymin = lb, fill = term))  + 
-  facet_wrap(~term, scales = &quot;free&quot;)
-
-ggp_gfam_smooth = 
-  coef(pffr_gfam_fit)$smterms$`s(age)`$coef %&gt;% 
-  ggplot(aes(x = yindex.vec, y = age, fill = value)) + 
-  geom_tile()
-
-ggp_gfam_linear + ggp_gfam_smooth</code></pre>
-</div>
-<div id="next-steps" class="section level2">
-<h2>Next steps</h2>
-<ul>
-<li>include time varying coefficient models in lit review</li>
-<li>(do lit review more generally)</li>
-</ul>
-<p>need to consider how to do generalized approaches</p>
-<p>say something somewhere about irregular or sparse data</p>
-<p>say something about sparsity inducing penalties</p>
+<p><img src="chapter_05_files/figure-html/unnamed-chunk-40-1.png" width="90%" /></p>
 </div>
 
 <br><br>
