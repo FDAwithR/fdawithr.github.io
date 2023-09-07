@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Chapter 9</title>
+
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
+<script defer src="https://use.fontawesome.com/releases/v5.0.3/js/all.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.0/js/v4-shims.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics 
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151578452-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-151578452-1');
+</script>
+-->
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">FDA with R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="overview.html">Overview</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Datasets
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="dataset_nhanes.html">NHANES</a>
+    </li>
+    <li>
+      <a href="dataset_content.html">Content</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Chapters
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="chapter_01.html">Chapter 1</a>
+    </li>
+    <li>
+      <a href="chapter_02.html">Chapter 2</a>
+    </li>
+    <li>
+      <a href="chapter_03.html">Chapter 3: FPCA</a>
+    </li>
+    <li>
+      <a href="chapter_04.html">Chapter 4: SoFR</a>
+    </li>
+    <li>
+      <a href="chapter_05.html">Chapter 5: FoSR</a>
+    </li>
+    <li>
+      <a href="chapter_06.html">Chapter 6: FoFR</a>
+    </li>
+    <li>
+      <a href="chapter_07.html">Chapter 7</a>
+    </li>
+    <li>
+      <a href="chapter_08.html">Chapter 8</a>
+    </li>
+    <li>
+      <a href="chapter_09.html">Chapter 9</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="scripts.html">Scripts</a>
+</li>
+<li>
+  <a href="https://github.com/FDAwithR">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Chapter 9</h1>
+
+</div>
+
+
+<p>This document contains clustering approaches for functional data and
+it is applied to the US Covid-19 weekly all-cause excess mortality data,
+simulated data with noise, CD4 counts after using smoothing, and NHANES
+data.</p>
+<div id="us-all-cause-excess-and-covid-19-mortality"
+class="section level2">
+<h2>US all-cause excess and Covid-19 mortality</h2>
+<p>Read the COVID-19 data from <code>refund</code> package.</p>
+<pre class="r"><code>#Load packages
+library(refund)
+library(fields)</code></pre>
+<p>Extract the necessary information from the data list. Give variables
+shorter names.</p>
+<pre class="r"><code>CV19 &lt;- COVID19
+
+#Date indicating weeks from the beginning of 2020
+current_date &lt;- CV19$US_weekly_excess_mort_2020_dates
+#Names of states and territories considered in the analysis
+new_states &lt;- CV19$US_states_names
+#Excess mortality as a function of time and state
+Wd &lt;- CV19$States_excess_mortality_per_million
+#Columns are weeks, rows are states
+colnames(Wd) &lt;- 1:52
+#Population of states  
+pop_state_n &lt;- CV19$US_states_population
+names(pop_state_n) &lt;- new_states</code></pre>
+<p>The data we are interested in is stored in <code>Wd</code>. Each row
+in this data matrix corresponds to a state or territory (District of
+Columbia and Puerto Rico). Every column contains the weekly all-cause
+excess death rate per one million residents since the beginning of 2020.
+So, the data matrix is <span class="math inline">\(52\times 52\)</span>
+dimensional because there are <span class="math inline">\(50\)</span>
+states and <span class="math inline">\(2\)</span> teritories (Puerto
+Rico and District of Columbia) and <span
+class="math inline">\(52\)</span> weeks.</p>
+<div id="exploratory-plots-and-analyses" class="section level3">
+<h3>Exploratory plots and analyses</h3>
+<p>Make a plot of weekly number of excess deaths comparing 2020 with
+2019 for each state. Each line corresponds to a state and some states
+are emphasized using color: New Jersey (green), Louisiana (red),
+California (plum), Maryland (dark blue), and Texas (salmon). The x-axis
+corresponds to 52 weeks starting with (the week ending) on January 4,
+2020 and ending with (the week ending) on December 26, 2020. The y-axis
+is expressed in all-case excess mortality rate per one million
+residents.</p>
+<pre class="r"><code>par(mfrow = c(1, 1))
+cmar &lt;- c(4, 4, 1, 1)
+par(mar = cmar)
+for(i in 1:length(new_states)){
+  ylabel = paste(&quot;US states weekly excess deaths/million&quot;)
+  xlabel = paste(&quot;Weeks starting January 2020&quot;)
+  #Plot only for first state. For others add lines
+  if(i == 1){
+    par(bg = &quot;white&quot;)
+    #Here plot the date versus cumulative excess mortality (hence the cumsum)
+    plot(current_date, Wd[i,], type = &quot;l&quot;, lwd = 1.5, 
+         col = rgb(0, 0, 0, alpha = 0.1), cex = 1, xlab = xlabel, 
+         ylab = ylabel, ylim = c(-50, 400), bty = &quot;n&quot;)
+  }
+  else
+  {lines(current_date, Wd[i,], lwd = 1, col = rgb(0, 0, 0, alpha = 0.1))}
+}
+
+emphasize &lt;- c(&quot;New Jersey&quot;, &quot;Louisiana&quot;, &quot;California&quot;, &quot;Maryland&quot;, &quot;Texas&quot;)
+col_emph &lt;- c(&quot;darkseagreen3&quot;, &quot;red&quot;, &quot;plum3&quot;, &quot;deepskyblue4&quot;, &quot;salmon&quot;)
+
+emph_state_ind &lt;- match(emphasize, new_states)
+
+for(i in 1:length(emphasize)){
+  lines(current_date, Wd[emph_state_ind[i],], lwd = 2.5, col = col_emph[i])
+}</code></pre>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-3-1.png" width="90%" /></p>
+<p>Plot the weekly mortality for each state (each dot represents a
+state). Each panel corresponds to a specific week on the x-axis and
+another specific week on the y-axis. This plot will be improved using
+code from Andrew.</p>
+<pre class="r"><code>par(mfrow = c(4, 4))
+cmar &lt;- c(3, 3, 0, 0)
+par(mar = cmar)
+plot(Wd[,10], Wd[,20], pch = 19, col = &quot;blue&quot;, cex = .7, bty = &quot;n&quot;, xlim = c(-40, 150), 
+     ylim = c(-40, 150), main = &quot;&quot;, xlab = &quot;Week 10&quot;, ylab = &quot;&quot;, axes = &quot;FALSE&quot;)
+mtext(&quot;Week 20&quot;, side = 2, cex = 0.5, line = 1.7)
+axis(side = 2, at = c(0, 50, 100), labels = c(0, 50, 100), cex.axis = 0.7, tck = -0.1)
+
+plot(0, type = &#39;n&#39;, axes = FALSE, ann = FALSE)
+plot(0, type = &#39;n&#39;, axes = FALSE, ann = FALSE)
+plot(0, type = &#39;n&#39;, axes = FALSE, ann = FALSE)
+
+plot(Wd[,10], Wd[,30], pch = 19, col = &quot;blue&quot;, cex = .7, bty = &quot;n&quot;, xlim = c(-40, 150), ylim = c(-40, 150), axes = &quot;FALSE&quot;)
+
+axis(side = 2, at = c(0, 50, 100), labels = c(0, 50, 100), cex.axis = 0.8, tck = -0.1)
+mtext(&quot;Week 30&quot;, side = 2, cex = 0.5, line = 1.7)
+
+plot(Wd[,20], Wd[,30], pch = 19, col = &quot;blue&quot;, cex = .7, bty = &quot;n&quot;, xlim = c(-40, 150), ylim = c(-40, 150), axes = &quot;FALSE&quot;)
+
+plot(0, type = &#39;n&#39;, axes = FALSE, ann = FALSE)
+plot(0, type = &#39;n&#39;, axes = FALSE, ann = FALSE)
+
+plot(Wd[,10], Wd[,40], pch = 19, col = &quot;blue&quot;, cex = .7, bty = &quot;n&quot;, xlim = c(-40, 150), ylim = c(-40, 150), axes = &quot;FALSE&quot;)
+axis(side = 2, at = c(0, 50, 100), labels = c(0, 50, 100), cex.axis = 0.8, tck = -0.1)
+mtext(&quot;Week 40&quot;, side = 2, cex = 0.5, line = 1.7)
+
+plot(Wd[,20], Wd[,40], pch = 19, col = &quot;blue&quot;, cex = .7, bty = &quot;n&quot;, xlim = c(-40, 150), ylim = c(-40, 150), axes = &quot;FALSE&quot;)
+
+plot(Wd[,30], Wd[,40], pch = 19, col = &quot;blue&quot;, cex = .7, bty = &quot;n&quot;, xlim = c(-40, 150), ylim = c(-40, 150), axes = &quot;FALSE&quot;)
+
+plot(0, type = &#39;n&#39;, axes = FALSE, ann = FALSE)
+
+plot(Wd[,10], Wd[,50], pch = 19, col = &quot;blue&quot;, xlim = c(-40, 150), ylim = c(-40, 150), cex = 0.7, axes = &quot;FALSE&quot;)
+axis(side = 1, at = c(0, 50, 100), labels = c(0, 50, 100), cex.axis = 0.8, tck = -0.1)
+axis(side = 2, at = c(0, 50, 100), labels = c(0, 50, 100), cex.axis = 0.8, tck = -0.1)
+mtext(&quot;Week 10&quot;, side = 1, cex = 0.5, line = 1.7)
+mtext(&quot;Week 50&quot;, side = 2, cex = 0.5, line = 1.7)
+
+plot(Wd[,20], Wd[,50], pch = 19, col = &quot;blue&quot;, xlim = c(-40, 150), ylim = c(-40, 150), cex = 0.7, axes = &quot;FALSE&quot;)
+axis(side = 1, at = c(0, 50, 100), labels = c(0, 50, 100), cex.axis = 0.8, tck = -0.1)
+mtext(&quot;Week 20&quot;, side = 1, cex = 0.5, line = 1.7)
+
+plot(Wd[,30], Wd[,50], pch = 19, col = &quot;blue&quot;, xlim = c(-40, 150), ylim = c(-40, 150), cex = 0.7, axes = &quot;FALSE&quot;)
+axis(side = 1, at = c(0, 50, 100), labels = c(0, 50, 100), cex.axis = 0.8, tck = -0.1)
+mtext(&quot;Week 30&quot;, side = 1, cex = 0.5, line = 1.7)
+
+plot(Wd[,40], Wd[,50], pch = 19, col = &quot;blue&quot;, xlim = c(-40, 150), ylim = c(-40, 150), cex = 0.7, axes = &quot;FALSE&quot;)
+axis(side = 1, at = c(0, 50, 100), labels = c(0, 50, 100), cex.axis = 0.8, tck = -0.1)
+mtext(&quot;Week 40&quot;, side = 1, cex = 0.5, line = 1.7)</code></pre>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-4-1.png" width="90%" /></p>
+<p>Calculate the mean and median of the excess mortality rate per one
+million residents for several weeks across 52 states and territories.
+This is used to provide basic summaries and exploratory data analyses to
+further investigate the patterns shown in the panels containing
+scatterplots of weekly excess mortality rates.</p>
+<pre class="r"><code>meanWd10 &lt;- mean(Wd[,10])
+medianWd10 &lt;- median(Wd[,10])</code></pre>
+<p>There is an average of 3.3 and a median of 2.63 excess deaths per
+million in week 10 (week ending on March 7, 2020).</p>
+<p>Identify the outlier in week 10 and investigate its properties</p>
+<pre class="r"><code>ind_out &lt;- which.max(Wd[,10])
+state_out &lt;- new_states[ind_out]
+val_out &lt;- round(Wd[ind_out, 6:14], digits = 1)</code></pre>
+<p>The outlier observed on week 10 is North Dakota with 10.5, -17, 49.7,
+10.5, 70.6, 39.2, 6.5, -30.1, -41.8 excess mortality on weeks <span
+class="math inline">\(6\)</span> through <span
+class="math inline">\(14\)</span> from the beginning of the year.</p>
+<p>Identify the top <span class="math inline">\(5\)</span> states that
+on week <span class="math inline">\(20\)</span> have the largest weekly
+excess mortality rate.</p>
+<pre class="r"><code>topweek20 &lt;- round(Wd[order(Wd[,20])[48:52],20], digits = 1)
+states_top_20 &lt;- new_states[order(Wd[,20])[48:52]]</code></pre>
+<p>The five states with the highest excess mortality rate for week 20
+are New Jersey, Connecticut, Delaware, Massachusetts, District of
+Columbia with 104.5, 106.3, 114.5, 122.1, 136.1 excess mortality rate
+per one million residents, respectively.</p>
+<p>Identify the top <span class="math inline">\(5\)</span> states that
+on week <span class="math inline">\(30\)</span> have the largest weekly
+excess mortality rate.</p>
+<pre class="r"><code>topweek30 &lt;- round(Wd[order(Wd[,30])[48:52],30], digits = 1)
+states_top_30 &lt;- new_states[order(Wd[,30])[48:52]]</code></pre>
+<p>The five states with the highest excess mortality rate for week 20
+were South Carolina, Louisiana, Texas, Arizona, Mississippi with 84.7,
+87, 88.8, 107, 119.3 excess mortality rate per one million residents,
+respectively.</p>
+<p>Identify the top <span class="math inline">\(5\)</span> states that
+on week <span class="math inline">\(40\)</span> have the largest weekly
+excess mortality rate.</p>
+<pre class="r"><code>topweek40 &lt;- round(Wd[order(Wd[,40])[48:52],40], digits = 1)
+states_top_40 &lt;- new_states[order(Wd[,40])[48:52]]</code></pre>
+<p>The five states with the highest excess mortality rate for week 20
+were Wyoming, Missouri, District of Columbia, Arkansas, North Dakota
+with 53.2, 58.4, 58.9, 72.3, 75.8 excess mortality rate per one million
+residents, respectively.</p>
+</div>
+<div id="k-means-clustering-of-the-functional-data"
+class="section level3">
+<h3>K-means clustering of the functional data</h3>
+<p>We now conduct K-means clustering for the excess mortality rate data.
+For now we do not use smoothing or other types of functional approaches.
+We treat the rows of matrix <code>Wd</code> (states) as independent
+multivariate observations recorded by rows (each row corresponds to a
+state).</p>
+<pre class="r"><code>rownames(Wd) &lt;- new_states
+set.seed(1000)
+kmeans_CV19_3 &lt;- kmeans(Wd, centers = 3)
+cl_ind &lt;- kmeans_CV19_3$cluster
+cl_cen &lt;- kmeans_CV19_3$centers</code></pre>
+<p>Plot (code hidden) the excess mortality rates for each state and
+territory as a function of week from the beginning of 2020. Each color
+corresponds to a cluster and the thicker lines of the same color
+indicate the cluster centers.</p>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-11-1.png" width="90%" /></p>
+<p>Make a US map to better indicate the spatial localizaton of the three
+clusters estimated by k-means based on the 2020 un-smoothed weekly
+excess mortality rates. The code below shows how to produce this type of
+map and will be used again for US maps.</p>
+<pre class="r"><code>library(usmap)
+library(ggplot2)
+library(tidyverse)
+
+#Define a color per group
+colset &lt;- c(rgb(0.41, 0.05, 0.68), rgb(0, 1, 0), rgb(1, .55, 0))
+
+## load state date which contains FIPS code
+data(&quot;statepop&quot;)
+
+## create a data frame to plot based on the input requirement
+state_cluster &lt;- data.frame(full = names(cl_ind), cluster = unname(cl_ind))
+data_cluster &lt;- statepop %&gt;%
+  left_join(state_cluster, by = &quot;full&quot;) %&gt;%
+  select(fips, cluster)
+data_cluster$cluster &lt;- as.factor(data_cluster$cluster)
+
+## make the US map
+p &lt;- plot_usmap(regions = &quot;states&quot;, data = data_cluster, values = &quot;cluster&quot;) +
+  scale_fill_manual(name = &quot;Cluster&quot;, values = colset) +
+  labs(title = &quot;&quot;) +
+  theme(legend.position = &quot;right&quot;, 
+        plot.title = element_text(hjust = 0.5, face = &quot;bold&quot;))
+print(p)</code></pre>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-12-1.png" width="90%" /></p>
+</div>
+<div id="hierarchical-clustering-of-functional-data"
+class="section level3">
+<h3>Hierarchical clustering of functional data</h3>
+<p>Recall that the data are contained in the matrix <code>Wd</code>, a
+<span class="math inline">\(52\times 52\)</span> dimensional matrix,
+where each state is a row and each column is a week of 2020.</p>
+<pre class="r"><code>library(gplots) ##Available from CRAN
+library(RColorBrewer)
+library(viridis)
+library(dendextend)
+#Calculate the matrix of distances
+dM &lt;- dist(Wd[,]) ^ 2
+#Hierarchical clustering on the square Euclidian distances
+hc &lt;- hclust(dM, method = &quot;ward.D2&quot;)</code></pre>
+<p>Plot the dendogram. This code uses the package
+<code>dendextend</code>, though better plotting may be available in
+other packages. This package allows to color code the dendograms
+according to a specific clustering (in our case obtained by cutting the
+result of hierarchical clustering to form five clusters).</p>
+<pre class="r"><code>#Set the cluster colors (five clusters)
+clust.col &lt;- c(&quot;#E69A8DFF&quot;, &quot;#F6D55C&quot;, &quot;#2A9D8F&quot;, &quot;#5F4B8BFF&quot;, &quot;#ee7600&quot;)
+
+#Set the dendogram
+hcd &lt;- as.dendrogram(hc)
+hcd &lt;- hcd %&gt;%
+         color_branches(k = 5, col = clust.col) %&gt;%
+         set(&quot;branches_lwd&quot;, c(2, 2, 2, 2, 2)) %&gt;%
+         set(&quot;branches_lty&quot;, c(1, 1, 1, 1, 1))
+
+cmar &lt;- c(4, 4, 1, 1)
+par(mar = cmar)
+nodePar &lt;- list(lab.cex = 0.6, pch = NA)
+plot(hcd, nodePar = nodePar, axes = FALSE, ylab = &quot;Distance (Ward.D2)&quot;, 
+     ylim = c(0, 750000), cex.lab = 0.6)
+axis(2, at = c(0, 250000, 500000, 750000), 
+     labels = c(&quot;0&quot;, &quot;250K&quot;, &quot;500K&quot;, &quot;750K&quot;), cex.axis = 0.6, lwd = 1)</code></pre>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-14-1.png" width="90%" /></p>
+<p>A complementary way of plotting these results is to display the
+heatmap of the data together with the clustering of the rows of the
+matrix (states). The clustering re-orders the states (which were
+organized in alphabetic order) to match with the hierarchical
+clustering. We could have clustered the columns (weeks) as well, but in
+this application we are interested in preserving the natural flow of
+time. Here we used the function <code>Heatmap</code> in the
+<code>R</code> package <code>ComplexHeatmap</code>. Note that the
+capital letter H in <code>Heatmap</code> matters! Other functions we
+have tried seemed more finicky, but the user is encouraged to try other
+packages and heatmap functions.</p>
+<pre class="r"><code>par(mfrow = c(1, 1))
+par(mar = c(4, 4, 4, 4))
+
+#This package is on Bioconductor but not on Cran
+if (!require(&quot;BiocManager&quot;, quietly = TRUE))
+    install.packages(&quot;BiocManager&quot;)
+
+BiocManager::install(&quot;ComplexHeatmap&quot;)
+## Warning: package(s) not installed when version(s) same as or greater than current; use
+##   `force = TRUE` to re-install: &#39;ComplexHeatmap&#39;
+
+library(ComplexHeatmap)
+library(circlize)
+
+#Set a set of breaks in the colors to account for the large outliers in New Jersey. 
+breaks &lt;- c(-50, seq(-40, 130, by = 1), 200, 250, 300)
+
+#Often heatmaps can be heavly affected by outliers. 
+#This requires careful mapping of colors
+hmcol &lt;- plasma(length(breaks))
+mycol &lt;- colorRamp2(breaks = breaks, col = hmcol)
+
+cmar &lt;- c(4, 4, 1, 1)
+par(mar = cmar)
+#Plot the heatmap with the row dendogram
+Heatmap(Wd, name = &quot;EMR&quot;, col = mycol,
+        row_names_gp = gpar(fontsize = 8),
+        column_names_gp = gpar(fontsize = 5), cluster_columns = FALSE, 
+        cluster_rows = color_branches(hc, k = 5, col = clust.col))</code></pre>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-15-1.png" width="90%" /></p>
+<p>We want to plot the clusters on the US map. One of the problems is
+that clusters are not labeled in increasing order from left to right (as
+plotted), but in the sequence in which they are split from the root of
+the tree. Thus, we need to relabel clusters to remain consistent with
+the left/right presentation of clusters.</p>
+<pre class="r"><code>cut_wardd2 &lt;- cutree(hc, k = 5)
+loc_cut &lt;- cut_wardd2
+loc_cut[cut_wardd2 == 2] &lt;- 1
+loc_cut[cut_wardd2 == 5] &lt;- 2
+loc_cut[cut_wardd2 == 1] &lt;- 3
+loc_cut[cut_wardd2 == 4] &lt;- 4
+loc_cut[cut_wardd2 == 3] &lt;- 5
+cut_wardd2 &lt;- loc_cut
+
+## load state date which contains FIPS code
+data(&quot;statepop&quot;)
+
+state_cluster &lt;- data.frame(full = names(cut_wardd2), cluster = unname(cut_wardd2))
+data_cluster &lt;- statepop %&gt;%
+  left_join(state_cluster, by = &quot;full&quot;) %&gt;%
+  select(fips, cluster)
+data_cluster$cluster &lt;- as.factor(data_cluster$cluster)
+
+## make the US map
+p &lt;- plot_usmap(regions = &quot;states&quot;, data = data_cluster, values = &quot;cluster&quot;) +
+  scale_fill_manual(name = &quot;Cluster&quot;, values = clust.col) +
+  labs(title = &quot;&quot;) +
+  theme(legend.position = &quot;right&quot;, 
+        plot.title = element_text(hjust = 0.5, face = &quot;bold&quot;))
+
+cmar &lt;- c(4, 4, 1, 1)
+par(mar = cmar)
+print(p)</code></pre>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-16-1.png" width="90%" /></p>
+</div>
+<div id="distributional-clustering" class="section level3">
+<h3>Distributional clustering</h3>
+<p>Distributional clustering is an approach that fits mixtures of
+multivariate distributions. The most common approach is mixture of
+Gaussian distributions, but t-distributions, spherical distributions
+could also be considered. Here we will use the <code>mclust</code>
+package, though other packages exist including <code>mixtools</code>,
+<code>clusterR</code>, and <code>flexmix</code>.</p>
+<pre class="r"><code>#Set the color palette
+colset &lt;- c(&quot;#E69A8DFF&quot;, &quot;#F6D55C&quot;, &quot;#2A9D8F&quot;, &quot;#5F4B8BFF&quot;)
+library(mclust)
+#Center and scale the data
+X &lt;- as.data.frame(apply(Wd, 2, scale))
+#Calculate BIC for distributional clustering
+BIC &lt;- mclustBIC(X)
+#Fit GMM using EM algorithm with 4 clusters suggested by BIC
+mod &lt;- Mclust(X, x = BIC)
+#Obtain clustering results
+res &lt;- mod$classification</code></pre>
+<p>Plot the US map of four clusters obtained from the distributional
+clustering of the multivariate distributions.</p>
+<pre class="r"><code>state_cluster &lt;- data.frame(full = names(cut_wardd2), cluster = res)
+data_cluster &lt;- statepop %&gt;%
+  left_join(state_cluster, by = &quot;full&quot;) %&gt;%
+  select(fips, cluster)
+data_cluster$cluster &lt;- as.factor(data_cluster$cluster)
+
+## make the US map
+p &lt;- plot_usmap(regions = &quot;states&quot;, data = data_cluster, values = &quot;cluster&quot;) +
+  scale_fill_manual(name = &quot;Cluster&quot;, values = colset) +
+  labs(title = &quot;&quot;) +
+  theme(legend.position = &quot;right&quot;, 
+        plot.title = element_text(hjust = 0.5, face = &quot;bold&quot;))
+
+cmar &lt;- c(4, 4, 1, 1)
+par(mar = cmar)
+print(p)</code></pre>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-18-1.png" width="90%" /></p>
+</div>
+<div id="clustering-functional-data" class="section level3">
+<h3>Clustering functional data</h3>
+<p>So far we have treated functional data as multivariate data and
+simply applied existing clustering techniques. However, there is
+something special about functional data. It can be observed with a lot
+of noise, which may require some type of smoothing. Smoothing can be
+done either directly, function-by-function or by using a smooth
+functional PCA approach. Here we explore transforming the data using
+functional PCA and then using clustering on: (1) the scores of the
+principal components; and (2) the smooth estimators of the functions. We
+will use the function <code>fpca.face</code> from the
+<code>refund</code> package based on the COVID weekly excess mortality
+data.</p>
+<p>Conduct functional PCA</p>
+<pre class="r"><code>t &lt;- 1:dim(Wd)[2]
+
+#Apply functional PCA using the FACE approach
+results &lt;- fpca.face(Y = Wd, Y.pred = Wd, center = TRUE, argvals = t,
+                     knots = 35, pve = 0.99, var = TRUE)
+
+#Obtain the eigenfunctions and eigenvalues
+Phi &lt;- results$efunctions
+eigenvalues &lt;- results$evalues
+
+#Obtain the estimated covariance and correlation matrices
+cov_est &lt;- Phi %*% diag(eigenvalues) %*% t(Phi)
+cor_est &lt;- cov2cor(cov_est)
+
+#Obtain the scores and the predicted functions
+PC_scores &lt;- results$scores
+Pred &lt;- results$Yhat</code></pre>
+<pre class="r"><code>#Name to columns and rows of the covariance
+colnames(cov_est) &lt;- 1:52
+rownames(cov_est) &lt;- 1:52
+
+colnames(cor_est) &lt;- 1:52
+rownames(cor_est) &lt;- 1:52</code></pre>
+<p>Below we provide a plot of the first three principal components. The
+x-axis is time in weeks starting in January 2020.</p>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-21-1.png" width="90%" /></p>
+<p>We now conduct clustering of the data using the PC scores. We use the
+first three principal components and use K-means with <span
+class="math inline">\(3\)</span> clusters. We compare the clustering
+based on the raw data with clustering based on the functional PCA
+scores.</p>
+<pre class="r"><code>rownames(PC_scores) &lt;- new_states
+set.seed(1000)
+kmeans_CV19_3 &lt;- kmeans(PC_scores[,1:3], centers = 3)
+cl_ind_sc &lt;- kmeans_CV19_3$cluster
+cl_cen_sc &lt;- kmeans_CV19_3$centers
+
+#This shows that the two approaches to K-means provide identical results 
+table(cl_ind, cl_ind_sc)
+##       cl_ind_sc
+## cl_ind  1  2  3
+##      1 12  0  0
+##      2  0 23  0
+##      3  0  0 17</code></pre>
+<p>Plot the scores on the first three principal components together with
+the colors of the clusters. The x-axis are the scores on PC1 and the
+y-axis represents the scores on PC2 (top panel) and PC3 (bottom panel),
+respectively.</p>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-23-1.png" width="90%" /></p>
+<p>Plot the smooth covariance and correlation function estimates</p>
+<pre class="r"><code>breaks &lt;- c(seq(-2000, -1000, length.out = 10), seq(-900, 900, length.out = 100), 
+          seq(1000, 2000, length.out = 10))
+hmcol &lt;- magma(length(breaks))
+mycol &lt;- colorRamp2(breaks = breaks, col = hmcol)
+Heatmap(cov_est, col = mycol, name = &quot;Covariance&quot;,  
+        row_names_gp = gpar(fontsize = 5), 
+        column_names_gp = gpar(fontsize = 5), cluster_columns = FALSE, 
+        cluster_rows = FALSE)</code></pre>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-24-1.png" width="90%" /></p>
+<pre class="r"><code>
+breaks &lt;- c(seq(-0.5, 0, length.out = 200), seq(0.01, 0.9, length.out = 100), 
+          seq(0.91, 1, length.out = 20))
+hmcol &lt;- magma(length(breaks))
+mycol &lt;- colorRamp2(breaks = breaks, col = hmcol)
+Heatmap(cor_est, col = mycol, name = &quot;Correlation&quot;, 
+        row_names_gp = gpar(fontsize = 5), column_names_gp = gpar(fontsize = 5), 
+        cluster_columns = FALSE, 
+        cluster_rows = FALSE)</code></pre>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-24-2.png" width="90%" /></p>
+<p>So far, we have shown results based on K-means clustering of PC
+scores. However, we can use any other type of clustering. Below we show
+how to conduct hierarchical smoothing using the PC scores on the first
+11 PCs</p>
+<pre class="r"><code>dM &lt;- dist(PC_scores[,1:11]) ^ 2
+#Apply hierarchical clustering
+hc_sc &lt;- hclust(dM, method = &quot;ward.D2&quot;)
+cut_wardd2_sc &lt;- cutree(hc_sc, k = 5)</code></pre>
+</div>
+</div>
+<div id="simulations-for-clustering-noisy-functional-data"
+class="section level2">
+<h2>Simulations for Clustering Noisy Functional Data</h2>
+<p>In the COVID-19 excess mortality rate example, there is no difference
+between K-means clustering of the raw data or PC scores. The reason for
+that is likely that the data has very little noise.</p>
+<p>Therefore, it makes a lot of sense to investigate when functional
+data analysis may make a difference in the case of clustering. To do
+that we build a simple simulation exercise, where the true data has two
+clusters. To these data we add different levels of noise and investigate
+how clustering approaches compare when we use the raw data and the
+principal component scores after functional PCA (FPCA) smoothing.</p>
+<p>Define functional data with two clusters. The first cluster contains
+constant functions <span
+class="math inline">\(f_i\{(j-1)/n\}=-0.2+0.2*(i-1)/n\)</span>, for
+<span class="math inline">\(i=1,\ldots,I=101\)</span> and <span
+class="math inline">\(j=1,\ldots,J=101\)</span>. Therefore, functions
+are observed at an equal grid of points between <span
+class="math inline">\([0,1]\)</span>, each function is constant, and
+constants increase from <span class="math inline">\(-0.2\)</span> to
+<span class="math inline">\(0.2\)</span> in equal increments. The second
+cluster contains the functions <span
+class="math inline">\(f_i\{(j-1)/n\}=\{0.8+0.4(i-102)/101\}\sin\{2\pi(j-1)/n\}\)</span>
+for <span class="math inline">\(i=102,\ldots,202\)</span> and <span
+class="math inline">\(j=1,\ldots,J=101\)</span>. These are sinus
+functions with various amplitudes from <span
+class="math inline">\(0.8\)</span> to <span
+class="math inline">\(1.2\)</span> evaluated at the same grid of equally
+spaced observations between <span
+class="math inline">\([0,1]\)</span>.</p>
+<pre class="r"><code>n_dom &lt;- 101
+t &lt;- seq(0, 1, length = n_dom)
+a &lt;- seq(-0.2, 0.2, length = 101)
+b &lt;- seq(0.8, 1.2, length = 101)
+cl1 &lt;- matrix(rep(a, each = 101), ncol = 101, byrow = TRUE)
+cl2 &lt;- matrix(rep(t, 101), ncol = 101, byrow = TRUE)
+cl2 &lt;- diag(b)%*% sin(2*pi*cl2)
+true_data &lt;- rbind(cl1, cl2)</code></pre>
+<p>Display the true underlying data with corresponding clusters
+indicated by red and blue colors.</p>
+<pre class="r"><code>par(mar = c(4, 4, 1, 1))
+blues &lt;- colorRampPalette(brewer.pal(9, &quot;Blues&quot;))(100)
+reds &lt;- colorRampPalette(brewer.pal(9, &quot;Reds&quot;))(100)
+plot(t, true_data[1,], ylim = c(-1.5, 1.5), col = reds[25], 
+     type = &quot;l&quot;, lwd = 2, xlab = &quot;Time&quot;, ylab = &quot;Outcome&quot;, bty = &quot;n&quot;)
+for(i in 1:10){
+  lines(t, true_data[1 + 10 * i,], col = reds[25 + 7 * i], lwd = 2)
+}
+
+for(i in 1:11){
+  lines(t, true_data[102 + 10 * (i - 1),], col = blues[25 + 7 * (i - 1)], lwd = 2)
+}</code></pre>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-27-1.png" width="90%" /></p>
+<pre class="r"><code>true_clust &lt;- c(rep(1, 101), rep(2, 101))
+cl_kmeans &lt;- kmeans(true_data, centers = 2)
+cl_ind &lt;- cl_kmeans$cluster
+
+#Check that K-means can identify the two clusters
+table(true_clust, cl_ind)
+##           cl_ind
+## true_clust   1   2
+##          1   0 101
+##          2 101   0</code></pre>
+<p>We now conduct a simulation where we simulate from the model <span
+class="math display">\[w_i(t_j)=f_i(t_j)+\sigma\epsilon_{ij}\;,\]</span>
+where <span class="math inline">\(t_j=(j-1)/101\)</span>, <span
+class="math inline">\(i=1,\ldots,202\)</span>, <span
+class="math inline">\(\epsilon_{ij}\)</span> are mutually independent
+<span class="math inline">\(N(0,1)\)</span> random variables and <span
+class="math inline">\(\sigma\)</span> controls the amount of noise
+around the functions. For each sigma we simulate <code>nsim=500</code>
+data sets, and use K-means with <span class="math inline">\(2\)</span>
+clusters on: (1) the raw simulated data; and (2) on the scores on the
+principal components taht explain <span
+class="math inline">\(99\)</span>% of the variance after removing the
+estimated noise variance.</p>
+<pre class="r"><code>#Number of entries in the true data matrix
+n &lt;- dim(true_data)[1] * dim(true_data)[2]
+
+#Noise levels
+sigmav = c(0, 1, 2, 3, 4, 5, 10)
+nsigma = length(sigmav)
+
+#Number of simulations for each sigma
+#nsim = 500
+#This is used to compile only. Results should be obtained using n = 500 simulations
+nsim = 5
+
+#Define the matrices that store missclassification rates
+#Each row corresponds to a simulation
+#Each column corresponds to a noise level
+prop_missclass_raw &lt;- matrix(rep(NA, nsigma * nsim), ncol = nsigma)
+prop_missclass_scores &lt;- matrix(rep(NA, nsigma * nsim), ncol = nsigma)
+
+for(i in 1:nsim){ #Begin simulations
+  for(j in 1:nsigma){ #Begin looping over levels of noise
+    sigma &lt;- sigmav[j]
+    #Simulate noisy functional data
+    sim_noise &lt;- matrix(rnorm(n), ncol = dim(true_data)[2])
+    sim_data &lt;- true_data+sigma*sim_noise
+    
+    #Conduct clustering directly on the raw data (signal+noise)
+    cl_kmeans_raw &lt;- kmeans(sim_data, centers = 2)
+    cl_ind_raw &lt;- cl_kmeans_raw$cluster
+    
+    
+    #Conduct clustering on the smooth estimators (scores) 
+    results &lt;- fpca.face(Y = sim_data, Y.pred = sim_data, center = TRUE, 
+                         argvals = t, knots = 35, pve = 0.99, var = TRUE)
+    
+    #Obtain the scores 
+    PC_scores &lt;- results$scores
+    
+    #Apply K-means to the FPCA scores
+    cl_kmeans_scores &lt;- kmeans(PC_scores, centers = 2)
+    cl_ind_scores &lt;- cl_kmeans_scores$cluster
+    
+    #Obtain the classification tables
+    temp_raw &lt;- table(true_clust, cl_ind_raw)
+    temp_scores &lt;- table(true_clust, cl_ind_scores)
+    
+    #Calculate the miss-classification for raw and PC scores
+    prop_missclass_raw[i, j] &lt;- min(sum(diag(temp_raw)), sum(temp_raw)-
+                                   sum(diag(temp_raw))) / (sum(temp_raw))
+    prop_missclass_scores[i, j] &lt;- min(sum(diag(temp_scores)), sum(temp_scores)-
+                                      sum(diag(temp_scores))) / (sum(temp_scores))
+  }#End loop over noise levels
+}#End loop over simulations
+
+#Calculate miss-classification rates
+miss_raw &lt;- colMeans(prop_missclass_raw)
+miss_scores &lt;- colMeans(prop_missclass_scores)</code></pre>
+<p>Plot the missclassification rates for k-means clustering with two
+clusters for raw data and FPCA scores respectively as a function of the
+standard deviation of the measurement error.</p>
+<pre class="r"><code>par(mar = c(4, 4, 1, 1))
+plot(sigmav,miss_raw, type = &quot;l&quot;, lwd = 3, 
+     col = &quot;#66c2a5&quot;, bty = &quot;n&quot;, ylim = c(0, 0.6), 
+     xlab = &quot;Standard deviation of error&quot;, 
+     ylab = &quot;Missclassification rate&quot;)
+lines(sigmav, miss_scores, lwd = 3, col = &quot;#fc8d62&quot;)
+
+legend(8, 0.6, c(&quot;Raw&quot;,  &quot;FPCA&quot;), lty = c(1, 1), seg.len = 0.8, lwd = c(3, 3), 
+       col = c(&quot;#66c2a5&quot;, &quot;#fc8d62&quot;), cex = 0.8, bty = &quot;n&quot;, y.intersp = 1)</code></pre>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-30-1.png" width="90%" /></p>
+</div>
+<div id="clustering-sparse-cd4-counts-data" class="section level2">
+<h2>Clustering Sparse CD4 Counts Data</h2>
+<p>Here we use the CD4 counts data and the face.sparse function. CD4
+observations are sparse, which makes direct clustering of the observed
+data impossible. Instead, we are predicting each curve at a grid of
+observations and use these predicted functions in clustering software.
+We also obtain the scores, which could be used for clustering, but we
+use the predicted functions for illustration.</p>
+<p>We use the function from the package. This function uses penalized
+splines smoothing to estimate the covariance and correlation and produce
+predictions.</p>
+<pre class="r"><code>library(face)
+library(refund)
+
+#Load the data
+data(cd4)
+n &lt;- nrow(cd4) 
+T &lt;- ncol(cd4)
+
+#Construct a vectorized form of the data
+id &lt;- rep(1:n, each = T)
+t &lt;- rep(-18:42, times = n) 
+y &lt;- as.vector(t(cd4))
+
+#Indicator for NA observations. This takes advantage of the sparse nature of the data
+sel &lt;- which(is.na(y))
+#Organize data as outcome, time, subject ID 
+data &lt;- data.frame(y = log(y[-sel]), argvals = t[-sel],
+subj &lt;- id[-sel])
+data &lt;- data[data$y &gt; 4.5,]
+#Provide the structure of the transformed data
+head(data)
+##          y argvals subj....id..sel.
+## 1 6.306275      -9                1
+## 2 6.794587      -3                1
+## 3 6.487684       3                1
+## 4 6.622736      -3                2
+## 5 6.129050       3                2
+## 6 5.198497       9                2
+
+#Fit the sparse smoother face.sparse
+#This call extracts the scores, as well
+fit_face &lt;- face.sparse(data, argvals.new = (-20:40), 
+                        calculate.scores = TRUE, 
+                        newdata = data, pve = 0.95)
+
+#Obtain the scores. Clustering could be done on the scores
+#This time we will conduct clustering on the predicted functions
+scores &lt;- fit_face$scores$scores
+
+data.h &lt;- data
+tnew &lt;- fit_face$argvals.new</code></pre>
+<p>Construct the predicted functions for each study participant. This is
+obtained from the <code>fpca.sparse</code> function fit.</p>
+<pre class="r"><code>#Extract the id vector and the vector of unique ids
+id &lt;- data.h$subj
+uid &lt;- unique(id)
+
+#Set the grid where to predict
+seq &lt;- -20:40
+k &lt;- length(seq)
+#Set the matrix that contains the predictions
+Pred_mat &lt;- matrix(rep(NA, n*k), ncol = k)
+
+#Predict every curve
+for(i in 1:n){ #Begin loop over study participants
+  #Select the i-th study participant  
+  sel &lt;- which(id == uid[i])
+  dati &lt;- data.h[sel,]
+  
+  #Set the frmework for data prediction
+  #With this framework it predicts at the grid and where observations were taken
+  #This is why vectors are longer than the length of the grid
+  dati_pred &lt;- data.frame(y = rep(NA, nrow(dati) + k ),
+                          argvals = c(rep(NA, nrow(dati)), seq), 
+                          subj = rep(dati$subj[1], nrow(dati) + k )
+  )
+  
+  #This is where the data is populated
+  dati_pred[1:nrow(dati),] &lt;- dati
+  yhat2 &lt;- predict(fit_face, dati_pred)
+  
+  #Extract just the predictions on the grid
+  Ord &lt;- nrow(dati) + 1:k
+  temp_pred &lt;- yhat2$y.pred[Ord]
+  Pred_mat[i,] &lt;- temp_pred
+}</code></pre>
+<p>Conduct clustering of predicted functions from fpca sparse</p>
+<pre class="r"><code>set.seed(202200228)
+cl_kmeans_CD4 &lt;- kmeans(Pred_mat, centers = 3)
+cl_ind_CD4 &lt;- cl_kmeans_CD4$cluster
+cl_cen_CD4 &lt;- cl_kmeans_CD4$centers</code></pre>
+<p>Plot the results of predicted CD4 curves together with the estimated
+clustering as well as centers of the clusters.</p>
+<pre class="r"><code>par(mar = c(4, 4, 1, 1))
+colset &lt;- c(&quot;#E69A8DFF&quot;, &quot;#F6D55C&quot;, &quot;#2A9D8F&quot;, &quot;#5F4B8BFF&quot;)
+plot(NULL, xlim = c(-20, 40), ylim = c(5, 8), xlab = &quot;Time from seroconversion (months)&quot;, 
+     ylab = &quot;Log CD4 counts&quot;, bty = &quot;n&quot;)
+
+for(i in 1:n){
+  lines(seq, Pred_mat[i,], col = colset[cl_ind_CD4[i]])
+}
+
+lines(seq, cl_cen_CD4[1,], col = &quot;darkred&quot;, type = &quot;l&quot;, lwd = 3)
+lines(seq, cl_cen_CD4[2,], col = &quot;darkorange&quot;, lwd = 3)
+lines(seq, cl_cen_CD4[3,], col = &quot;darkgreen&quot;, lwd = 3)</code></pre>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-34-1.png" width="90%" /></p>
+</div>
+<div id="clustering-nhanes-data" class="section level2">
+<h2>Clustering NHANES Data</h2>
+<p>We also consider the case of NHANES data. Here we use the same NHANES
+dataset as that introduced in Chapter 7. We take the study participant
+specific average physical activity at every time point (minute) of the
+day over eligible days. These average trajectories are clustered using
+K-means with nine clusters.</p>
+<pre class="r"><code>library(tidyverse)
+library(survival)
+## 
+## Attaching package: &#39;survival&#39;
+## The following object is masked from &#39;package:face&#39;:
+## 
+##     pspline
+library(mgcv)
+library(refund)
+
+df_cleaned &lt;- readRDS(&quot;./../../FDA-with-R/NHANES/data/nhanes_fda_with_r.rds&quot;)
+
+df_cluster &lt;- df_cleaned %&gt;% 
+  filter(!is.na(event))
+
+dat.MIMS &lt;- unclass(df_cluster$MIMS)
+
+#kmeans on selected number of clusters
+set.seed(100)
+kmeans.MIMS &lt;- kmeans(dat.MIMS, centers = 9) ## kmeans
+orders &lt;- order(-apply(kmeans.MIMS$centers, 1, max)) ## order by maximum MIMS
+percent &lt;- round(table(kmeans.MIMS$cluster) / nrow(dat.MIMS) * 100, 2)
+
+## correlation of each cluster with demographic variables
+clust_cor &lt;- matrix(NA, nrow = length(unique(kmeans.MIMS$cluster)), ncol = 5)
+clust_summary &lt;- matrix(NA, nrow = length(unique(kmeans.MIMS$cluster)) + 1, ncol = 5)
+colnames(clust_cor) &lt;- colnames(clust_summary) &lt;- c(&quot;Cluster&quot;, &quot;event&quot;, &quot;age&quot;, &quot;BMI&quot;, &quot;PIR&quot;)
+for(k in 1:length(unique(kmeans.MIMS$cluster))){
+  clust_ind &lt;- rep(0, nrow(dat.MIMS))
+  clust_ind[which(kmeans.MIMS$cluster == k)] &lt;- 1
+  df_cluster$clust_ind &lt;- clust_ind
+  clust_cor[k, 1] &lt;- clust_summary[k, 1] &lt;- k
+  clust_cor[k, 2:5] &lt;- round(tail(cor(df_cluster[, c(&quot;event&quot;, &quot;age&quot;, &quot;BMI&quot;, &quot;PIR&quot;, &quot;clust_ind&quot;)], 
+                                      use = &quot;complete.obs&quot;), 1)[1:4], 3)
+  clust_summary[k, 2:5] &lt;- round(apply(df_cluster[which(kmeans.MIMS$cluster == k), 
+                                            c(&quot;event&quot;, &quot;age&quot;, &quot;BMI&quot;, &quot;PIR&quot;)], 2, 
+                                       function(x) mean(x, na.rm = TRUE)), 3)
+}
+clust_summary[nrow(clust_summary), 1] &lt;- 0
+clust_summary[nrow(clust_summary), 2:5] &lt;- round(apply(df_cluster[, c(&quot;event&quot;, &quot;age&quot;, &quot;BMI&quot;, &quot;PIR&quot;)], 
+                                                       2, function(x) mean(x, na.rm = TRUE)), 3)
+
+#reorder cluster by age
+par(mfrow = c(3, 3), mar = c(4, 4, 2, 1))
+for(i in 1:nrow(kmeans.MIMS$centers)){
+  plot(kmeans.MIMS$centers[order(clust_summary[1:9, &quot;age&quot;])[i],], type = &quot;l&quot;, 
+       ylim = c(0, max(kmeans.MIMS$centers)),
+       # ylim = c(0, 30), 
+       xaxt = &quot;n&quot;, ylab = &quot;&quot;, xlab = &quot;&quot;,
+       main = paste0(&quot;Cluster &quot;, i, &quot;, &quot;, percent[order(clust_summary[1:9, &quot;age&quot;])[i]], &quot;%&quot;) )
+  axis(side = 1, at = c(1, 6, 12, 18, 23)*60, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))
+  mtext(side = 1, text = &quot;Time of day&quot;, line = 2.4, cex = 0.8)
+  mtext(side = 2, text = &quot;MIMS&quot;, line = 2, cex = 0.8)
+}</code></pre>
+<p><img src="chapter_09_files/figure-html/unnamed-chunk-35-1.png" width="90%" /></p>
+<pre class="r"><code>
+clust_summary[order(clust_summary[1:9, &quot;age&quot;]),]
+##       Cluster event    age    BMI   PIR
+##  [1,]       8 0.022 33.904 27.340 1.850
+##  [2,]       5 0.046 35.362 29.029 1.772
+##  [3,]       7 0.020 40.975 27.502 1.894
+##  [4,]       6 0.053 41.644 28.726 2.275
+##  [5,]       1 0.027 43.994 27.803 2.436
+##  [6,]       3 0.039 49.059 28.084 2.548
+##  [7,]       4 0.065 52.739 29.342 2.939
+##  [8,]       2 0.155 59.261 30.279 2.666
+##  [9,]       9 0.349 60.989 30.565 2.165</code></pre>
+</div>
+
+<br><br>
+<footer>
+  <p class="copyright text-muted" align="center">Copyright &copy; 2023</p>
+</footer>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
