@@ -259,7 +259,7 @@ Note that even with $80$\% missing data, the estimated eigenvectors using fPCA (
 
 ## Application to NHANES
 
-(Ask Andrew to fill in)
+(Waiting for Andrew to fill in)
 
 
 ## Sparse FPCA of the CONTENT data set
