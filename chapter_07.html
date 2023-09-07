@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Chapter 7</title>
+
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
+<script defer src="https://use.fontawesome.com/releases/v5.0.3/js/all.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.0/js/v4-shims.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics 
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151578452-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-151578452-1');
+</script>
+-->
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">FDA with R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="overview.html">Overview</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Datasets
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="dataset_nhanes.html">NHANES</a>
+    </li>
+    <li>
+      <a href="dataset_content.html">Content</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Chapters
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="chapter_01.html">Chapter 1</a>
+    </li>
+    <li>
+      <a href="chapter_02.html">Chapter 2</a>
+    </li>
+    <li>
+      <a href="chapter_03.html">Chapter 3: FPCA</a>
+    </li>
+    <li>
+      <a href="chapter_04.html">Chapter 4: SoFR</a>
+    </li>
+    <li>
+      <a href="chapter_05.html">Chapter 5: FoSR</a>
+    </li>
+    <li>
+      <a href="chapter_06.html">Chapter 6: FoFR</a>
+    </li>
+    <li>
+      <a href="chapter_07.html">Chapter 7</a>
+    </li>
+    <li>
+      <a href="chapter_08.html">Chapter 8</a>
+    </li>
+    <li>
+      <a href="chapter_09.html">Chapter 9</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="scripts.html">Scripts</a>
+</li>
+<li>
+  <a href="https://github.com/FDAwithR">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Chapter 7</h1>
+
+</div>
+
+
+<div id="exploratory-analysis-of-the-survival-data-in-nhanes"
+class="section level2">
+<h2>Exploratory Analysis of the Survival Data in NHANES</h2>
+<p>We first illustrate the survival data analysis concepts using
+examples from the NHANES data collected between 2011-2014.</p>
+<pre class="r"><code>library(tidyverse)
+library(survival)
+library(mgcv)
+library(refund)
+
+df_cleaned &lt;- readRDS(&quot;./../../FDA-with-R/NHANES/data/nhanes_fda_with_r.rds&quot;)
+
+df_fig71 &lt;- df_cleaned %&gt;% 
+  mutate(time_yr = round(time / 12, 2)) %&gt;%
+  select(SEQN, time = time_yr, event, age, BMI, race, gender, CHD) %&gt;%
+  filter(SEQN %in% c(64759, 70962, 73561, 75630, 77244, 82820))
+
+#get survival data with functional predictors
+nhanes_df_surv &lt;- df_cleaned %&gt;% 
+  mutate(time_yr = round(time / 12, 2)) %&gt;%
+  filter(!is.na(event)) %&gt;%
+  select(SEQN, time = time_yr, event, age, BMI, race, gender, CHD, TMIMS, MIMS)</code></pre>
+<p>Below is the code to obtain a sample of six participants in NHANES
+2011-2014. The code then reproduce Figure 7.2 of the book.</p>
+<pre class="r"><code>df_sample &lt;- df_fig71
+df_sample$MIMS &lt;- df_cleaned$MIMS[which(df_cleaned$SEQN %in% df_sample$SEQN),]
+str(df_sample)
+## &#39;data.frame&#39;:    6 obs. of  9 variables:
+##  $ SEQN  : num  64759 70962 73561 75630 77244 ...
+##  $ time  : num  3.33 8.17 0.75 6.33 6.58 1.5
+##  $ event : int  1 0 1 0 0 1
+##  $ age   : num  80 40 73 59 42 78
+##  $ BMI   : num  24.8 45 19.7 28.3 25.9 26.9
+##  $ race  : Factor w/ 6 levels &quot;Mexican American&quot;,..: 3 4 3 1 4 3
+##  $ gender: Factor w/ 2 levels &quot;Male&quot;,&quot;Female&quot;: 1 1 2 2 1 1
+##  $ CHD   : Factor w/ 4 levels &quot;No&quot;,&quot;Yes&quot;,&quot;Refused&quot;,..: 1 1 1 1 1 1
+##  $ MIMS  : &#39;AsIs&#39; num [1:6, 1:1440] 0.0969 1.7742 0.7577 10.6671 4.459 ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:6] &quot;64759&quot; &quot;70962&quot; &quot;73561&quot; &quot;75630&quot; ...
+##   .. ..$ : chr [1:1440] &quot;MIN0001&quot; &quot;MIN0002&quot; &quot;MIN0003&quot; &quot;MIN0004&quot; ...
+
+#plot NHANES sample data
+layout(matrix(c(1:21), 7, 3, byrow = FALSE), widths = c(1, 2, 4))
+
+#title of other info
+par(mar = c(0,0,0,0))
+plot(c(0, 1), c(0, 1), ann = F, bty = &#39;n&#39;, type = &#39;n&#39;, xaxt = &#39;n&#39;, yaxt = &#39;n&#39;)
+text(x = 0.45, y = 0.5, paste(&quot;SEQN&quot;), cex = 1.8, col = &quot;black&quot;, font = 2)
+#other info
+par(mar = c(1,0,1,1))
+for(i in 1:6){
+  plot(c(0, 1), c(0, 1), ann = F, bty = &#39;n&#39;, type = &#39;n&#39;, xaxt = &#39;n&#39;, yaxt = &#39;n&#39;)
+  mtext(side = 4, text = df_sample$SEQN[i], line = -6.5, cex = 1.2, las = 1)
+}
+
+#title of predictors
+par(mar = c(0,0,0,0))
+plot(c(0, 1), c(0, 1), ann = F, bty = &#39;n&#39;, type = &#39;n&#39;, xaxt = &#39;n&#39;, yaxt = &#39;n&#39;)
+text(x = 0.45, y = 0.5, paste(&quot;Predictors&quot;), cex = 1.8, col = &quot;black&quot;, font = 2)
+#other info
+par(mar = c(1,0,1,1))
+for(i in 1:6){
+  plot(c(0, 1), c(0, 1), ann = F, bty = &#39;n&#39;, type = &#39;n&#39;, xaxt = &#39;n&#39;, yaxt = &#39;n&#39;)
+  mtext(side = 4, text = paste0(&quot;age: &quot;, df_sample$age[i],
+                                &quot;, gender: &quot;, df_sample$gender[i],
+                                &quot;, BMI: &quot;, df_sample$BMI[i],
+                                &quot;, \n&quot;, df_sample$race[i],
+                                &quot;, CHD: &quot;, df_sample$CHD[i]), line = -17, cex = 0.8, las = 1)
+}
+
+#title of survival data
+par(mar = c(0,0,0,0))
+plot(c(0, 1), c(0, 1), ann = F, bty = &#39;n&#39;, type = &#39;n&#39;, xaxt = &#39;n&#39;, yaxt = &#39;n&#39;)
+text(x = 0.45, y = 0.5, paste(&quot;Time to event&quot;), cex = 1.8, col = &quot;black&quot;, font = 2)
+#survival data
+par(mar = c(0.2,0.5,0.2,0.5))
+for(j in 1:6){
+  if(df_sample$event[j] == 1){
+    plot(x = c(0, df_sample$time[j]), y = c(0, 0), type = &quot;l&quot;, xlim = c(0, 8.7), xaxt = &quot;n&quot;, yaxt = &quot;n&quot;, bty = &quot;n&quot;, col = &quot;red&quot;, lwd = 2)
+    points(x = df_sample$time[j], y = 0,  pch = 4, col = &quot;red&quot;, cex = 2)
+    text(df_sample$time[j], 0, labels = paste0(format(round(df_sample$time[j], 2), nsmall = 2), &quot; years&quot;), cex = 1.5, pos = 3, col = &quot;red&quot;)
+  }else{
+    plot(x = c(0, df_sample$time[j]), y = c(0, 0), type = &quot;l&quot;, xlim = c(0, 8.7), xaxt = &quot;n&quot;, yaxt = &quot;n&quot;, bty = &quot;n&quot;, lwd = 2)
+    points(x = df_sample$time[j], y = 0, pch = 16, cex = 2)
+    text(df_sample$time[j], 0, labels = paste0(format(round(df_sample$time[j], 2), nsmall = 2), &quot; years&quot;), cex = 1.5, pos = 3)
+  }
+  if(j == 1){
+    legend(4.85, 1.3, legend=c(&quot;Censored&quot;, &quot;Deceased&quot;),
+           col=c(&quot;black&quot;, &quot;red&quot;), lty=1, lwd = 2, cex=1.5, box.lty=0, y.intersp=1.3)
+  }
+}</code></pre>
+<p><img src="chapter_07_files/figure-html/unnamed-chunk-2-1.png" width="90%" /></p>
+<p>Instead of only focusing on the survival outcomes, we now incorporate
+the functional predictors into the data set. The code below shows how to
+reproduce Figure 7.4 of the book.</p>
+<pre class="r"><code>layout(matrix(c(1:21), 7, 3, byrow = FALSE), widths = c(1, 2, 4))
+
+#title of other info
+par(mar = c(0,0,0,0))
+plot(c(0, 1), c(0, 1), ann = F, bty = &#39;n&#39;, type = &#39;n&#39;, xaxt = &#39;n&#39;, yaxt = &#39;n&#39;)
+text(x = 0.45, y = 0.5, paste(&quot;SEQN&quot;), cex = 1.8, col = &quot;black&quot;, font = 2)
+#other info
+par(mar = c(1,0,1,1))
+for(i in 1:6){
+  plot(c(0, 1), c(0, 1), ann = F, bty = &#39;n&#39;, type = &#39;n&#39;, xaxt = &#39;n&#39;, yaxt = &#39;n&#39;)
+  mtext(side = 4, text = df_sample$SEQN[i], line = -6.5, cex = 1.2, las = 1)
+}
+
+#title of predictors
+par(mar = c(0,0,0,0))
+plot(c(0, 1), c(0, 1), ann = F, bty = &#39;n&#39;, type = &#39;n&#39;, xaxt = &#39;n&#39;, yaxt = &#39;n&#39;)
+text(x = 0.45, y = 0.5, paste(&quot;Predictors&quot;), cex = 1.8, col = &quot;black&quot;, font = 2)
+#other info
+par(mar = c(2,0,1,1))
+for(i in 1:6){
+  plot(df_sample$MIMS[i,], type = &quot;l&quot;, xaxt = &quot;n&quot;, xlab = &quot;&quot;, bty = &quot;n&quot;, yaxt = &quot;n&quot;)
+  axis(side = 1, at = c(1, 72, 144, 216, 288)*5, labels = c(&quot;00:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;24:00&quot;), padj = -1)
+  mtext(side = 4, text = paste0(&quot;age: &quot;, df_sample$age[i], &quot;, ...\n&quot;), line = -20, cex = 0.8, las = 1)
+}
+
+#title of survival data
+par(mar = c(0,0,0,0))
+plot(c(0, 1), c(0, 1), ann = F, bty = &#39;n&#39;, type = &#39;n&#39;, xaxt = &#39;n&#39;, yaxt = &#39;n&#39;)
+text(x = 0.5, y = 0.5, paste(&quot;Time to event&quot;), cex = 2, col = &quot;black&quot;, font = 2)
+#survival data
+par(mar = c(0.2,0.5,0.2,0.5))
+for(j in 1:6){
+  if(df_sample$event[j] == 1){
+    plot(x = c(0, df_sample$time[j]), y = c(0, 0), type = &quot;l&quot;, xlim = c(0, 8.7), xaxt = &quot;n&quot;, yaxt = &quot;n&quot;, bty = &quot;n&quot;, col = &quot;red&quot;, lwd = 2)
+    points(x = df_sample$time[j], y = 0,  pch = 4, col = &quot;red&quot;, cex = 2)
+    text(df_sample$time[j], 0, labels = paste0(format(round(df_sample$time[j], 2), nsmall = 2), &quot; years&quot;), cex = 1.5, pos = 3, col = &quot;red&quot;)
+  }else{
+    plot(x = c(0, df_sample$time[j]), y = c(0, 0), type = &quot;l&quot;, xlim = c(0, 8.7), xaxt = &quot;n&quot;, yaxt = &quot;n&quot;, bty = &quot;n&quot;, lwd = 2)
+    points(x = df_sample$time[j], y = 0, pch = 16, cex = 2)
+    text(df_sample$time[j], 0, labels = paste0(format(round(df_sample$time[j], 2), nsmall = 2), &quot; years&quot;), cex = 1.5, pos = 3)
+  }
+  if(j == 1){
+    legend(4.85, 1.3, legend=c(&quot;Censored&quot;, &quot;Deceased&quot;),
+           col=c(&quot;black&quot;, &quot;red&quot;), lty=1, lwd = 2, cex=1.5, box.lty=0, y.intersp=1.3)
+  }
+}</code></pre>
+<p><img src="chapter_07_files/figure-html/unnamed-chunk-3-1.png" width="90%" /></p>
+<div id="kaplan-meier-estimators" class="section level3">
+<h3>Kaplan-Meier Estimators</h3>
+<p>We further explore the NHANES 2011-2014 survival data by
+investigating the Kaplan-Meyer (KM) estimators of the survival function
+for specific subgroups. The code below reproduce Figure 7.5 of the book
+which displays results for different age groups at baseline.</p>
+<pre class="r"><code>library(survival)
+library(survminer)
+library(gridExtra)
+
+nhanes_df_surv$Age_cat &lt;- cut(nhanes_df_surv$age, 
+                          breaks = c(20, 50, 80),
+                          include.lowest = TRUE)
+
+#set PA group within each age group
+TMIMS_cat_age &lt;- rep(NA, nrow(nhanes_df_surv))
+for(age_group in c(&quot;[20,50]&quot;, &quot;(50,80]&quot;)){
+  TMIMS_cat_age[which(nhanes_df_surv$Age_cat == age_group)] &lt;- 
+    cut(nhanes_df_surv$TMIMS[which(nhanes_df_surv$Age_cat == age_group)], 
+        breaks = quantile(nhanes_df_surv$TMIMS[which(nhanes_df_surv$Age_cat == age_group)], c(0, 0.333, 0.667, 1)), 
+        labels = c(&quot;low TMIMS&quot;, &quot;medium TMIMS&quot;, &quot;high TMIMS&quot;),
+        include.lowest = TRUE)
+}
+nhanes_df_surv$TMIMS_cat_age &lt;- factor(TMIMS_cat_age, labels = c(&quot;low TMIMS&quot;, &quot;medium TMIMS&quot;, &quot;high TMIMS&quot;))
+rm(age_group, TMIMS_cat_age)
+
+
+#draw KM curves by TMIMS category
+##create survival object
+nhanes_df_surv$SurvObj &lt;- with(nhanes_df_surv, Surv(time, event))
+
+##TMIMS by age
+TMIMS.age.km.plot &lt;- list()
+for(age_group in c(&quot;[20,50]&quot;, &quot;(50,80]&quot;)){
+  TMIMS.age.km &lt;- survfit(SurvObj ~ TMIMS_cat_age, data = nhanes_df_surv %&gt;% filter(Age_cat == age_group))
+  TMIMS.age.km.plot[[age_group]] &lt;- ggsurvplot(fit = TMIMS.age.km, 
+                                             data = nhanes_df_surv, 
+                                             risk.table = TRUE,
+                                             pval = TRUE, 
+                                             conf.int = FALSE, 
+                                             break.time.by = 1, 
+                                             ggtheme = theme_minimal(), 
+                                             risk.table.y.text.col = TRUE,
+                                             risk.table.y.text = FALSE, 
+                                             legend.title = &quot;PA Level&quot;,
+                                             legend.labs = c(&quot;low&quot;, &quot;medium&quot;, &quot;high&quot;),
+                                             title = paste0(&quot;Age: &quot;, age_group),
+                                             xlim = c(0, 8.2),
+                                             ylim = c(0.5, 1),
+                                             pval.size = 6,
+                                             pval.coord = c(0.58, 0.57),
+                                             fontsize = 4.3)
+  TMIMS.age.km.plot[[age_group]]$plot &lt;- TMIMS.age.km.plot[[age_group]]$plot +
+    theme(legend.text = element_text(size = 15, color = &quot;black&quot;),
+          legend.title = element_text(size = 15, color = &quot;black&quot;),
+          title = element_text(size = 14, color = &quot;black&quot;),
+          axis.title.x = element_text(size = 15)) +
+    xlim(0, 8.2)
+  TMIMS.age.km.plot[[age_group]]$table &lt;- TMIMS.age.km.plot[[age_group]]$table +
+    theme(axis.title.x = element_text(size = 15),
+          axis.title.y = element_text(size = 15),
+          title = element_text(size = 14))
+}
+
+grid.arrange(TMIMS.age.km.plot$`[20,50]`$plot, 
+             TMIMS.age.km.plot$`(50,80]`$plot, 
+             TMIMS.age.km.plot$`[20,50]`$table, 
+             TMIMS.age.km.plot$`(50,80]`$table,
+             heights = c(3, 1),
+             nrow = 2)</code></pre>
+<p><img src="chapter_07_files/figure-html/unnamed-chunk-4-1.png" width="90%" /></p>
+</div>
+<div id="results-for-the-standard-cox-models" class="section level3">
+<h3>Results for the Standard Cox Models</h3>
+<p>We now show how to fit standard Cox models. The results are shown in
+Table 7.1 of the book.</p>
+<pre class="r"><code>df_cleaned &lt;- nhanes_df_surv %&gt;%
+  filter(age &gt;= 50 &amp; !is.na(BMI) &amp; !is.na(race) &amp; !is.na(gender) &amp; !is.na(CHD) &amp; !is.na(TMIMS) 
+         &amp; CHD %in% c(&quot;Yes&quot;, &quot;No&quot;))
+
+fit_M1 &lt;- coxph(Surv(time, event) ~ age + gender + race, data = df_cleaned)
+summary(fit_M1, conf.int = FALSE)
+## Call:
+## coxph(formula = Surv(time, event) ~ age + gender + race, data = df_cleaned)
+## 
+##   n= 4180, number of events= 698 
+## 
+##                             coef exp(coef)  se(coef)      z Pr(&gt;|z|)    
+## age                     0.102206  1.107612  0.004884 20.926  &lt; 2e-16 ***
+## genderFemale           -0.272688  0.761330  0.076073 -3.585 0.000338 ***
+## raceOther Hispanic     -0.169661  0.843951  0.216029 -0.785 0.432242    
+## raceNon-Hispanic White  0.210762  1.234619  0.163065  1.293 0.196181    
+## raceNon-Hispanic Black  0.180265  1.197534  0.171762  1.050 0.293947    
+## raceNon-Hispanic Asian -0.389520  0.677382  0.229697 -1.696 0.089925 .  
+## raceOther Race          0.543402  1.721854  0.300130  1.811 0.070210 .  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Concordance= 0.754  (se = 0.01 )
+## Likelihood ratio test= 626.7  on 7 df,   p=&lt;2e-16
+## Wald test            = 529.1  on 7 df,   p=&lt;2e-16
+## Score (logrank) test = 630.8  on 7 df,   p=&lt;2e-16
+
+fit_M2 &lt;- coxph(Surv(time, event) ~ age + gender + race + BMI + CHD, data = df_cleaned)
+summary(fit_M2, conf.int = FALSE)
+## Call:
+## coxph(formula = Surv(time, event) ~ age + gender + race + BMI + 
+##     CHD, data = df_cleaned)
+## 
+##   n= 4180, number of events= 698 
+## 
+##                             coef exp(coef)  se(coef)      z Pr(&gt;|z|)    
+## age                     0.098356  1.103356  0.004982 19.743  &lt; 2e-16 ***
+## genderFemale           -0.214727  0.806762  0.077161 -2.783  0.00539 ** 
+## raceOther Hispanic     -0.163071  0.849531  0.216077 -0.755  0.45044    
+## raceNon-Hispanic White  0.182709  1.200465  0.163155  1.120  0.26278    
+## raceNon-Hispanic Black  0.209753  1.233373  0.171802  1.221  0.22212    
+## raceNon-Hispanic Asian -0.412425  0.662043  0.231816 -1.779  0.07522 .  
+## raceOther Race          0.519289  1.680832  0.300163  1.730  0.08363 .  
+## BMI                    -0.005780  0.994237  0.006638 -0.871  0.38391    
+## CHDYes                  0.567735  1.764266  0.103012  5.511 3.56e-08 ***
+## CHDRefused                    NA        NA  0.000000     NA       NA    
+## CHDDon&#39;t know                 NA        NA  0.000000     NA       NA    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Concordance= 0.76  (se = 0.01 )
+## Likelihood ratio test= 654.3  on 9 df,   p=&lt;2e-16
+## Wald test            = 573.6  on 9 df,   p=&lt;2e-16
+## Score (logrank) test = 690.5  on 9 df,   p=&lt;2e-16
+
+fit_M3 &lt;- coxph(Surv(time, event) ~ age + gender + race + BMI + CHD + TMIMS, data = df_cleaned)
+summary(fit_M3, conf.int = FALSE)
+## Call:
+## coxph(formula = Surv(time, event) ~ age + gender + race + BMI + 
+##     CHD + TMIMS, data = df_cleaned)
+## 
+##   n= 4180, number of events= 698 
+## 
+##                              coef  exp(coef)   se(coef)       z Pr(&gt;|z|)    
+## age                     0.0709039  1.0734781  0.0052525  13.499  &lt; 2e-16 ***
+## genderFemale           -0.0599678  0.9417948  0.0780030  -0.769 0.442019    
+## raceOther Hispanic     -0.1494232  0.8612046  0.2160182  -0.692 0.489116    
+## raceNon-Hispanic White  0.0717456  1.0743820  0.1626740   0.441 0.659185    
+## raceNon-Hispanic Black  0.0837017  1.0873045  0.1718321   0.487 0.626178    
+## raceNon-Hispanic Asian -0.4691413  0.6255392  0.2316202  -2.025 0.042818 *  
+## raceOther Race          0.4365582  1.5473723  0.3000154   1.455 0.145636    
+## BMI                    -0.0248345  0.9754714  0.0067596  -3.674 0.000239 ***
+## CHDYes                  0.4405216  1.5535173  0.1033900   4.261 2.04e-05 ***
+## CHDRefused                     NA         NA  0.0000000      NA       NA    
+## CHDDon&#39;t know                  NA         NA  0.0000000      NA       NA    
+## TMIMS                  -0.0001674  0.9998326  0.0000135 -12.393  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Concordance= 0.783  (se = 0.009 )
+## Likelihood ratio test= 811.6  on 10 df,   p=&lt;2e-16
+## Wald test            = 704.6  on 10 df,   p=&lt;2e-16
+## Score (logrank) test = 826.3  on 10 df,   p=&lt;2e-16</code></pre>
+</div>
+</div>
+<div id="cox-regression-with-baseline-functional-predictors"
+class="section level2">
+<h2>Cox Regression with Baseline Functional Predictors</h2>
+<div id="linear-functional-cox-model" class="section level3">
+<h3>Linear Functional Cox Model</h3>
+<p>(Waiting for Andrew to fill in)</p>
+</div>
+<div id="smooth-effects-of-traditional-and-functional-predictors"
+class="section level3">
+<h3>Smooth Effects of Traditional and Functional Predictors</h3>
+<p>(Waiting for Andrew to fill in)</p>
+</div>
+<div id="additive-functional-cox-model" class="section level3">
+<h3>Additive Functional Cox Model</h3>
+<p>Although the linear functional Cox model provides an efficient and
+reasonable estimation framework to analyze the association between
+baseline functional predictors and survival outcome, one limitation is
+that it only allows a linear association between the functional
+predictor at each location of the domain and the log hazard.</p>
+<p>The additive functional Cox model replaces the linear functional
+<span class="math inline">\(\int_S W_i(s)\beta(s)ds\)</span> model with
+the functional term <span class="math inline">\(\int_S F\{s,
+W_i(s)\}ds\)</span>, where <span class="math inline">\(F(\cdot,
+\cdot)\)</span> is an unknown bivariate smooth function to be estimated.
+The model becomes</p>
+<p><span class="math display">\[\log
+\lambda_i\{t|\mathbf{Z}_i,W_i(\cdot)\} =
+    \log\{\lambda_0(t)\} + \mathbf{Z}_i^t \boldsymbol{\gamma} + \int_S
+F\{s, W_i(s)\}ds\;. \]</span></p>
+<p>The code to fit an additive functional Cox model using the mgcv
+package and reproduce Figure 7.11 of the book is shown below.</p>
+<pre class="r"><code>df_cleaned &lt;- nhanes_df_surv %&gt;%
+  filter(age &gt;= 50 &amp; !is.na(age) &amp; !is.na(BMI) &amp; !is.na(gender) &amp; !is.na(CHD))
+
+nS &lt;- ncol(df_cleaned$MIMS)
+N &lt;- nrow(df_cleaned)
+sind &lt;- seq(0, 1, len = nS)
+lind &lt;- rep(1/nS, nS)
+df_cleaned$smat &lt;- I(matrix(rep(sind, N), N, nS, byrow=TRUE))
+df_cleaned$lmat &lt;- I(matrix(rep(lind, N), N, nS, byrow=TRUE))
+
+#get physical activity quantiles
+df_cleaned$MIMS_sm &lt;- I(fpca.face(unclass(df_cleaned$MIMS))$Yhat)
+df_cleaned$MIMS_q &lt;- I(apply(df_cleaned$MIMS_sm, 2, function(y) ecdf(y)(y)))
+
+#fit AFCM
+fit_afcm &lt;- gam(time ~ age + BMI + gender + CHD +
+                  ti(MIMS_q, smat, by = lmat, bs = c(&quot;cr&quot;, &quot;cc&quot;), k = c(5, 5), mc = c(TRUE, FALSE)),
+                weights = event, data = df_cleaned, family = cox.ph())
+
+#obtain estimated surface
+par(mar = c(4.5, 4, 1, 1) + 0.1)
+vis.gam(fit_afcm, view = c(&quot;smat&quot;, &quot;MIMS_q&quot;), plot.type = &quot;contour&quot;, color = &quot;topo&quot;, 
+        xaxt = &quot;n&quot;, 
+        main = &quot;&quot;,
+        xlab = &quot;Time of Day&quot;, ylab = &quot;Physical Activity Quantile&quot;)
+axis(side = 1, at = c(1, 6, 12, 18, 23)/24, labels = c(&quot;01:00&quot;, &quot;06:00&quot;, &quot;12:00&quot;, &quot;18:00&quot;, &quot;23:00&quot;))</code></pre>
+<p><img src="chapter_07_files/figure-html/unnamed-chunk-6-1.png" width="90%" /></p>
+</div>
+</div>
+
+<br><br>
+<footer>
+  <p class="copyright text-muted" align="center">Copyright &copy; 2023</p>
+</footer>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
