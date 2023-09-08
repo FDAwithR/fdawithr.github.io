@@ -13,7 +13,7 @@
 
 <title>Chapter 4: SoFR</title>
 
-<script src="site_libs/header-attrs-2.16/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -29,14 +29,14 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
 <script defer src="https://use.fontawesome.com/releases/v5.0.3/js/all.js"></script>
 <script defer src="https://use.fontawesome.com/releases/v5.0.0/js/v4-shims.js"></script>
@@ -198,8 +198,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -207,16 +207,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -410,28 +403,41 @@ div.tocify {
 </div>
 
 
-<div id="ch-intro" class="section level2">
-<h2>Ch Intro</h2>
-<p>Thinking of complete functions as individual data points, which is
-the basic conceptual framework for FDA, suggests the need to include
-these observations in standard analyses. Regression models with scalar
-outcomes avoid reducing functional predictors to single-number summaries
-or treating each observed grid point separately. Instead, this class of
-approaches generally seeks to smooth estimate coefficient functions that
-flexibly capture the time-dependent structure in the associations.</p>
-</div>
-<div id="motivating-scalar-on-function-regression"
-class="section level2">
-<h2>Motivating Scalar-on-Function Regression</h2>
-<p>The goal of this Chapter is to introduce FDA methods for modeling the
-effect of functional predictors on scalar outcomes. We start with a
-direct but non-functional approach which serves to build intuition for
-later functional methods. This approach, where bin-level averages are
-used as predictors in standard regression models, is useful in itself as
-an exploratory and interpretable analysis.</p>
-<pre class="r"><code># import and organize the data
-
-nhanes_df = 
+<p>This book Chapter and the code in this page considers functions as
+predictors in models with scalar outcomes. We focus on the linear
+scalar-on-function regression (SoFR), starting the general motivation
+and building intuition using exploratory analyses and careful
+interpretation of coefficients. Methods using unpenalized basis
+expansions are implemented in traditional software, while estimation and
+inference for SoFR using penalized splines is conducted using the
+<code>refund</code> and <code>mgcv</code> packages.</p>
+<div id="motivation-and-eda" class="section level2">
+<h2>Motivation and EDA</h2>
+<p>Much of this page will use data from the NHANES to illustrate
+techniques for modeling scalar outcomes using functional predictors. In
+particular, we will use MIMS profiles as functional predictors of body
+mass index (BMI) as a continuous outcome. We will begin with a simple
+approach and show how this is related to more general linear
+scalar-on-function regression models. For each participant, we will
+obtain the average MIMS value in each of 12 two-hour bins and then use
+these bin averages as predictors in a standard linear regression model.
+This has the advantage of allowing some degree of flexibility in the
+association between MIMS values and BMI over the course of the day,
+while not requiring non-standard modeling techniques or interpretations.
+Indeed, in our experience this kind of approach can be a good starting
+point in collaborative settings or serve as a useful check on results
+from more complex approaches.</p>
+<p>The code chunk below imports and organizes the processed NHANES data
+that will be used in this page. After importing the data, we create a
+new variable which indicates whether the participant died within two
+years of their inclusion in the study; retain only those variables in
+the processed NHANES data that will be relevant for this example; rename
+<code>MIMS</code> and <code>MIMS_sd</code> to include the suffix
+<code>_mat</code> to indicate these variables are stored as matrices;
+restrict the dataset to participants 25 years of age or older; and
+ensure that the resulting dataframe has the class
+<code>tibble</code>.</p>
+<pre class="r"><code>nhanes_df = 
   readRDS(
     here::here(&quot;data&quot;, &quot;nhanes_fda_with_r.rds&quot;)) %&gt;% 
   mutate(
@@ -442,6 +448,11 @@ nhanes_df =
   filter(age &gt;= 25) %&gt;% 
   drop_na(BMI) %&gt;% 
   tibble()</code></pre>
+<p>In the next code chunk, we convert <code>MIMS_mat</code> and
+<code>MIMS_mat_sd</code> to <code>tidyfun</code> objects using
+<code>tfd()</code>using the <code>arg</code> argument in
+<code>tfd()</code> to be explicit about the grid over which functions
+are observed.</p>
 <pre class="r"><code>nhanes_df = 
   nhanes_df %&gt;% 
   mutate(
@@ -449,7 +460,19 @@ nhanes_df =
     MIMS_tf = tfd(MIMS_tf, arg = seq(1/60, 24, length = 1440)),
     MIMS_sd_tf = matrix(MIMS_sd_mat, ncol = 1440),
     MIMS_sd_tf = tfd(MIMS_sd_tf, arg = seq(1/60, 24, length = 1440)))</code></pre>
-<p>Doing 12 2-hour bins.</p>
+<p>The next code chunk contains two components. The first component
+creates a new data frame containing average MIMS values in two-hour bins
+by computing the rolling mean of each <code>MIMS_tf</code> observation
+with a bin width of 120 minutes, and then evaluating that rolling mean
+at hours <span class="math inline">\(1, 3, ..., 23\)</span>. The result
+is saved as <code>MIMS_binned</code>, and for the next step only
+<code>BMI</code> and <code>MIMS_binned</code> are retained.</p>
+<p>The second component of this code chunk fits the regression of
+<code>BMI</code> on these bin averages. The <code>tf_spread()</code>
+function produces a wide-format dataframe with columns corresponding to
+each bin average in the <code>MIMS_binned</code> variable, and the call
+to <code>lm()</code> regresses <code>BMI</code> on all of these
+averages.</p>
 <pre class="r"><code>nhanes_bin_df = 
   nhanes_df %&gt;% 
   mutate(
@@ -459,22 +482,50 @@ nhanes_df =
   select(BMI, MIMS_binned) 
 ## setting fill = &#39;extend&#39; for start/end values.
 ## Warning: There was 1 warning in `mutate()`.
-## ℹ In argument: `MIMS_binned = tf_smooth(MIMS_tf, method
-##   = &quot;rollmean&quot;, k = 120, align = &quot;center&quot;)`.
+## ℹ In argument: `MIMS_binned = tf_smooth(MIMS_tf, method = &quot;rollmean&quot;, k = 120,
+##   align = &quot;center&quot;)`.
 ## Caused by warning in `tf_smooth.tfd()`:
 ## ! non-equidistant arg-values in &#39;MIMS_tf&#39; ignored by rollmean.
 
 fit_binned = 
   lm(BMI ~ ., 
      data = nhanes_bin_df %&gt;% tf_spread(MIMS_binned))</code></pre>
-<pre class="r"><code>nhanes_bin_df %&gt;% 
+<p>We now show the binned predictors and the resulting coefficients
+using plotting tools in <a
+href="https://tidyfun.github.io/tidyfun/"><code>tidyfun</code></a>. The
+first plot generated in the code chunk below shows the
+<code>MIMS_binned</code> variable for the first 500 rows (other data
+points are omitted to prevent overplotting). The second plot shows the
+coefficients for each bin averaged MIMS values. We create this plot by
+tidying the model fit stored in <code>fit_binned</code> and omitting the
+intercept term. An <code>hour</code> variable is then created by
+manipulating the coefficient names, and upper and lower 95% confidence
+bounds for each hour are obtained by adding and subtracting 1.96 times
+the standard error from the estimates. We plot the estimates as lines
+and points, and add error bars for the confidence intervals. The two
+panels are combined using the <a
+href="https://github.com/thomasp85/patchwork"><code>patchwork</code></a>
+package.</p>
+<p>The binned MIMS profiles show expected diurnal patterns of activity,
+where there is generally lower activity in the night and higher activity
+in the day. The results of the regression using bin-averaged MIMS values
+as predictors for BMI (right panel) are consistent with these observed
+trends. Coefficients for bin averages during the day are generally below
+zero and some (2-hour intervals between 8-10AM and 6-8PM) are
+statistically significant.</p>
+<pre class="r"><code>ggp_binned = 
+  nhanes_bin_df %&gt;% 
   slice(1:500) %&gt;% 
   ggplot(aes(y = MIMS_binned, color = BMI)) + 
   geom_spaghetti() + 
-  geom_meatballs()</code></pre>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-3-1.png" width="90%" /></p>
-<pre class="r"><code>
-fit_binned %&gt;% 
+  geom_meatballs() + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Binned MIMS&quot;)
+
+ggp_coefs = 
+  fit_binned %&gt;% 
   broom::tidy() %&gt;% 
   filter(term != &quot;(Intercept)&quot;) %&gt;% 
   mutate(
@@ -484,30 +535,26 @@ fit_binned %&gt;%
     lb = estimate - 1.96 * std.error) %&gt;% 
   ggplot(aes(x = hour, y = estimate)) + 
   geom_point() + geom_path() +
-  geom_errorbar(aes(ymin = lb, ymax = ub), width = .5)</code></pre>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-3-2.png" width="90%" /></p>
-<p>Not shown: code plotting and saving results</p>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-4-1.png" width="90%" /></p>
-<p>Binned vs daily average, comparing adjusted R squared</p>
-<pre class="r"><code>nhanes_df %&gt;% 
-  mutate(mean_mims = tf_integrate(MIMS_tf)) %&gt;% 
-  lm(BMI ~ mean_mims, data = .) %&gt;% 
-  broom::glance() %&gt;% 
-  select(adj.r.squared)
-## # A tibble: 1 × 1
-##   adj.r.squared
-##           &lt;dbl&gt;
-## 1        0.0167
+  geom_errorbar(aes(ymin = lb, ymax = ub), width = .5) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)
 
-fit_binned %&gt;% 
-  broom::glance() %&gt;% 
-  select(adj.r.squared)
-## # A tibble: 1 × 1
-##   adj.r.squared
-##           &lt;dbl&gt;
-## 1        0.0267</code></pre>
-<p>Showing the binned regression as a step function – begin to shift
-towards coefficient function interpretation</p>
+ggp_binned + ggp_coefs</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-3-1.png" width="90%" /></p>
+<p>We will motivate a shift to scalar-on-function regression by noting
+that the model using bin averages can be expressed in terms of a
+functional coefficient expressed as a step function and functional
+predictors by integrating over their product. This is motivated by the
+following expression, with technical details provided in the book
+Chapter text: <span class="math display">\[\begin{equation}
+\sum_{b=1}^{12} \beta_{b} \overline{X}_{ib} \approx \int_{0}^{24}
+\beta^{step}(s) X_{i}(s) \, ds.
+\label{eq:ch4_step_int}
+\end{equation}\]</span></p>
+<p>The code chunk below creates a dataframe that contains the step
+coefficient function defined above.</p>
 <pre class="r"><code>stepfun_coef_df = 
   fit_binned %&gt;% 
   broom::tidy() %&gt;% 
@@ -519,41 +566,160 @@ towards coefficient function interpretation</p>
     estimate = .5 * estimate,
     arg = seq(1/60, 24, length = 1440)) %&gt;% 
   tf_nest(.id = method)</code></pre>
-<p>Not shown: code for plots similar to above</p>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-7-1.png" width="90%" /></p>
-<div id="simple-linear-scalar-on-function" class="section level3">
-<h3>“Simple Linear” Scalar-on-Function</h3>
-<p>Probably most important overall approach; very flexible, and with
-many model extensions. Start with a single functional coefficient to get
-things going.</p>
+<p>A plot showing the complete (not binned) <code>MIMS_tf</code>
+trajectories alongside the step coefficient function is shown below.
+Comparing this plot with one above, in which bin averages are shown
+alongside regression coefficients, is intended to emphasize that these
+approaches are identical up a to a re-scaling of the regression
+parameters. Connecting the bin average approach to a truly functional
+coefficient is an intuitive starting point for the more flexible linear
+SoFR models considered next.</p>
+<pre class="r"><code>ggp_stepfun_mims = 
+  nhanes_df %&gt;% 
+  slice(1:500) %&gt;% 
+  ggplot(aes(y = MIMS_tf, color = BMI)) + 
+  geom_spaghetti() + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)
+
+ggp_stepfun_coef = 
+  stepfun_coef_df %&gt;% 
+  ggplot(aes(y = estimate)) + 
+  geom_spaghetti(linewidth = 1.1, alpha = .75) + 
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)
+
+ggp_stepfun_mims + ggp_stepfun_coef</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-5-1.png" width="90%" /></p>
 </div>
+<div id="simple-linear-scalar-on-function" class="section level2">
+<h2>“Simple Linear” Scalar-on-Function</h2>
+<p>We now introduce the linear scalar-on-function regression model in
+which there is only one functional predictor and no scalar covariates.
+This is analogous to ``simple” linear regression, and will be useful for
+introducing key concepts in interpretation, estimation, and inference
+for models with functional predictors. Later sections will consider
+extensions of this approach.</p>
 <div id="model-specification-and-interpretation" class="section level3">
 <h3>Model specification and interpretation</h3>
-<p>Would then introduce functional form of a “simple” SoFR, including
-intercept and integral term only. Discuss interpretation of the
-functional coefficient, drawing on EDA for intuition.</p>
-<p>Note that interpretation in more complex settings is similar – would
-need to “hold scalar covariates” constant or think in terms of log ORs
-(for logit regression), but key ideas hold.</p>
-<p>Key challenge in this model is choosing a form for coefficient
-function and developing an estimation approach.</p>
+<p>For participants <span class="math inline">\(i = 1, \dots,
+n\)</span>, let <span class="math inline">\(Y_i\)</span> be a scalar
+response of interest and <span class="math inline">\(X_{i}: S\rightarrow
+\mathbb{R}\)</span> be a functional predictor observed over the domain
+<span class="math inline">\(S\)</span>. The simple linear
+scalar-on-function regression model is <span
+class="math display">\[\begin{equation}
+Y_i=\beta_0 + \int_{S} \beta_1 (s)X_{i}(s)\, ds + \epsilon_i
+\end{equation}\]</span> where <span
+class="math inline">\(\beta_0\)</span> is a population-level scalar
+intercept, <span class="math inline">\(\beta_1(s): S\rightarrow
+\mathbb{R}\)</span> is the functional coefficient of interest, and <span
+class="math inline">\(\epsilon_i\)</span> is a residual with mean zero
+and variance <span class="math inline">\(\sigma^2_{\epsilon}\)</span>.
+This model specification generalizes the specific case where a
+coefficient function constrained to be a step function approximated a
+regression model based on bin averages. The coefficient function now can
+be more flexible, but the interpretation is analogous: <span
+class="math inline">\(\beta_1(s)\)</span> defines the weight given to
+predictor functions at each <span class="math inline">\(s \in
+S\)</span>, and the product of <span
+class="math inline">\(X_{i}(s)\)</span> and <span
+class="math inline">\(\beta_1(s)\)</span> is integrated to obtain the
+overall contribution of the functional term in the model. At each time
+point, <span class="math inline">\(\beta(s)\)</span> is the effect on
+the outcome for a one unit increase in <span
+class="math inline">\(X_{i}(s)\)</span> when all other values <span
+class="math inline">\(X_{i}(s&#39;)\)</span> <span
+class="math inline">\(s&#39;\in S, s&#39;\neq s\)</span> are kept
+unchanged. This interpretation is admittedly somewhat awkward, but
+unavoidable when regressing a scalar outcome on a functional predictor.
+Note that the coefficients adjust for effects of all other <span
+class="math inline">\(s&#39;\in S\)</span>.</p>
+<p>The innovation in scalar-on-function regression, compared to
+nonfunctional models, is a coefficient function that integrates with
+covariate functions to produce scalar terms in the linear predictor. The
+corresponding challenge is developing an estimation strategy that
+minimizes <span class="math display">\[\begin{equation}\min_{\beta_0,
+\beta_{1}(s)} \sum_{i = 1}^{n} \left\{ Y_i - \beta_0 - \int_{S} \beta_1
+(s)X_{i}(s)\, ds\right\}^2
+\label{eq:ch4_sofr_ss}
+\end{equation}\]</span> in a way that is flexible and computationally
+feasible.</p>
 </div>
 <div id="parametric-estimation-of-the-coefficient-function"
 class="section level3">
 <h3>Parametric estimation of the coefficient function</h3>
-<p>Clearly the novelty in the SoFR, compared to nonfunctional models, is
-the coefficient function that integrates with observed functions to
-produce scalar terms in the linear predictor.</p>
-<p>Can start with a parametric basis expansion – linear or quadratic –
-to walk through the conversion of model to estimating a small number of
-parameters. This will include the integration of each basis function and
-functional predictor (and numeric approximations of that integration),
-which creates a known design matrix.</p>
-<p>OPTION: Is it worthwhile to do this estimation using lm() with a
-fixed basis expansion? That would emphasize this is “just” regression
-after recasting the model.</p>
-<p>This has some limitations, though, and is not so flexible</p>
-<p>Code for creating basis.</p>
+<p>Our first approach expands the coefficient function <span
+class="math inline">\(\beta_1(s)\)</span> using a relatively
+low-dimensional basis expansion; doing so leads to a more familiar
+setting in which scalar basis coefficients are the target of estimation
+and inference. Specifically, let <span class="math inline">\(\beta_1(s)
+= \sum_{k = 1}^{K}\beta_{1k}B_{k}(s)\)</span> where <span
+class="math inline">\(B_1(s), \dots, B_{K}(s)\)</span> is a collection
+of basis functions. Substituting this expansion into the integral term
+in (<span class="math inline">\(\ref{eq:ch4_linear_sofr}\)</span>) gives
+<span class="math display">\[\begin{equation}
+\arraycolsep=1.4pt\def\arraystretch{2}
+\begin{array}{lll}
+E[Y_i] &amp;=&amp; \beta_0 + \int_S \beta_1 (s)X_{i}(s)\, ds \\
+  &amp;=&amp; \beta_0 + \sum_{k=1}^{K} \left[ \int_{S}
+B_{k}(s)X_{i}(s)\, ds\right] \beta_{1k} \\
+  &amp;=&amp; \beta_0 + \mathbf{C}^t_{i} \boldsymbol{\beta}_{1}
+\end{array}
+\end{equation}\]</span> where <span class="math inline">\(C_{ik} =
+\int_{S} B_{k}(s)X_{i}(s)\, ds\)</span>, <span
+class="math inline">\(\mathbf{C}_i = [C_{i1}, \dots,
+C_{iK}]^{t}\)</span>, and <span
+class="math inline">\(\boldsymbol{\beta}_1=(\beta_{11},\ldots,\beta_{1K})^t\)</span>
+is the vector of basis coefficients. The result of the basis expansion
+for the coefficient function, therefore, is a recognizable multiple
+linear regression with carefully-defined scalar covariates and
+corresponding coefficients. Specifically, let <span
+class="math inline">\(\mathbf{y}=(y_1,\ldots,y_n)^t\)</span>, the matrix
+<span class="math inline">\(\mathbf{X}\)</span> be constructed by
+row-stacking vectors <span class="math inline">\([1, C_{i1}, \dots,
+C_{iK}]\)</span>, and <span class="math inline">\(\boldsymbol{\beta} =
+[\beta_{0}, \beta_{11}, \dots, \beta_{1K}]^{t}\)</span> be the vector of
+regression coefficients including the population intercept and spline
+coefficients. This suggests a standard OLS approach to estimating <span
+class="math inline">\(\boldsymbol{\beta}\)</span>. Note that functional
+predictors are actually observed over a finite grid, and the definite
+integrals that define the <span class="math inline">\(C_{ik}\)</span>
+are in practice estimated using numeric quadrature.</p>
+<p>Many options for the basis have been considered in the expansive
+literature for SoFR. To illustrate the ideas in this Section, we start
+with a quadratic basis and obtain the corresponding estimate of the
+coefficient function <span class="math inline">\(\beta_{1}(s)\)</span>.
+We define the basis <span class="math display">\[\begin{equation}
+\arraycolsep=1.4pt
+\left\{\begin{array}{lll}
+  B_{1}(s) = 1\;,\\
+  B_{2}(s) = s\;,\\
+  B_{3}(s) = s^2\;, \\
+\end{array}\right.
+\label{eq:ch4_quad_basis}
+\end{equation}\]</span> and, given this, obtain scalar predictors <span
+class="math inline">\(C_{ik}\)</span> that can be used in standard
+linear model software. The basis expansion includes an intercept term,
+which should not be confused with the model’s intercept, <span
+class="math inline">\(\beta_0\)</span>. The intercept in the basis
+expansion allows the coefficient function <span
+class="math inline">\(\beta_1(s)\)</span> to shift as needed, while the
+population intercept is the expected value of the response when the
+predictor function is zero over the entire domain.</p>
+<p>Continuing to focus on BMI as an outcome and MIMS as a functional
+predictor, the code chunk below defines the quadratic basis and obtains
+the numeric integrals in the <span
+class="math inline">\(C_{ik}\)</span>. The basis matrix is defined in
+terms of <code>arg</code> and given appropriate column names. We
+construct the data frame <code>num_int_df</code> which contains the
+necessary numeric integrals. We retain the row names of the matrix
+product in the resulting dataframe, and convert this to a numeric
+variable for consistency with <code>nhanes_df</code>.</p>
 <pre class="r"><code>epoch_arg = seq(1/60, 24, length = 1440)
 
 B = cbind(1, epoch_arg, epoch_arg^2)
@@ -564,7 +730,28 @@ num_int_df =
     (nhanes_df$MIMS_mat %*% B) * (1/ 60), 
     rownames = &quot;SEQN&quot;) %&gt;% 
   mutate(SEQN = as.numeric(SEQN))</code></pre>
-<p>Code for fitting model.</p>
+<p>The next code chunk implements the regression and processes the
+results. We first define a new data frame, <code>nhanes_quad_df</code>,
+that contains variables relevant for the scalar-on-function regression
+of BMI on MIMS trajectories using SoFR and expand the coefficient
+function <span class="math inline">\(\beta_1(s)\)</span> in terms of the
+quadratic basis defined in the previous code chunk. This is created by
+joining two previously defined dataframes, and keeping only
+<code>BMI</code> and the columns corresponding to the numeric integrals
+<span class="math inline">\(C_{ik}\)</span>. Using
+<code>nhanes_quad_df</code>, we fit a linear regression of BMI on the
+<span class="math inline">\(C_{ik}\)</span>; the formula specification
+includes a population intercept to reiterate that the model’s intercept
+<span class="math inline">\(\beta_0\)</span> is distinct from the basis
+expansion’s intercept, which appears in <span
+class="math inline">\(C_{i1}\)</span>. Finally, we combine the
+coefficient estimates in <code>fit_quad</code> with the basis matrix to
+obtain the estimate of the coefficient function. We compute the matrix
+product of <code>B</code> and the coefficients of <code>fit_quad</code>
+(omitting the population intercept), and convert the result to a
+<code>tidyfun</code> object. The coefficient function is stored in a
+data frame called <code>quad_coef_df</code>, along with a variable
+<code>method</code> with the value <code>quad</code>.</p>
 <pre class="r"><code>nhanes_quad_df = 
   left_join(nhanes_df, num_int_df, by = &quot;SEQN&quot;) %&gt;% 
   select(BMI, int, lin, quad)
@@ -577,9 +764,29 @@ quad_coef_df =
   tibble(
     method = &quot;Quadratic&quot;,
     estimate = tfd(t(B %*% coef(fit_quad)[-1]), arg = epoch_arg))</code></pre>
-<p>Not shown: code for doing integration via <code>tf_integrate</code>
-and confirming this is similar.</p>
-<p>Slight change in code, using BS with 8 DoF</p>
+<p>This general strategy for estimating coefficient functions can be
+readily adapted to other basis choices. The next code defines a cubic
+B-spline basis with eight degrees of freedom; this is more flexible than
+the quadratic basis, while also ensuring a degree of smoothness that is
+absent from the stepwise estimate of the coefficient function. Once the
+basis is defined, the remaining steps in the code chunk below mirror
+those used to estimate the coefficient function using a quadratic basis,
+with a small number of minor changes. The basis is generated using the
+<code>bs()</code> function in the <code>splines</code> package, and
+there are now eight basis functions instead of three. There is a
+corresponding increase in the number of columns in
+<code>num_int_df</code> and for convenience we write the formula in the
+<code>lm()</code> call as <code>BMI ~ 1 + .</code> instead of listing
+columns individually. The final step in this code chunk constructs the
+estimated coefficient function by multiplying the matrix of basis
+functions evaluated over <span class="math inline">\(\mathbf{s}\)</span>
+by the vector of B-spline coefficients; the result is stored in a data
+frame called <code>bspline_coef_df</code>, now with a variable
+<code>method</code> taking the value <code>B-Spline</code>. The
+similarity between this model fitting and the one using a quadratic
+basis is intended to emphasize that the basis expansion approach to
+fitting a linear SoFR can be easy to implement for a broad range of
+basis choices.</p>
 <pre class="r"><code>B_bspline = splines::bs(epoch_arg, df = 8, intercept = TRUE)
 colnames(B_bspline) = str_c(&quot;BS_&quot;, 1:8)
 
@@ -601,34 +808,130 @@ bspline_coef_df =
     method = &quot;B-Spline&quot;,
     estimate = 
       tfd(t(B_bspline %*% coef(fit_bspline)[-1]), arg = epoch_arg))</code></pre>
+<p>We show how to display all coefficient function estimates in the next
+code chunk. The first step uses <code>bind_rows()</code> to combine data
+frames containing the stepwise, quadratic, and B-spline estimated
+coefficient functions. The result is a data with three rows, one for
+each estimate, and two columns containing the <code>method</code> and
+<code>estimate</code> variables. We plot the estimates using
+<code>ggplot()</code> and <code>geom_spaghetti()</code> by setting the
+aesthetics for <code>y</code> and <code>color</code> to
+<code>estimate</code> and <code>method</code>, respectively. In the
+resulting plot, the coefficient functions have some broad similarities
+across basis specifications. That said, the quadratic basis has a much
+higher estimate in the nighttime than other methods because of the
+constraints on the shape of the coefficient function. The stepwise
+coefficient has the bin average interpretation but the lack of
+smoothness across bins is scientifically implausible. Of the
+coefficients presented so far, then, the B-spline basis with eight
+degrees of freedom is our preference as a way to include both
+flexibility and smoothness in the estimate of <span
+class="math inline">\(\beta_1(\cdot)\)</span>.</p>
 <pre class="r"><code>bind_rows(stepfun_coef_df, quad_coef_df, bspline_coef_df) %&gt;% 
   ggplot(aes(y = estimate, color = method)) + 
-  geom_spaghetti(alpha = 1, linewidth = 1.2) </code></pre>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-13-1.png" width="90%" /></p>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-14-1.png" width="90%" /></p>
+  geom_spaghetti(alpha = 1, linewidth = 1.2) +
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-9-1.png" width="90%" /></p>
 </div>
 <div id="penalized-spline-estimation" class="section level3">
 <h3>Penalized spline estimation</h3>
-<p>Broadly, we favor expanding in terms of a known basis and explicitly
-controlling smoothness using penalties, although other approaches are
-available. Simply using a low dimension spline basis works the same way
-as the parametric approach, but need to increase degrees of freedom and
-shift to penalized regression.</p>
-<p>Recalling some preliminary information on smoothing, our goal is to
-estimate coefficient function in a way that explicitly penalizes
-wiggliness; we’ve seen how to do this in scatterplot smoothing, but the
-idea translates to this setting. In particular, we want to estimate
-coefficient function subject to a smoothness penalty controlled by a
-single tuning parameter.</p>
-<p>Can write the resulting penalized likelihood for “simple” SoFR; note
-tuning parameter could be chosen in a variety of ways. But a central
-insight is the connection to semiparametric regression, which takes
-advantage of a mixed model formulation to obtain an equivalent ridge
-regression and estimate tuning parameters in terms of variance
-components.</p>
-<p>NOTE: this is a point Ciprian’s comments emphasize, and we should
-trace idea of casting penalized spline SoFR as a mixed model (in refund
-or mgcv) back to the pfr paper.</p>
+<p>Our approach to scalar-on-function regression using smoothness
+penalties relies on key insights that connect functional regression to
+scatterplot smoothing and mixed models. By expressing the coefficient
+function using a spline expansion it is possible to cast
+scalar-on-function regression in terms of a linear regression model.
+While the design matrix for that model has a specific construction, once
+it is available, usual model fitting approaches can be used directly.
+Analogously, the use of penalized splines requires the careful
+construction of design and penalty matrices, but once these are in
+place, the techniques for scatterplot smoothing. Critically, this
+includes casting scalar-on-function regression as a mixed model; this
+connection makes it possible to use the rich collection of techniques
+for mixed model estimation and inference for functional regression.</p>
+<p>Broadly speaking, in functional regression models we prefer to use
+rich spline basis expansions because they are flexible and numerically
+stable. We include penalties that encourage smoothness in the target of
+estimation, which generally take the form of penalties on the overall
+magnitude of the squared second derivative of the estimand. This
+combination results in a quadratic penalty with a tuning parameter that
+controls the degree of smoothness; higher penalization leads to
+“flatter” coefficient functions, while lower penalization allows more
+flexible but “wigglier” coefficients.</p>
+<p>As before, let <span class="math inline">\(\beta_1(s) = \sum_{k =
+1}^{K}\beta_{1k}B_{k}(s)\)</span> where <span
+class="math inline">\(B_1(s), \dots, B_{K}(s)\)</span> is a collection
+of basis functions. We add a smoothness-inducing penalty of the form
+<span class="math inline">\(\int_S \{\beta_{1}&#39;&#39;(s)\}^2
+ds\)</span> to the minimization criterion. Intuitively, estimates of
+<span class="math inline">\(\beta_{1}(s)\)</span> that include many
+sharp turns will have squared second derivatives <span
+class="math inline">\(\{\beta_{1}&#39;&#39;(s)\}^2\)</span> with many
+large values, while smooth estimates of <span
+class="math inline">\(\beta_{1}(s)\)</span> will have second derivatives
+that are close to 0 over the domain <span
+class="math inline">\(S\)</span>. To implement the squared second
+derivative penalty, let <span class="math inline">\(\mathbf{P}\)</span>
+be the <span class="math inline">\(K \times K\)</span> matrix with the
+<span class="math inline">\((i,j)^{\text{th}}\)</span> entry equal to
+<span class="math inline">\(\int_S
+B_i&#39;&#39;(s)B_j&#39;&#39;(s)ds\)</span>.</p>
+<p>Let <span class="math inline">\(\mathbf{X}\)</span> be a <span
+class="math inline">\(n \times (K+1)\)</span> matrix in which the <span
+class="math inline">\(i^{\text{th}}\)</span> row is <span
+class="math inline">\([1, C_{i1}, \dots,C_{iK}]\)</span>, and let <span
+class="math inline">\(\boldsymbol{\beta}\)</span> be the <span
+class="math inline">\((K+1)\)</span> dimensional column vector that
+concatenates the population intercept <span
+class="math inline">\(\beta_0\)</span> and the spline coefficients <span
+class="math inline">\(\boldsymbol{\beta}_1\)</span>. Adding the second
+derivative penalty yields a penalized sum of squares <span
+class="math display">\[\begin{equation}\min_{\boldsymbol{\beta}}||\mathbf{y}-\mathbf{X}\boldsymbol{\beta}||^2+\lambda
+\boldsymbol{\beta}^t\mathbf{D}\boldsymbol{\beta}\;.
+\end{equation}\]</span> Here <span class="math inline">\(\lambda\geq
+0\)</span> is a scalar tuning parameter and <span
+class="math inline">\(\mathbf{D}\)</span> is the matrix given by <span
+class="math display">\[\mathbf{D}=\begin{bmatrix}
+\mathbf{0}_{1 \times 1} &amp; \mathbf{0}_{K \times 1} \\
+\;\mathbf{0}_{1 \times K} &amp; \mathbf{P}\\
+\end{bmatrix}\;,\]</span> where <span
+class="math inline">\(\mathbf{0}_{a\times b}\)</span> is a matrix of
+zero entries with <span class="math inline">\(a\)</span> rows and <span
+class="math inline">\(b\)</span> columns. For fixed values of <span
+class="math inline">\(\lambda\)</span>, a closed form solution for <span
+class="math inline">\(\widehat{\boldsymbol{\beta}}\)</span> is <span
+class="math inline">\(\widehat{\boldsymbol{\beta}}=(\mathbf{X}^t\mathbf{X}+\lambda
+\mathbf{D})^{-1}\mathbf{X}^t\mathbf{y}\)</span>. Varying <span
+class="math inline">\(\lambda\)</span> from 0 to <span
+class="math inline">\(\infty\)</span> will induce no penalization and
+full penalization, respectively, and choosing an appropriate tuning
+parameter is an important practical challenge. As elsewhere in this
+Chapter, though, we emphasize that the familiar form in (<span
+class="math inline">\(\ref{eq:ch4_penalized_ss}\)</span>) should not
+mask the novelty and innovation of this model, which implements
+penalized spline smoothing to estimate the coefficient function in a
+scalar-on-function regression.</p>
+<p>We illustrate these ideas in the next code chunk, which continues to
+use BMI as an outcome and MIMS as a functional predictor. The code draws
+on elements that have been seen previously. We first define a B-spline
+basis with 30 degrees of freedom evaluated over the finite grid
+<code>arg</code>. Using functionality in the <code>splines2</code>
+package, we obtain the second derivative of each spline basis function
+evaluated over the same finite grid. The elements of the penalty matrix
+<span class="math inline">\(\mathbf{P}\)</span> are obtained through
+numeric approximations to the integrals. The design matrix <span
+class="math inline">\(\mathbf{X}\)</span> is obtained by adding a column
+taking the value <span class="math inline">\(1\)</span> everywhere to
+the terms <span class="math inline">\(C_{ik}\)</span>. Next, we
+construct the matrix <span class="math inline">\(\mathbf{D}\)</span>.
+The response vector <span class="math inline">\(\mathbf{y}\)</span> is
+extracted from <code>nhanes_df</code> and we choose high and low values
+for the tuning parameter <span class="math inline">\(\lambda\)</span>.
+Given all of these elements, we estimate the coefficient vector <span
+class="math inline">\(\boldsymbol{\beta}\)</span> to obtain
+<code>coef_high</code> and <code>coef_low</code>.</p>
 <pre class="r"><code>B_bspline = splines::bs(epoch_arg, df = 30, intercept = TRUE)
 sec_deriv = splines2::bSpline(epoch_arg, df = 30, intercept = TRUE, derivs = 2)
 P = t(sec_deriv) %*% sec_deriv * (1 / 60)
@@ -643,13 +946,52 @@ lambda_low = 100
 
 coef_high = solve(t(X) %*% X + lambda_high * D) %*% t(X) %*% y
 coef_low = solve(t(X) %*% X + lambda_low * D) %*% t(X) %*% y</code></pre>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-16-1.png" width="90%" /></p>
+<p>The estimated coefficient functions that correspond to the estimates
+in <code>coef_high</code> and <code>coef_low</code> can be produced
+through simple modifications to the previous code. A figure below shows
+the resulting coefficient functions. Note that we specify the color for
+these curves for consistency with later plots.</p>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-11-1.png" width="90%" /></p>
+<p>Recasting the penalized sum of squares in (<span
+class="math inline">\(\ref{eq:ch4_penalized_ss}\)</span>) as a mixed
+model allows the data-driven estimation of tuning parameters; more
+broadly, this opens the door to using a wide range of methods for mixed
+model estimation and inference in functional regression settings. Below,
+we construct the design matrix <span
+class="math inline">\(\mathbf{C}\)</span> using numeric integration. The
+penalty matrix <span class="math inline">\(\mathbf{P}\)</span>, which
+contains the numeric integral of the squared second derivative of the
+basis functions, is reused from a prior code chunk. We pass these as
+arguments into <code>mgcv::gam()</code> by specifying <code>C</code> in
+the formula that defines the regression structure, and then use the
+<code>paraPen</code> argument to supply our penalty matrix
+<code>P</code> for the design matrix <code>C</code>. Lastly, we specify
+the estimation method to be REML.</p>
 <pre class="r"><code>C = (nhanes_df$MIMS_mat %*% B_bspline) * (1 / 60)
 
 fit_REML_penalty = 
   gam(y ~ 1 + C, paraPen = list(C = list(P)), 
       method = &quot;REML&quot;)</code></pre>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-18-1.png" width="90%" /></p>
+<p>Code that multiplies the basis functions by the resulting spline
+coefficients to obtain the estimated coefficient function is shown
+below. We plot the result and include previous penalized estimates,
+based on high and low values of the tuning parameter <span
+class="math inline">\(\lambda\)</span>, which over- and under-smoothed
+the coefficient function. The data-driven approach to tuning parameter
+selection yields an estimate that is smooth but time-varying.</p>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-13-1.png" width="90%" /></p>
+<p>Many of the strengths of the <code>mgcv</code> package can be
+leveraged through the <code>refund</code> package, which adds
+functionality, quality of life features, and user interfaces relevant to
+FDA. For SoFR, this means that instead of building models using
+knowledge of the linear algebra underlying penalized spline estimation,
+we instead only require correctly specified data structures and syntax
+for <code>refund::pfr()</code>. In the code chunk below, we regress BMI
+on MIMS using the matrix variable <code>MIMS_mat</code> using a the
+linear specification in <code>lf()</code>. We additionally indicate the
+grid over which predictors are observed, and specify the use of REML to
+choose the tuning parameter. The next component of this code chunk
+extracts the resulting coefficient and structures it for plotting.</p>
 <pre class="r"><code>pfr_fit = 
   pfr(
     BMI ~ lf(MIMS_mat, argvals = seq(1/60, 24, length = 1440)), 
@@ -660,30 +1002,47 @@ pfr_coef_df =
   mutate(method = &quot;refund::pfr()&quot;) %&gt;% 
   tf_nest(.id = method, .arg = MIMS_mat.argvals) %&gt;% 
   rename(estimate = value)</code></pre>
-<pre><code>## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
+<p>The next figure displays results obtained using
+<code>mgcv::gam()</code> and <code>refund::pfr()</code>; there are some
+minor differences in the default model implementations and these results
+do not align perfectly, although they are very similar and can be made
+exactly the same. For reference, we also show the coefficient function
+based on an unpenalized B-spline basis with eight degrees of
+freedom.</p>
+<pre class="r"><code>bind_rows(bspline_coef_df, REML_penalty_df, pfr_coef_df) %&gt;% 
+  ggplot(aes(y = estimate, color = method)) + 
+  geom_spaghetti(alpha = 1, linewidth = 1.2) +
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)
+## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
 ## grids.
 ## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
 ## result has resolution =0.001</code></pre>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-20-1.png" width="90%" /></p>
-<p>Quick table showing Adjusted R2 for each of these models</p>
-<pre class="r"><code>adj_r2_table = 
-  tibble(
-    method = c(&quot;bin&quot;, &quot;quad&quot;, &quot;bspline8&quot;),
-    model = list(fit_binned, fit_quad, fit_bspline)
-  ) %&gt;% 
-  mutate(
-    glance = map(model, broom::glance),
-    adjr2 = map_dbl(glance, &quot;adj.r.squared&quot;)
-  ) %&gt;% 
-  select(method, adjr2)</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-15-1.png" width="90%" /></p>
 </div>
-<div id="other-basis-approaches" class="section level3">
-<h3>Other basis approaches</h3>
-<p>If your basis is data-driven, the integrals in the expansion aren’t
-approximated using numeric integration; they’re the scores from the FPCA
-expansion. Therefore you’re effectively regressing on FPC scores. This
-can be good if it’s hard to do that integration – if curves are sparse
-or very noisy, for example.</p>
+<div id="data-driven-basis-expansion" class="section level3">
+<h3>Data-driven Basis Expansion</h3>
+<p>To this point, we have developed unpenalized and penalized estimation
+strategies using basis expansions constructed independently of observed
+data – step functions, polynomial bases, B-splines. The use of a
+data-driven basis obtained through FPCA is a popular alternative, and
+indeed was among the first approaches to SoFR. This approach, sometimes
+referred to as “Functional Principal Components Regression” (FPCR), has
+useful numerical features that can make it an appealing option in some
+practical settings.</p>
+<p>The code chunk below implements the scalar-on-function regression of
+BMI on MIMS using a data-driven basis. In the first lines of code, we
+use the function <code>refunder::rfr_fpca()</code> to conduct FPCA. This
+function takes a <code>tf</code> vector as an input; for data observed
+over a regular grid, this serves as a wrapper for
+<code>fpca.face()</code>. We specify {npc = 4} to return <span
+class="math inline">\(K = 4\)</span> principal components. The remainder
+of this code chunk is essentially copied from above, with naming
+conventions similar to previous code. We regress <code>BMI</code> on
+covariates <span class="math inline">\(C_{ik}\)</span> obtained through
+numeric integration, and save this as .</p>
 <pre class="r"><code>nhanes_fpca = 
   rfr_fpca(&quot;MIMS_tf&quot;, data = nhanes_df, npc = 4)
 ## Warning in new_tfb_fpc(data, domain = domain, method = method, resolution = resolution, : domain for tfb_fpc can&#39;t be larger than observed arg-range -- extrapolating FPCs is a bad idea.
@@ -704,7 +1063,41 @@ nhanes_fpcr_df =
 
 fit_fpcr_int = 
   lm(BMI ~ 1 + ., data = nhanes_fpcr_df)</code></pre>
-<p>Different way of doing the same thing.</p>
+<p>We used numerical integration to obtain the <span
+class="math inline">\(C_{ik}\)</span> in the previous code, but an
+important advantage of FPCR is that principal component scores are the
+projection of centered functional observations onto eigenfunctions. That
+is, we can use FPC scores as predictors rather than obtaining values
+through numeric integration.</p>
+<p>The fact that FPCR can be carried out using a regression on FPC
+scores directly is a key strength. There are many practical settings
+where the numeric integration used to construct the design matrices
+throughout this chapter – for pre-specified and data-driven basis
+expansions – is not possible. For functional data that are sparsely
+observed or that are measured with substantial noise, numeric
+integration can be difficult or impossible. In both those settings, FPCA
+methods can produce estimates of eigenfunctions and the associated
+scores and thereby enable scalar-on-function regression in a wide range
+of real-world settings. At the other extreme, for very high-dimensional
+functional observations, it may be necessary to conduct dimension
+reduction as a pre-processing step to reduce memory and computational
+burdens. The FPCR gives an interpretable scalar-on-function regression
+in this setting as well. That said, because FPCR is a regression on FPC
+scores, only effects that are captured by the directions of variation
+contained in the FPCs can be accounted for using this approach.
+Moreover, the smoothing of the estimated coefficient function depends on
+the intrinsic choice of the number of eigenfunctions, <span
+class="math inline">\(K\)</span>. This tends to be less problematic when
+one is interested in prediction performance, but may have large effects
+on the estimation of the <span class="math inline">\(\beta_1(s)\)</span>
+coefficient.</p>
+<p>In the code below, we extract <code>scores</code> from the FPCA
+object <code>nhanes_fpca</code> obtained in a previous code chunk.
+Mirroring code elsewhere, we create a dataframe containing the scores;
+merge this with <code>nhanes_df</code> and retain <code>BMI</code> and
+the predictors of interest; and fit a linear model, storing the results
+as <code>fit_fpcr_score</code> to reflect that we have performed FPCR
+using score estimates.</p>
 <pre class="r"><code>C = nhanes_fpca$scores * (sqrt(60) / 60)
 
 colnames(C) = str_c(&quot;score_&quot;, 1:4)
@@ -721,37 +1114,105 @@ nhanes_fpcr_df =
 
 fit_fpcr_score = 
   lm(BMI ~ 1 + ., data = nhanes_fpcr_df)</code></pre>
+<p>A table showing coefficient estimates from <code>fit_fpcr_int</code>
+and <code>fit_fpcr_score</code> is shown next. As expected, the
+intercepts from the two models differ – one is based on centered <span
+class="math inline">\(X_{i}(s)\)</span> covariate functions and the
+other is not – but basis coefficients are nearly identical.</p>
+<p>Throughout this Section, we have deferred the important
+methodological consideration of how to choose the truncation level <span
+class="math inline">\(K\)</span>. Because our estimation approach does
+not include any explicit smoothness constraints, the flexibility of the
+underlying basis controls the smoothness of the resulting coefficient
+function. For that reason, <span class="math inline">\(K\)</span> is
+effectively a tuning parameter. The figure below illustrates this point
+by showing the coefficient function with <span
+class="math inline">\(K=4\)</span> as well as the coefficient function
+with <span class="math inline">\(K=12\)</span>. The previous code could
+be modified for this setting, but we implement the helper function <a
+href="scripts.html"><code>nhanes_fpcr</code></a> to do the model
+fitting. We also show the coefficient function expressed as a step
+function for reference. The coefficient function with <span
+class="math inline">\(K=4\)</span> is, unsurprisingly, the smoothest,
+while the coefficient function with <span class="math inline">\(K =
+12\)</span> more closely tracks the step coefficient function.</p>
 <pre><code>## Warning: There were 2 warnings in `mutate()`.
 ## The first warning was:
-## ℹ In argument: `fit = map(npc, nhanes_fpcr, df =
-##   nhanes_df)`.
+## ℹ In argument: `fit = map(npc, nhanes_fpcr, df = nhanes_df)`.
 ## Caused by warning in `new_tfb_fpc()`:
 ## ! domain for tfb_fpc can&#39;t be larger than observed arg-range -- extrapolating FPCs is a bad idea.
 ##  domain reset to [0.017,24]
-## ℹ Run `dplyr::last_dplyr_warnings()` to see the 1
-##   remaining warning.</code></pre>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-25-1.png" width="90%" /></p>
-<p>Regressing only on scores doesn’t explicitly penalize for smoothness.
-You can choose the number of components, or maybe start with many and do
-a variable selection, but both of those have issues. Or you can do a
-penalized approach, where now you’re doing numeric second derivatives
-and integration to get the penalty matrix.</p>
-<pre class="r"><code>fit_fpcr_int %&gt;% 
-  broom::tidy()
-## # A tibble: 5 × 5
-##   term        estimate std.error statistic  p.value
-##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1 (Intercept) 32.4       0.275      118.   0       
-## 2 efunc_1      0.0668    0.00509     13.1  6.88e-39
-## 3 efunc_2     -0.00835   0.00759     -1.10 2.72e- 1
-## 4 efunc_3      0.0524    0.0115       4.56 5.16e- 6
-## 5 efunc_4      0.0677    0.0147       4.60 4.33e- 6</code></pre>
+## ℹ Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-19-1.png" width="90%" /></p>
 </div>
-<div id="inference" class="section level3">
-<h3>Inference</h3>
-<p>Construction of (pointwise) confidence intervals.</p>
-<p>Need covariance thing.</p>
-<p>Here’s FPCR with 5 basis functions.</p>
+</div>
+<div id="inference-in-simple-linear-scalar-on-function-regression"
+class="section level2">
+<h2>Inference in “Simple” Linear Scalar-on-Function Regression</h2>
+<p>We now turn our attention to inference. First, we will develop
+pointwise confidence intervals that are not adjusted for correlation and
+multiplicity (not CMA), as defined in elsewhere. We refer to these as
+“unadjusted” confidence intervals, even though they are adjusted for
+other scalar and/or functional covariates. Leter we will discuss
+correlation (to account for the correlation of <span
+class="math inline">\(\widehat{\beta}_1(s_j)\)</span>) and multiplicity
+(to account for the multiple locations <span
+class="math inline">\(s_j\)</span>, <span
+class="math inline">\(j=1,\ldots,p\)</span>) adjusted confidence
+intervals. We refer to this double adjustment as correlation and
+multiplicity adjusted (CMA) inference.</p>
+<div id="unadjusted-inference-for-functional-predictors"
+class="section level3">
+<h3>Unadjusted Inference for Functional Predictors</h3>
+<p>Our approach to unadjusted inference assumes Normality and constructs
+<span class="math inline">\((1-\alpha)\)</span> confidence intervals of
+the form <span class="math display">\[\widehat{\beta}_1(s) \pm
+z_{1-\alpha / 2} \sqrt{\mbox{Var}\{\widehat{\beta}_1(s)\}}\]</span>
+where <span class="math inline">\(z_{\alpha}\)</span> is the <span
+class="math inline">\(\alpha\)</span> quantile of a standard Normal
+distribution. Recall that the coefficient <span
+class="math inline">\(\widehat{\beta}_1(s)\)</span> was expanded in a
+basis <span
+class="math inline">\(\widehat{\beta}_1(s)=\mathbf{B}(s)\boldsymbol{\beta}_1\)</span>;
+the variance <span
+class="math inline">\(\mbox{Var}\{\widehat{\beta}_1(s)\}\)</span> at any
+point <span class="math inline">\(s\in S\)</span> can be obtained by
+combining the basis with the variance of the estimated coefficients.
+This is very useful because the basis coefficient vector <span
+class="math inline">\(\widehat{\boldsymbol{\beta}}_1\)</span> is finite
+and quite low dimensional.</p>
+<p>When using a fixed basis and no penalization, the resulting inference
+is familiar from usual linear models. After constructing the design
+matrix <span class="math inline">\(\mathbf{X}\)</span> and estimating
+all model coefficients, <span
+class="math inline">\(\boldsymbol{\beta}_1\)</span>, using ordinary
+least squares and the error variance, <span
+class="math inline">\(\sigma_{\epsilon}^2\)</span>, based on model
+residuals, <span
+class="math inline">\(\mbox{Var}(\widehat{\boldsymbol{\beta}}_1)\)</span>
+can be extracted from <span
+class="math inline">\(\mbox{Var}(\widehat{\boldsymbol{\beta}}_1) =
+\widehat{\sigma}_{\epsilon}^2 \left(\mathbf{X}^{t}\mathbf{X}
+\right)\)</span>. Indeed, this can be quickly illustrated using
+previously fit models; in the code chunk below, we use the
+<code>vcov()</code> function to obtain <span
+class="math inline">\(\mbox{Var}(\widehat{\boldsymbol{\beta}})\)</span>
+from <code>fit_fpcr_int</code>, the linear model object for FPCR with
+<span class="math inline">\(K = 4\)</span>. We remove the row and column
+corresponding to the population intercept, and then pre- and
+post-multiply by the FPCA basis matrix <span
+class="math inline">\(\mathbf{B}(\mathbf{s})\)</span> stored in
+<code>B_fpca</code>. The resulting covariance matrix is <span
+class="math inline">\(1440 \times 1440\)</span>, and has the variances
+<span class="math inline">\(\mbox{Var}\{\widehat{\beta}_1(s)\}\)</span>
+for each value in the observation grid <span
+class="math inline">\(s\in\mathbf{s}\)</span> on the main diagonal. The
+final part of the code chunk creates the estimate <span
+class="math inline">\(\widehat{\boldsymbol{\beta}}_{1}(s)\)</span> as a
+<code>tf</code> object; uses similar code to obtain the pointwise
+standard error (as the square root of entries on the diagonal of the
+covariance matrix); and constructs upper and lower bounds for the 95%
+confidence interval.</p>
 <pre class="r"><code>var_basis_coef = vcov(fit_fpcr_int)[-1,-1]
 var_coef_func = B_fpca %*% var_basis_coef %*% t(B_fpca)
 
@@ -764,43 +1225,37 @@ fpcr_inf_df =
   mutate(
     ub = estimate + 1.96 * se,
     lb = estimate - 1.96 * se) </code></pre>
-<p>PFR inference comes from pfr; that’s in the coef above.</p>
+<p>The process for obtaining confidence intervals for penalized spline
+estimation is conceptually similar. Again, inference is built around the
+covariance of the basis coefficients and the primary difference is in
+the calculation of that variance. The necessary step is to perform
+inference on fixed and random effects in a mixed model. Later we will
+explore this in detail; for now, we will use the helpful wrapper
+<code>pfr()</code> for inference. Indeed, the object
+<code>pfr_coef_df</code>, obtained in a previous code chunk using
+<code>coef(pfr_fit)</code>, already includes a column <code>se</code>
+containing the pointwise standard error. In the code chunk below, we use
+this column to construct upper and lower bounds of a 95% confidence
+interval.</p>
 <pre class="r"><code>pfr_inf_df = 
   pfr_coef_df %&gt;% 
   mutate(
     ub = estimate + 1.96 * se,
     lb = estimate - 1.96 * se) </code></pre>
-<pre class="r"><code>bind_rows(pfr_inf_df, fpcr_inf_df) %&gt;% 
-  ggplot(aes(y = estimate)) + 
-  geom_spaghetti() +
-  geom_errorband(aes(ymax = ub, ymin = lb)) + 
-  facet_grid(.~method)
-## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
-## grids.
-## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
-## result has resolution =0.01
-## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
-## grids.
-## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
-## result has resolution =0.01
-## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
-## grids.
-## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
-## result has resolution =0.01
-## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
-## grids.
-## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
-## result has resolution =0.01</code></pre>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-29-1.png" width="90%" /></p>
+<p>Our next code chunk will plot the estimates and confidence intervals
+created in the previous code. We combine the dataframes containing
+estimates and confidence bounds for the penalized spline and FPCR
+methods using <span class="math inline">\(K = 4, 8, 12\)</span>. The
+result is plotting using familiar tools from <code>ggplot</code> and
+<code>tidyfun</code>, and we use <code>geom_errorband()</code> to plot
+the confidence bands.</p>
 <pre><code>## Warning: There were 3 warnings in `mutate()`.
 ## The first warning was:
-## ℹ In argument: `fit = map(npc, nhanes_fpcr, df =
-##   nhanes_df)`.
+## ℹ In argument: `fit = map(npc, nhanes_fpcr, df = nhanes_df)`.
 ## Caused by warning in `new_tfb_fpc()`:
 ## ! domain for tfb_fpc can&#39;t be larger than observed arg-range -- extrapolating FPCs is a bad idea.
 ##  domain reset to [0.017,24]
-## ℹ Run `dplyr::last_dplyr_warnings()` to see the 2
-##   remaining warnings.
+## ℹ Run `dplyr::last_dplyr_warnings()` to see the 2 remaining warnings.
 ## Warning in vec_ptype2_tfd_tfd(x, y, ...): concatenating functions on different
 ## grids.
 ## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
@@ -817,119 +1272,179 @@ fpcr_inf_df =
 ## grids.
 ## Warning in vec_ptype2_tfd_tfd(x, y, ...): inputs have different resolutions,
 ## result has resolution =0.01</code></pre>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-30-1.png" width="90%" /></p>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-22-1.png" width="90%" /></p>
 </div>
-<div id="identifiability" class="section level3">
-<h3>Identifiability</h3>
-<p>We may want to do a little on identifiability. removing the mean from
-Xi(t) and maybe some of the work that Fabian and Sonja did (essentially
-showing that only particular types of beta coefficients are
-estimable).</p>
-</div>
-</div>
-<div id="sparse-estimation" class="section level2">
-<h2>Sparse Estimation</h2>
-<p>I lean towards dedicating a section to this, rather than folding it
-in elsewhere. But it might be a short section …</p>
-<p>Introduce CONTENT data, and explain that SoFR can easily become a
-dynamic prediction problem.</p>
-<p>My understanding of the approach is: FPCA to expand predictors, still
-splines for coefficient, numeric integration and penalized
-estimation.</p>
-<p>May need to revisit identifiability?</p>
 </div>
 <div id="extensions-of-linear-sofr" class="section level2">
 <h2>Extensions of linear SoFR</h2>
-<p>Many subsections extend</p>
+<p>In this Section, we will consider several obvious and necessary
+extensions of the “simple” linear model. We will focus on implementation
+of models using <code>pfr()</code>. Note that this page only deals with
+cross-sectional settings; multilevel and longitudinal functional data
+are the subject of other pages. The emphasis here is on the fact that
+these extensions can be implemented using small changes to the familiar
+code of functional regression and attempts to make SoFR models as easy
+to fit as linear and semiparametric models.</p>
 <div id="adding-scalar-covariates" class="section level3">
 <h3>Adding scalar covariates</h3>
-<p>Just popping stuff in a non-penalized design matrix.</p>
-<p>Show some results, interpret coefficients, done.</p>
+<p>Most real-data analyses that involve a functional predictor will also
+include one or more scalar covariates. All methods in the previous
+section can easily be adapted to this setting. To be explicit, we are
+now interested in fitting models of the form <span
+class="math display">\[\begin{equation}
+Y_i=\beta_0 + \int_{S} \beta_1 (s)X_{i}(s)\, ds +
+\bm{Z}_i^t\bm{\gamma}  + \epsilon_i\;,
+\end{equation}\]</span> where <span
+class="math inline">\(\bm{Z}_i\)</span> is a <span
+class="math inline">\(Q\times 1\)</span> dimensional vector of scalar
+covariates for subject <span class="math inline">\(i\)</span> and <span
+class="math inline">\(\bm{\gamma}\)</span> is the vector of associated
+coefficients.</p>
+<p>The code chunk below regresses <code>BMI</code> on
+<code>MIMS_mat</code> as a functional predictor and <code>age</code> and
+<code>gender</code> as scalar covariates using <code>pfr()</code>;
+recall that <code>pfr()</code> expects functional predictors to be
+structured as matrices. Except for the addition of <code>age</code> and
+<code>gender</code> in the formula, all other elements of the model
+fitting code have been seen before.</p>
 <pre class="r"><code>pfr_adj_fit = 
   pfr(
     BMI ~ age + gender + lf(MIMS_mat, argvals = seq(1/60, 24, length = 1440)), 
     data = nhanes_df)</code></pre>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-32-1.png" width="90%" /></p>
-<pre><code>## 
-## Family: gaussian 
-## Link function: identity 
-## 
-## Formula:
-## BMI ~ age + gender + s(x = MIMS_mat.tmat, by = L.MIMS_mat)
-## 
-## Parametric coefficients:
-##               Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)  34.766073   0.496659  70.000  &lt; 2e-16 ***
-## age          -0.039074   0.005599  -6.979 3.22e-12 ***
-## genderFemale  1.683539   0.161064  10.453  &lt; 2e-16 ***
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Approximate significance of smooth terms:
-##                              edf Ref.df    F p-value    
-## s(MIMS_mat.tmat):L.MIMS_mat 7.21  8.208 38.1  &lt;2e-16 ***
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## R-sq.(adj) =  0.0459   Deviance explained =  4.7%
-## -REML =  25271  Scale est. = 46.861    n = 7553</code></pre>
-<p>Could do some additional work to get mediation …</p>
+<p>Moreover, all subsequent steps build directly on previous code
+chunks. Functional coefficients and standard errors can be extracted
+using <code>coef</code> and combined to obtain confidence intervals, and
+then plotted using tools from <code>tidyfun</code> or other graphics
+packages. Estimates and inference for non-functional coefficients can be
+obtained using <code>summary()</code> on the fitted model object.</p>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-24-1.png" width="90%" /></p>
 </div>
 <div id="multiple-functional-predictors" class="section level3">
 <h3>Multiple functional predictors</h3>
+<p>It is frequently the case that more than one functional predictor is
+available; often the functions are observed over the same domain, but
+this is not necessary. The goal is to fit a model of the form <span
+class="math display">\[\begin{equation}
+Y_i=\beta_0 + \sum_{r=1}^{R} \int_{S_r} \beta_r(s) X_{ir}(s)\, ds +
+\bm{Z}_i^t\bm{\gamma}  + \epsilon_i
+\end{equation}\]</span> where <span
+class="math inline">\(X_{ir}(s)\)</span>, <span class="math inline">\(1
+\leq r \leq R\)</span> are functional predictors observed over domains
+<span class="math inline">\(S_r\)</span> with associated coefficient
+functions <span class="math inline">\(\beta_r(s)\)</span>. The
+interpretation of the coefficients here is similar to that elsewhere; it
+is possible to interpret the effect of <span
+class="math inline">\(X_{ir}(s)\)</span> on the expected value of <span
+class="math inline">\(Y_i\)</span> through the coefficient <span
+class="math inline">\(\beta_r(s)\)</span>, keeping all other functional
+and non-functional predictors fixed. As when adding scalar predictors to
+the “simple” scalar-on-function regression model, techniques described
+previously can be readily adapted to this setting.</p>
+<p>We will again use <code>pfr()</code> to implement an example of this
+model. The code chunk below regresses <code>BMI</code> on scalar
+covariates <code>age</code> and <code>gender</code>. The functional
+predictor <code>MIMS_mat</code> is familiar from many analyses in this
+Section and is used here. We add the functional predictor
+<code>MIMS_sd_mat</code>, which is the standard deviation of MIMS values
+taken across several days of observation for each participant, also
+stored as a matrix. <code>MIMS_sd_mat</code> is included in the formula
+specification exactly as <code>MIMS_mat</code> has been in previous code
+chunks.</p>
 <pre class="r"><code>pfr_mult_fit = 
   pfr(
     BMI ~ age + gender + 
       lf(MIMS_mat, argvals = seq(1/60, 24, length = 1440)) + 
       lf(MIMS_sd_mat, argvals = seq(1/60, 24, length = 1440)), 
     data = nhanes_df)</code></pre>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-34-1.png" width="90%" /></p>
-<pre><code>## 
-## Family: gaussian 
-## Link function: identity 
-## 
-## Formula:
-## BMI ~ age + gender + s(x = MIMS_mat.tmat, by = L.MIMS_mat) + 
-##     s(x = MIMS_sd_mat.tmat, by = L.MIMS_sd_mat)
-## 
-## Parametric coefficients:
-##               Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)  36.253053   0.647002  56.032  &lt; 2e-16 ***
-## age          -0.048196   0.005893  -8.178 3.35e-16 ***
-## genderFemale  1.709442   0.160691  10.638  &lt; 2e-16 ***
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Approximate significance of smooth terms:
-##                                     edf Ref.df     F p-value    
-## s(MIMS_mat.tmat):L.MIMS_mat       3.802  4.399 18.63  &lt;2e-16 ***
-## s(MIMS_sd_mat.tmat):L.MIMS_sd_mat 7.114  8.145 13.07  &lt;2e-16 ***
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## R-sq.(adj) =  0.0564   Deviance explained = 5.81%
-## -REML =  25238  Scale est. = 46.342    n = 7553</code></pre>
+<p>The subsequent extraction of estimates and inference is almost
+identical – with the key addition of specifying <code>select = 1</code>
+or <code>select = 2</code> in the call to <code>coef()</code> to extract
+values for <code>MIMS_mat</code> and <code>MIMS_sd_mat</code>,
+respectively.</p>
+<pre class="r"><code>pfr_mult_inf_df = 
+  bind_rows(
+    coef(pfr_mult_fit, select = 1) %&gt;% mutate(coef = &quot;MIMS&quot;) %&gt;% rename(argvals = MIMS_mat.argvals),
+    coef(pfr_mult_fit, select = 2) %&gt;% mutate(coef = &quot;MIMS SD&quot;) %&gt;% rename(argvals = MIMS_sd_mat.argvals)) %&gt;% 
+  rename(estimate = value) %&gt;% 
+  mutate(
+    ub = estimate + 1.96 * se,
+    lb = estimate - 1.96 * se) %&gt;% 
+  tf_nest(.id = coef, .arg = argvals)
+
+pfr_mult_inf_df %&gt;% 
+  ggplot(aes(y = estimate)) + 
+  geom_spaghetti(alpha = 1, linewidth = 1.2) +
+  geom_errorband(aes(ymax = ub, ymin = lb), linetype = 0) + 
+  facet_grid(.~coef) +
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-26-1.png" width="90%" /></p>
 </div>
 <div id="exponential-family-outcomes" class="section level3">
 <h3>Exponential family outcomes</h3>
-<p>fit the model:</p>
+<p>Outcomes that follow binomial, Poisson, and other exponential family
+distributions are common in practice, and require the use of a
+generalized linear model framework for estimation and inference. This
+is, of course, a natural extension to the estimation methods we favor.
+For example, given a binary outcome <span
+class="math inline">\(Y_i\)</span>, scalar predictors <span
+class="math inline">\(\bm{Z}_i\)</span>, and a functional predictor
+<span class="math inline">\(X_i(s)\)</span>, one can pose the logistic
+scalar-on-function regression <span
+class="math inline">\(E[Y_i|\{X_{i}(s):s\in S\},\mathbf{Z}_i] =
+\mu_i\)</span>, where <span class="math display">\[\begin{equation}
+g(\mu_i)= \beta_0 + \int_{S} \beta_1 (s)X_{i}(s)ds +
+\bm{Z}_i^t\bm{\gamma}\;, \label{eq:SoFR_mgcv}
+\end{equation}\]</span> where <span
+class="math inline">\(g(\cdot)\)</span> is the logit link function.
+Model parameters can be interpreted as log odd ratios or exponentiated
+to obtain odds ratios. Expanding the coefficient function in terms of a
+basis expansion again provides a mechanism for estimation and inference.
+Rather than minimizing a sum of squares or the penalized equivalent, one
+now minimizes a (penalized) log likelihood. Tuning parameters for
+penalized approaches can be selected in a variety of ways, but we
+continue to take advantage of the connection between roughness penalties
+and mixed model representations. Non-penalized approaches can be fit
+directly using <code>glm()</code>, while penalized models are available
+through <code>mgcv::gam()</code> or <code>pfr()</code>.</p>
+<p>In the code chunk below, we fit a logistic scalar-on-function
+regression in the NHANES dataset. Our binary outcome is two-year
+mortality, with the value 0 indicating that the participant survived two
+years after enrollment. We adjust for age, gender, and BMI, and focus on
+MIMS as a functional predictor. The model specification using
+<code>pfr()</code> sets the argument <code>family</code> to
+<code>binomial()</code>, but other aspects of this code are drawn
+directly from prior examples.</p>
 <pre class="r"><code>pfr_mort_fit = 
   pfr(
     death_2yr ~ age + gender + BMI + 
       lf(MIMS_mat, argvals = seq(1/60, 24, length = 1440)),
     family = binomial(), method = &quot;REML&quot;, data = nhanes_df)</code></pre>
-<p><img src="chapter_04_files/figure-html/unnamed-chunk-36-1.png" width="90%" /></p>
-</div>
-</div>
-<div id="other-sofr-models" class="section level2">
-<h2>Other SoFR models</h2>
-<p>Not sure how far we go in this direction – there are <em>tons</em> of
-models, and interpreting the results can be hard. Maybe this is where we
-show some options in pfr() and then do a lit review?</p>
-<div id="fgam" class="section level3">
-<h3>FGAM</h3>
-<p>I’m calling this an extension of linear SoFR, but I guess could go in
-other models.</p>
+<p>Extracting estimated coefficient functions and conducting inference
+can be accomplished using the <code>coef()</code> function to obtain
+estimates and pointwise standard errors. Post-processing to construct
+confidence intervals is direct, and these can be inverse-logit
+transformed to obtain estimates and inference as odds ratios.</p>
+<pre class="r"><code>pfr_mort_inf_df = 
+  coef(pfr_mort_fit) %&gt;% 
+  rename(estimate = value) %&gt;% 
+  mutate(
+    method = &quot;pfr_adj&quot;,
+    ub = estimate + 1.96 * se,
+    lb = estimate - 1.96 * se) %&gt;% 
+  tf_nest(.id = method, .arg = MIMS_mat.argvals)
+
+pfr_mort_inf_df %&gt;% 
+  ggplot(aes(y = estimate)) + 
+  geom_spaghetti(alpha = 1, linewidth = 1.2) +
+  geom_errorband(aes(ymax = ub, ymin = lb)) +
+  scale_x_continuous(
+    breaks = seq(0, 24, length = 5),
+    labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
+  labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)</code></pre>
+<p><img src="chapter_04_files/figure-html/unnamed-chunk-28-1.png" width="90%" /></p>
 </div>
 </div>
 
