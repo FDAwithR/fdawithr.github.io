@@ -1,0 +1,579 @@
+---
+title: "Chapter 3: FPCA"
+output:
+  html_document: 
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+# library(tidyfun)
+
+library(mgcv)
+
+library(refund)
+# library(refundr)
+
+# library(splines2)
+
+# library(patchwork)
+
+# source(here::here("source", "nhanes_fpcr.R"))
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.width = 8,
+  # fig.asp = .7,
+  out.width = "90%"
+)
+
+# theme_set(theme_minimal() + theme(legend.position = "bottom"))
+# 
+# options(
+#   ggplot2.continuous.colour = "viridis",
+#   ggplot2.continuous.fill = "viridis"
+# )
+# 
+# scale_colour_discrete = scale_colour_viridis_d
+# scale_fill_discrete = scale_fill_viridis_d
+```
+
+## Defining FPCA and Connections to PCA
+
+This section illustrates functional principal component analysis (fPCA) using both simulations. It is associated with Chapter 3 of the book Functional Data Analysis with R. We use dense and dense with missing observations data structures.
+
+Functional PCA is closely related to multivariate PCA, but uses the ordering of the observed data and smoothness of the underlying signal to reduce the rank of the approximation and increase interpretability of results. The idea is to find a small set of orthonormal functions that explain most of the variability of the observed signal.
+
+## Simulations
+
+### Dense single-level functional data
+
+We start by simulating dense functional data from a set of orthonormal functions. In practice these functions are unknown and would need to be estimated from the data. In simulations the orthonormal functions are known. All functions are generated on an equally spaced grid between $0$ and $1$ from the model $$W_i(t)=\sum_{k=1}^K\xi_{ik}\phi_k(t)+\epsilon_{i}(t)\;,$$ where $K=4$, $\xi_{ik}\sim N(0,\lambda_K)$, $\epsilon_{i}(t)\sim N(0,\sigma^2)$, $\xi_{ik}$ and $\epsilon_i(t)$ are mutually independent for all $i$, $k$, and $t$. For illustration purposes we set $\lambda_k=0.5^{k-1}$ for $k=1,\ldots,4$ and $\sigma=2$, which corresponds to high noise. The number of study participants is set to $n=50$ and the number grid points is set to $p=3000$ to illustrate a case of high dimensional data. We start by simulating data that are completely observed for every study participant. We use the Fourier orthonormal functions $\phi_k(t)$:$$\phi_1(t)=\sqrt{2}\sin(2\pi t); \; \phi_2(t)=\sqrt{2}\cos(2\pi t);\; \phi_3(t)=\sqrt{2}\sin(4\pi t);\;
+\phi_4(t)=\sqrt{2}\cos(4\pi t)$$
+
+Below we display the R code for simulating the data.
+
+```{r cars}
+set.seed(5242022)
+#### settings (I-->n,J-->p,N-->K)
+n <- 50 # number of subjects
+p <- 3000 # dimension of the data
+t <- (1:p) / p # a regular grid on [0,1]
+K <- 4 #number of eigenfunctions
+sigma <- 2 ##standard deviation of the random noise
+lambdaTrue <- c(1, 0.5, 0.5 ^ 2, 0.5 ^ 3) # True eigenvalues
+  
+# True eigenfunctions stored in a p by K dimensional matrix
+#Each column corresponds to one eigenfunction  
+phi <- sqrt(2) * cbind(sin(2 * pi * t), cos(2 * pi * t), 
+                       sin(4 * pi * t), cos(4 * pi * t))
+```
+
+Note that the functions $\phi_k(\cdot)$ are orthonormal in $L_2$. However, we cannot work directly with the functions and, instead, we work with a vector of observations along the functions $\phi_k=\{\phi_k(t_1),\ldots,\phi_k(t_p)\}$, which is in ${\mathcal{R}^p}\neq L_2$. Even though we have started with orthonormal functions in $L_2$ these vectors are not orthonormal in $\mathcal{R}^p$. Indeed, they need to be normalized by $1/\sqrt{p}$ and the cross products are close to, but not exactly, zero because of numerical approximations. However, after normalization the approximation to orthonormality in ${\mathcal{R}^p}$ is very good
+
+```{r}
+round(t(phi) %*% phi / p, digits = 5)
+```
+
+To better explain this consider the $L_2$ norm of any of the functions. It can be shown that $\int_0^1\phi_k^2(t)dt=1$ for every $k$, which indicates that the function has norm $1$ in $L_2$. The integral can be approximated by the Riemann sum $$1=\int_0^1\phi_k^2(t)dt\approx \sum_{j=1}^p (t_j-t_{j-1})\phi_k^2(t_j)=\frac{1}{p}\sum_{j=1}^p\phi_k^2(t_j)=\frac{1}{p}||\phi_k||^2=\{\phi_k/\sqrt{p}\}^t\{\phi_k/\sqrt{p}\}\;.$$ Here $t_j=j/p$ for $j=0,\ldots,p$ and $||\phi_k||^2=\sum_{j=1}^p\phi_k^2(t_j)$ is the $L_2$ norm of the vector $\{\phi_k(t_1),\ldots,\phi_k(t_p)\}^t$ in $\mathcal{R}^p$. This is different, though closely related to, the $L_2$ norm in the functional space on $[0,1]$. The norm in the vector space is the Riemann sum approximation to the integral of the square of the function. The two have the same interpretation when the observed vectors are divided by $\sqrt{p}$ (when data are equally spaced and the distance between grid points is $1/p$). Slightly different constants are necessary if functional data are on an interval that is not $[0,1]$ or observations have different spacing.
+
+### Plots of functions used to generate the data
+
+Below we illustrate the eigenfunctions $\phi_k(t)$, $k=1,\ldots,4$ used to generate the data. Lighter colors corresponding to larger $k$, the index of the function in the basis. The first two eigenfunctions (darker shades of blue) have a period of one (lower frequency) and the second eigenfunctions (lighter shades of blue) have a period of two (higher frequency).
+
+```{r, echo=TRUE,results=FALSE}
+col.me <- c("darkblue", "royalblue", "cadetblue", "deepskyblue")
+plot(NULL, xlim = c(0, 1), ylim = c(-1.5, 3.5), 
+     xlab = "Functional domain", ylab = "Functional values",
+     bty = "n")
+for(i in 1:4){
+  lines(t, phi[,i], lwd = 2.5, col = col.me[i])
+}
+
+legend(0.7, 3, legend = c(expression(phi[1](s)), expression(phi[2](s)), expression(phi[3](s)), expression(phi[4](s))),
+       col = col.me, lty = c(1, 1, 1, 1), lwd = c(3, 3, 3, 3), cex = 1, bty = "n")
+```
+
+### Data generation and plotting
+
+Given the data generation mechanism structure it is important to see how data are actually obtained and what types of structures can be generated. This highlights the fact that fPCA provides a data generating mechanism. The general recipe is to simulate the scores independently, multiply them with the eigenfunctions, and add noise.
+
+```{r}
+#Generate independent N(0,1) in an nxK matrix
+xi <- matrix(rnorm(n * K), n, K)
+#Make scores on column k have variance lambda_k
+xi <- xi %*% diag(sqrt(lambdaTrue))
+#Obtain the signal by mutliplying the scores with the eigenvectors
+X <- xi %*% t(phi); # of size I by J
+#Add independent noise
+Y <- X + sigma * matrix(rnorm(n * p), n, p)
+```
+
+We now visualize the results of the simulations. First we plot the first two functions. As over plotting all functions would make the plot unreadable, in the second plot we use a heatmap. Heatmaps can be misleading, especially when data are noisy and the signal to noise ratio is low.
+
+```{r, results=FALSE}
+#Plot the first two functions simulated 
+par(mar = c(4.5, 4, 0, 1))
+plot(t, Y[1,], type = "l", 
+     col = rgb(0, 0, 1, alpha = 0.5), ylim = c(-10, 10), 
+     xlab = "Functional domain", ylab = "Functional values", 
+     bty = "n")
+lines(t, Y[2,], col = rgb(1, 0, 0, alpha = 0.5))
+```
+
+```{r, echo=TRUE,message=FALSE,warning=FALSE,results=FALSE}
+library(colorRamps)
+library(viridis)
+library(RColorBrewer)
+
+colme <- colorRampPalette(brewer.pal(10, "RdYlBu"),bias=1)(100)
+#Display the heatmap of all the functions
+par(mar = c(4.5, 4, 0.5, 1))
+image(t(Y), xlab = "Functional domain (Time)", ylab = "Study participants", 
+      axes = FALSE, col = colme)
+mtext(text = 5 * (1:10), side = 2, line = 0.3, at = seq(1 / 10, 1, length = 10), las = 1, cex = 0.8)
+mtext(text = seq(1 / 10, 1, length = 10), side = 1, line = 0.3, at = seq(1 / 10, 1, length = 10), las = 1, cex = 0.8)
+```
+
+### Obtaining the FPCA results
+
+Given the data generated and displayed we would like to apply standard (raw) and functional (smooth) PCA and compare the results obtained.
+
+First conduct direct PCA analysis on the raw data without smoothing
+
+```{r}
+results_raw <- prcomp(Y)
+#Obtain the estimated eigenvalues
+raw_eigenvalues <- results_raw$sdev ^ 2 / p
+
+#Obtain the estimated eigenvectors
+#Normalize to match with the eigenfunctions
+raw_eigenvectors <- sqrt(p) * results_raw$rotation
+
+#Eigenvectors are unique up to sign
+#If eigenvectors are negative correlated with the true eigenvectors
+#Change their sign
+for(k in 1:K){
+  if(raw_eigenvectors[,k] %*% phi[,k] < 0) 
+    raw_eigenvectors[,k] <- -raw_eigenvectors[,k]
+}
+```
+
+Now apply the fpca.face smoothing and display the results. The function uses one argument, the $n\times p$ dimensional matrix of data, where each row corresponds to one study participant and each column corresponds to a location on the domain (e.g., time).
+
+```{r}
+library(refund)
+#Here we use more parameters for illustration purposes 
+results <- fpca.face(Y,center = TRUE, argvals = t, knots = 100, pve = 0.9999, var = TRUE)
+#These are re-scaled to appear on the scale of the original functions 
+Phi <- sqrt(p) * results$efunctions
+eigenvalues <- results$evalues / p
+
+#If eigenvectors are negative correlated with the true eigenvectors
+#Change their sign
+for(k in 1:K){
+  if(Phi[,k] %*% phi[,k] < 0) 
+    Phi[,k] <- -Phi[,k]
+}
+```
+
+Plot the true eigenfunctions versus estimated eigenfunctions using raw and smooth PCA. The plot indicates that raw PCA results in highly variable estimates of the true PCA. In contrast smooth PCA provides smooth estimators that are more interpretable and reasonable. Smooth PCA eigenvectors seem to track pretty closely to the mean of the eigenvectors estimated from raw data. Both estimators do not overlap perfectly over the true eigenvectors. This is reasonable to observe in one simulation. However, checking whether the estimators are biased would require multiple simulations and taking the average over these simulations.
+
+```{r}
+par(mar = c(4.5, 4.5, 2, 2)) 
+par(mfrow = c(K / 2, 2)) 
+seq <- (1:(p / 10)) * 10 
+
+for(k in 1:K){
+  plot(t, raw_eigenvectors[,k], type = "l", col = "grey70", lwd = 0.2, 
+       ylim = c(-3, 3), ylab = paste("Eigenfunction ", k, sep = ""), xlab = "Time", bty = "n")
+
+  lines(t[seq], phi[seq, k], lwd = 3, col = "blue", lty = 1) 
+  lines(t[seq], Phi[seq, k], lwd = 3, col = "red", lty = 3)
+}
+```
+
+### Compare the estimated eigenvalues using PCA and FPCA
+
+We next compare the true eigenvalues (blue line) with the estimated eigenvalues using raw PCA (gray dotted line) and using smooth PCA (red dotted line). Notice that the smooth estimated eigenvalues are very close to the true eigenvalues. In contrast, eigenvalues estimated from raw PCA overestimate the true eigenvalues by quite a margin. This is especially true when the true eigenvalues are zero (no signal). Raw PCA continues to assign signal when there is none. Moreover, the estimated eigenvalues using raw PCA decrease slowly to zero forming almost a straight line. This feature can be observed in many applications. If observed, it could suggest that data are noisier than what standard PCA assumes (no noise, just smaller signals as the principal component number increases).
+
+```{r, echo=TRUE,results=FALSE}
+true_eigenvalues <- c(lambdaTrue, rep(0, 46))
+results <- fpca.face(Y, center = TRUE, argvals = t, knots = 100, pve = 0.9999, var = TRUE)
+smooth_eigenvalues <- rep(0, 50)
+ll <- length(results$evalues)
+smooth_eigenvalues[1:ll] <- results$evalues / p
+
+par(mar = c(4.5, 4, 0.5, 1))
+plot(1:50, true_eigenvalues, lwd = 3, col = "blue", bty = "n", type = "l",
+     xlab = "Index", ylab = "Eigenvalues")
+lines(1:50, raw_eigenvalues, lwd = 3, xlab = "Index", ylab = "Eigenvalues", col = "grey70", lty = 3)
+lines(1:50, smooth_eigenvalues, col = "red", lwd = 3, lty = 3)
+legend(30, 1, legend = c("True", "Raw", "Smooth"),
+       col = c("blue", "grey70", "red"), lty = c(1, 3, 3), lwd = c(3, 3, 3), cex = 1, bty = "n")
+```
+
+### Show how fpca.face works with NAs
+
+We now show how to use smooth functional PCA even with substantial amount of missing observations. Start by generating a matrix of the same dimension with Y, but containing $80$% missing observations
+
+```{r}
+#Missing data percentage
+miss_perc <- 0.8
+#Randomly assign what data are missing
+NA_mat <- matrix(rbinom(p * n, 1, miss_perc), ncol = p)
+Y_w_NA <- Y
+#Build the matrix with missing observations
+Y_w_NA[NA_mat == 1] <- NA
+
+#Conduct fPCA on the matrix with missing data
+results_NA <- fpca.face(Y_w_NA, center = TRUE, argvals = t, knots = 100, pve = 0.99)
+
+#Obtain the fPCA estimtors of eigenfunctions
+ef_NA <- sqrt(p) * results_NA$efunctions
+
+#If eigenvectors are negative correlated with the true eigenvectors
+#Change their sign
+for(k in 1:K){
+  if(ef_NA[,k] %*% phi[,k] < 0) 
+    ef_NA[,k] <- -ef_NA[,k]
+}
+```
+
+```{r, echo=TRUE,results=FALSE}
+par(mar = c(4.5, 4.5, 2, 2)) 
+par(mfrow = c(K / 2, 2)) 
+seq <- (1:(p / 10)) * 10 
+
+for(k in 1:K){
+  plot(t[seq], phi[seq, k], ylim = c(-3, 3), type = "l", col = "blue", 
+       ylab = paste("Eigenfunction ", k, sep = ""), xlab = "Time", bty = "n", lwd = 2)
+
+  lines(t[seq], ef_NA[seq, k], type = "l", col = "red", lty = 3, lwd = 3) 
+} 
+```
+
+Note that even with $80$\% missing data, the estimated eigenvectors using fPCA (red dotted line) are very close to the true eigenvectors (blue solid lines). These estimators start to degrade when the missing data becomes extrem and only a few observations are available per function.
+
+
+## Application to NHANES
+
+(Waiting for Andrew to fill in)
+
+
+## Sparse FPCA of the CONTENT data set
+
+Load the packages that will be used. Here the function `face::face.sparse` is doing the heavy lifting. The package `tidyverse` is used for reading the data and some data manipulation, the package `fields` is used for its `image.plot` function, while `refund` contains the CONTENT data set.  
+
+```{r, warning=FALSE,message=FALSE}
+library(tidyverse)
+library(refund)
+library(face)
+library(fields)
+```
+
+### Obtain and describe the data
+Data are available in the `refund` package
+```{r, message=FALSE}
+data("content")
+content_df <- content
+head(content_df)
+```
+
+```{r, echo=TRUE}
+nobs <- dim(content_df)[1]
+id <- content_df$id
+t <- content_df$agedays
+uid <- unique(id)
+nbabies <- length(uid)
+av_obs <- round(nobs / nbabies, digits = 0)
+```
+
+We now illustrate the sampling locations of the CONTENT data, where each study participant is shown on one line. Each dot in the plot below is a sampling point for a child expressed in days from birth.
+
+```{r, echo=TRUE,message=FALSE,warning=FALSE,results=FALSE}
+par(mar = c(4.5, 4, 0.5, 1))
+plot(1, type = "n", xlab = "Days from birth", ylab = "Study participants", xlim = c(0, 700), ylim = c(0, length(uid)), bty = "n") 
+
+for(i in 1:length(uid)){
+  seq <- which(id == uid[i])
+  points(t[seq], rep(i, length(seq)), col = "red", pch = 19, cex = 0.2)
+}
+```
+
+We now display the z-score for length (blue dots) and weight (red dots) for $4$ study participants. This plot illustrates the dependence between the normalized length and weight measures as a function of time from birth.  
+
+```{r, echo=TRUE,message=FALSE,warning=FALSE,results=FALSE}
+y1 <- content_df$zlen
+y2 <- content_df$zwei
+Sample <- c(30, 45, 56, 67)
+
+par(mfrow = c(2, 2), mar = c(4.5, 4.5, 3, 2))
+for(i in 1:4){
+  sel <- which(id == uid[Sample[i]])
+  plot(t[sel], y1[sel], col = "blue", pch = 19, 
+       xlab = "Days from birth",
+       ylab = "z-score", main = paste("Subject ", uid[Sample[i]]), bty = "n", 
+       ylim = c(-4, 4), xlim = c(0, 701), cex = 0.7)
+  points(t[sel], y2[sel], col = "red", pch = 19, cex = 0.7)
+}
+```
+
+### Estimation using face.sparse
+This component of the document illustrates how to use the `face.sparse` function to fit a sparse FPCA model and extract important summaries of the fit. Data needs to be in long format with y containing the data, id containing the subject ids, and t containing time. We build a data frame with these values.
+
+```{r}
+id <- content_df$id
+uid <- unique(id)
+t <- content_df$agedays
+y <- content_df$zlen
+
+#Prepare the data for face.sparse
+data <- data.frame(y = y, argvals = t, subj = id)
+
+#Apply face.sparse to the entire data set
+fit_face <- face.sparse(data, argvals.new = (1:701))
+
+#Create a data double
+data.h <- data
+tnew <- fit_face$argvals.new
+```
+
+All results are now stored in the `fit_face` variable and we will show how to extract and plot estimators of the mean, covariance, variance, correlation function, and eigenfunctions. 
+
+```{r}
+#Smooth marginal mean
+m <- fit_face$mu.new
+#Smooth covariance
+Cov <- fit_face$Chat.new
+#Pointwise covariance
+Cov_diag <- diag(Cov)
+#Smooth correlation 
+Cor <- fit_face$Cor.new
+#Pointwise prediction intervals
+m_p_2sd <- m + 2 * sqrt(Cov_diag)
+m_m_2sd <- m - 2 * sqrt(Cov_diag)
+#Smooth eigenfunctions 
+eigenf <- fit_face$eigenfunctions
+#Smooth eigenvalues 
+eigenv <- fit_face$eigenvalues
+```
+
+Plot the mean, variance, marginal prediction interval, and correlation function. Note that the mean function (panel in first row first column) has an increasing trend with a decline between $200$ and $400$ days after birth. This is likely to be due to what babies remained in the study after day $200$. It could be that lighter babies were more likely to stay in the study, but this hypothesis requires more investigation. The standard deviation (panel in first row second column) is very close to $1$, but smaller than $1$. This is probably due to the nature of the sampling, which focuses on a particular subgroup of babies. The pointwise prediction interval (panel in second row first column) seems to indicate that the assumption of normality of the marginal distributions at every time point may be reasonable. The correlation plot (panel in second row second column) seems to indicate that correlation is not overly complicated, and indicates that most of the variability in the smooth component may be explained by a few eigenfunctions. 
+
+```{r, echo=TRUE,message=FALSE,warning=FALSE,results=FALSE}
+par(mfrow = c(2, 2), mar = c(4.5, 4.5, 1, 2))
+#First panel, plot the mean function
+plot(tnew, m, 
+     lwd = 2, lty = 2, col = "blue", 
+     xlab = "Days from birth", 
+     ylab = "Mean zlen", bty = "n")
+
+#Second panel, plot the standard deviation
+plot(tnew, sqrt(Cov_diag), type = "l", lwd = 3, 
+     col = "red",
+     xlab = "Days from birth",
+     ylab = "SD zlen", bty = "n")
+
+#Third panel, plot the mean plus minus 2sd
+plot(1, type = "n", xlab = "Days from birth", ylab = "zlen", xlim = c(0, 700), 
+     ylim = c(-3.5, 3), bty = "n") 
+
+for(i in 1:length(uid)){ 
+  seq <- which(id == uid[i])
+  lines(t[seq], y[seq], col = rgb(0, 0, 0, alpha = 0.1)) 
+}
+
+#Mean and marginal prediction intervals
+lines(tnew, m, lwd = 3, lty = 1, col = "blue")
+lines(tnew, m_p_2sd, lwd = 2, lty = 3, col = "red")
+lines(tnew, m_m_2sd, lwd = 2, lty = 3, col = "red")
+
+#Fourth panel, correlation function
+image.plot(tnew, tnew, Cor, 
+           xlab = "Days from birth", 
+           ylab = "Days from birth",
+           main = "",
+           axis.args = list(at = c(0.6, 0.7, 0.8, 0.9, 1.0)),
+           legend.shrink = 0.8, 
+           legend.line = -1.5, legend.width = 0.5)
+```
+
+The first three eigenvalues of the covariance operator explain more than $99$\% of the variability of the smooth component.  Below we display the eigenfunctions that correspond to these three largest eigenvalues. The first eigenfunction (PC1, shown in blue) is very close to a random intercept, while the second eigenfunction (PC2, shown in green) is very close to a random slope. However, the third eigenfunction (PC3, shown in red) could probably be captured by a quadratic spline with a knot at $300$ days from birth.
+
+```{r, echo=TRUE,message=FALSE,warning=FALSE,results=FALSE}
+par(mar = c(4.5, 4.5, 0, 2))
+col_me <- c("cornflowerblue", "aquamarine3", "coral1")
+
+#Make an empty plot
+plot(1, type = "n", xlab = "Days from birth", ylab = "", xlim = c(0, 700), 
+     ylim = c(-3.5, 5), bty = "n")
+
+for(i in 1:3){
+  lines(0:700, eigenf[,i], col = col_me[i], lwd = 3)
+}
+legend(500, 4, c("PC1", "PC2", "PC3"), 
+       col = col_me, lty = c(1, 1, 1),
+       bty = "n", lwd = c(3, 3, 3), cex = 0.8)
+```
+
+### Predict trajectories using face.sparse
+Predict and plot the z-score for length observations for four study participants. These are the same study participants shown in the data examples earlier.
+
+```{r, echo=TRUE,message=FALSE,warning=FALSE,results=FALSE}
+Sample <- c(30, 45, 56, 67)
+
+#The days where we predict the function
+seq <- 1:701
+#This is used to prepare the data used for prediction
+k <- length(seq)
+par(mfrow = c(2, 2), mar = c(4.5, 4.5, 3, 2))
+for(i in 1:4){
+  #Begin for loop over study participants
+  #Select the data that correspond to individual i in Sample
+  sel <- which(id == uid[Sample[i]])
+  dati <- data.h[sel,]
+  
+  #Create the data frame for prediction
+  dati_pred <- data.frame(y = rep(NA, nrow(dati) + k),
+                          argvals = c(rep(NA, nrow(dati)), seq),
+                          subj = rep(dati$subj[1], nrow(dati) + k ))
+  
+  #Fill the first part of the data set with the observations for the subject that will be predicted
+  dati_pred[1:nrow(dati),] <- dati
+  #Produce the predictions for subject i
+  yhat2 <- predict(fit_face, dati_pred)
+  
+  data3 <- dati
+  Ylim <- range(c(data3$y, yhat2$y.pred))
+  Ord <- nrow(dati) + 1:k
+  
+  plot(data3$argvals, data3$y,
+       xlab = "Days from birth",
+       ylab = "zlen", pch = 19, col = "blue",
+       cex = 0.6, ylim = c(-3, 3),
+       cex.lab = 1.25, cex.axis = 1.25,
+       cex.main = 1.25, xlim = c(1, 700), 
+       bty = "n", main = paste("Subject ", uid[Sample[i]]))
+  lines(dati_pred$argvals[Ord], yhat2$y.pred[Ord], col = "red", lwd = 2)
+  lines(dati_pred$argvals[Ord], yhat2$y.pred[Ord] - 1.96 * yhat2$se.pred[Ord], 
+        col = "red", lwd = 1, lty = 2)
+  lines(dati_pred$argvals[Ord], yhat2$y.pred[Ord] + 1.96 * yhat2$se.pred[Ord], 
+        col = "red", lwd = 1, lty = 2)
+  lines(tnew, fit_face$mu.new, col = "black", lwd = 2)
+}#End for loop over study participants
+```
+
+
+## When PCA Fails
+
+### PCA for pure noise
+We generate data independently from $$W_i(t)\sim N(0,\sigma^2)$$ and apply PCA to see what types of results we obtain.
+
+The number of study participants is set to $n=250$ and the number grid points is set to $p=3000$ to illustrate a case of high dimensional data.
+
+```{r}
+set.seed(5242022)
+n <- 250
+p <- 3000
+K <- 4
+t <- (1:p) / p
+sigma <- 2
+W <- sigma * matrix(rnorm(n * p), n, p)
+```
+
+Apply PCA to the data matrix $W$
+
+```{r}
+results_raw <- prcomp(W)
+#Obtain the estimated eigenvalues
+raw_eigenvalues <- results_raw$sdev ^ 2 / 3000
+
+#Obtain the estimated eigenvectors
+#Normalize to match with the eigenfunctions
+raw_eigenvectors <- sqrt(p) * results_raw$rotation
+```
+
+Plot the eigenvectors and save the figure
+
+```{r}
+par(mar = c(4.5, 4.5, 2, 2))
+par(mfrow = c(K / 2, 2))
+seq <- (1:(p / 10)) * 10
+for(k in 1:K){
+  plot(t, raw_eigenvectors[,k], type = "l", col = "grey70", lwd = 0.2, ylim = c(-3, 3), 
+       ylab = paste("Eigenfunction ", k, sep = ""), 
+       xlab = "Time", bty = "n")
+}
+```
+
+Plot the first 50 eigenvalues from the largest to the smallest
+
+```{r}
+par(mar = c(4.5, 4, 1, 1))
+plot(raw_eigenvalues[1:50], bty = "n", type = "l", lwd = 3, ylab = "Eigenvalues", xlab = "Eigenvalues Index")
+```
+
+### PCA for randomly placed bumps
+We generate data independently data without noise where 
+
+$$W_i(t) = \frac{1}{\sqrt{2\pi}\sigma_i}\exp\left\{-\frac{(t-\mu_i)^2}{2\sigma^2_i}\right\}\;,$$ 
+where $\mu_i\sim\textrm{Uniform}[0,1]$ are random centers of the Gaussian distributions. The standard deviations are $\sigma_i\sim\textrm{Uniform}[0.05,0.15]$, which control the size of the bump.
+
+```{r}
+W <- matrix(rep(NA, p * n), ncol = p)
+x <- seq(0, 1, length = 3000)
+
+for(i in 1:n){ 
+  mu <- runif(1)
+  sigma <- 0.01
+  W[i,] <- dnorm(x, mu, sigma)
+}
+```
+
+Plot the first 5 functions generated via this procedure
+
+```{r,message=FALSE,warning=FALSE}
+library(viridis)
+col.sc <- viridis(10)
+plot(1, type = "n", xlab = "Functional domain", ylab = "Functional values", 
+     xlim = c(0, 1), ylim = c(0, 40), bty = "n")
+for(i in 1:10){
+  lines(x, W[i,], type = "l", lwd = 2, col = col.sc[i])
+}
+lines(c(0, 1), c(0, 0), lwd = 3)
+```
+
+
+```{r}
+results_raw <- prcomp(W)
+
+raw_eigenvalues <- results_raw$sdev ^ 2 / 3000
+
+#Obtain the estimated eigenvectors
+#Normalize to match with the eigenfunctions
+raw_eigenvectors <- sqrt(p) * results_raw$rotation
+
+par(mar = c(4.5, 4.5, 2, 2))
+par(mfrow = c(K / 2, 2))
+seq <- (1:(p / 10)) * 10
+for(k in 1:K){
+  plot(t, raw_eigenvectors[,k], type = "l", lwd = 2, ylim = c(-3, 6), 
+       ylab = paste("Eigenfunction ", k, sep = ""),
+       xlab = "Time", bty = "n")
+}
+```
+
+Plot the first $50$ largest eigenvalues for the Gaussian bumps data.
+
+```{r}
+par(mar = c(4.5, 4, 1, 1))
+plot(raw_eigenvalues[1:50], bty = "n", type = "l", lwd = 3, ylab = "Eigenvalues", xlab = "Eigenvalues Index")
+```
+
+The number of study participants is set to $n=250$ and the number grid points is set to $p=3000$ to illustrate a case of high dimensional data.
+
+
+
+

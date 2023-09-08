@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Chapter 3: FPCA</title>
+
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
+<script defer src="https://use.fontawesome.com/releases/v5.0.3/js/all.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.0/js/v4-shims.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics 
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151578452-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-151578452-1');
+</script>
+-->
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">FDA with R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="overview.html">Overview</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Datasets
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="dataset_nhanes.html">NHANES</a>
+    </li>
+    <li>
+      <a href="dataset_content.html">Content</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Chapters
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="chapter_01.html">Chapter 1</a>
+    </li>
+    <li>
+      <a href="chapter_02.html">Chapter 2</a>
+    </li>
+    <li>
+      <a href="chapter_03.html">Chapter 3: FPCA</a>
+    </li>
+    <li>
+      <a href="chapter_04.html">Chapter 4: SoFR</a>
+    </li>
+    <li>
+      <a href="chapter_05.html">Chapter 5: FoSR</a>
+    </li>
+    <li>
+      <a href="chapter_06.html">Chapter 6: FoFR</a>
+    </li>
+    <li>
+      <a href="chapter_07.html">Chapter 7</a>
+    </li>
+    <li>
+      <a href="chapter_08.html">Chapter 8</a>
+    </li>
+    <li>
+      <a href="chapter_09.html">Chapter 9</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="scripts.html">Scripts</a>
+</li>
+<li>
+  <a href="https://github.com/FDAwithR">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Chapter 3: FPCA</h1>
+
+</div>
+
+
+<div id="defining-fpca-and-connections-to-pca" class="section level2">
+<h2>Defining FPCA and Connections to PCA</h2>
+<p>This section illustrates functional principal component analysis
+(fPCA) using both simulations. It is associated with Chapter 3 of the
+book Functional Data Analysis with R. We use dense and dense with
+missing observations data structures.</p>
+<p>Functional PCA is closely related to multivariate PCA, but uses the
+ordering of the observed data and smoothness of the underlying signal to
+reduce the rank of the approximation and increase interpretability of
+results. The idea is to find a small set of orthonormal functions that
+explain most of the variability of the observed signal.</p>
+</div>
+<div id="simulations" class="section level2">
+<h2>Simulations</h2>
+<div id="dense-single-level-functional-data" class="section level3">
+<h3>Dense single-level functional data</h3>
+<p>We start by simulating dense functional data from a set of
+orthonormal functions. In practice these functions are unknown and would
+need to be estimated from the data. In simulations the orthonormal
+functions are known. All functions are generated on an equally spaced
+grid between <span class="math inline">\(0\)</span> and <span
+class="math inline">\(1\)</span> from the model <span
+class="math display">\[W_i(t)=\sum_{k=1}^K\xi_{ik}\phi_k(t)+\epsilon_{i}(t)\;,\]</span>
+where <span class="math inline">\(K=4\)</span>, <span
+class="math inline">\(\xi_{ik}\sim N(0,\lambda_K)\)</span>, <span
+class="math inline">\(\epsilon_{i}(t)\sim N(0,\sigma^2)\)</span>, <span
+class="math inline">\(\xi_{ik}\)</span> and <span
+class="math inline">\(\epsilon_i(t)\)</span> are mutually independent
+for all <span class="math inline">\(i\)</span>, <span
+class="math inline">\(k\)</span>, and <span
+class="math inline">\(t\)</span>. For illustration purposes we set <span
+class="math inline">\(\lambda_k=0.5^{k-1}\)</span> for <span
+class="math inline">\(k=1,\ldots,4\)</span> and <span
+class="math inline">\(\sigma=2\)</span>, which corresponds to high
+noise. The number of study participants is set to <span
+class="math inline">\(n=50\)</span> and the number grid points is set to
+<span class="math inline">\(p=3000\)</span> to illustrate a case of high
+dimensional data. We start by simulating data that are completely
+observed for every study participant. We use the Fourier orthonormal
+functions <span class="math inline">\(\phi_k(t)\)</span>:<span
+class="math display">\[\phi_1(t)=\sqrt{2}\sin(2\pi t); \;
+\phi_2(t)=\sqrt{2}\cos(2\pi t);\; \phi_3(t)=\sqrt{2}\sin(4\pi t);\;
+\phi_4(t)=\sqrt{2}\cos(4\pi t)\]</span></p>
+<p>Below we display the R code for simulating the data.</p>
+<pre class="r"><code>set.seed(5242022)
+#### settings (I--&gt;n,J--&gt;p,N--&gt;K)
+n &lt;- 50 # number of subjects
+p &lt;- 3000 # dimension of the data
+t &lt;- (1:p) / p # a regular grid on [0,1]
+K &lt;- 4 #number of eigenfunctions
+sigma &lt;- 2 ##standard deviation of the random noise
+lambdaTrue &lt;- c(1, 0.5, 0.5 ^ 2, 0.5 ^ 3) # True eigenvalues
+  
+# True eigenfunctions stored in a p by K dimensional matrix
+#Each column corresponds to one eigenfunction  
+phi &lt;- sqrt(2) * cbind(sin(2 * pi * t), cos(2 * pi * t), 
+                       sin(4 * pi * t), cos(4 * pi * t))</code></pre>
+<p>Note that the functions <span
+class="math inline">\(\phi_k(\cdot)\)</span> are orthonormal in <span
+class="math inline">\(L_2\)</span>. However, we cannot work directly
+with the functions and, instead, we work with a vector of observations
+along the functions <span
+class="math inline">\(\phi_k=\{\phi_k(t_1),\ldots,\phi_k(t_p)\}\)</span>,
+which is in <span class="math inline">\({\mathcal{R}^p}\neq
+L_2\)</span>. Even though we have started with orthonormal functions in
+<span class="math inline">\(L_2\)</span> these vectors are not
+orthonormal in <span class="math inline">\(\mathcal{R}^p\)</span>.
+Indeed, they need to be normalized by <span
+class="math inline">\(1/\sqrt{p}\)</span> and the cross products are
+close to, but not exactly, zero because of numerical approximations.
+However, after normalization the approximation to orthonormality in
+<span class="math inline">\({\mathcal{R}^p}\)</span> is very good</p>
+<pre class="r"><code>round(t(phi) %*% phi / p, digits = 5)
+##      [,1] [,2] [,3] [,4]
+## [1,]    1    0    0    0
+## [2,]    0    1    0    0
+## [3,]    0    0    1    0
+## [4,]    0    0    0    1</code></pre>
+<p>To better explain this consider the <span
+class="math inline">\(L_2\)</span> norm of any of the functions. It can
+be shown that <span
+class="math inline">\(\int_0^1\phi_k^2(t)dt=1\)</span> for every <span
+class="math inline">\(k\)</span>, which indicates that the function has
+norm <span class="math inline">\(1\)</span> in <span
+class="math inline">\(L_2\)</span>. The integral can be approximated by
+the Riemann sum <span
+class="math display">\[1=\int_0^1\phi_k^2(t)dt\approx \sum_{j=1}^p
+(t_j-t_{j-1})\phi_k^2(t_j)=\frac{1}{p}\sum_{j=1}^p\phi_k^2(t_j)=\frac{1}{p}||\phi_k||^2=\{\phi_k/\sqrt{p}\}^t\{\phi_k/\sqrt{p}\}\;.\]</span>
+Here <span class="math inline">\(t_j=j/p\)</span> for <span
+class="math inline">\(j=0,\ldots,p\)</span> and <span
+class="math inline">\(||\phi_k||^2=\sum_{j=1}^p\phi_k^2(t_j)\)</span> is
+the <span class="math inline">\(L_2\)</span> norm of the vector <span
+class="math inline">\(\{\phi_k(t_1),\ldots,\phi_k(t_p)\}^t\)</span> in
+<span class="math inline">\(\mathcal{R}^p\)</span>. This is different,
+though closely related to, the <span class="math inline">\(L_2\)</span>
+norm in the functional space on <span
+class="math inline">\([0,1]\)</span>. The norm in the vector space is
+the Riemann sum approximation to the integral of the square of the
+function. The two have the same interpretation when the observed vectors
+are divided by <span class="math inline">\(\sqrt{p}\)</span> (when data
+are equally spaced and the distance between grid points is <span
+class="math inline">\(1/p\)</span>). Slightly different constants are
+necessary if functional data are on an interval that is not <span
+class="math inline">\([0,1]\)</span> or observations have different
+spacing.</p>
+</div>
+<div id="plots-of-functions-used-to-generate-the-data"
+class="section level3">
+<h3>Plots of functions used to generate the data</h3>
+<p>Below we illustrate the eigenfunctions <span
+class="math inline">\(\phi_k(t)\)</span>, <span
+class="math inline">\(k=1,\ldots,4\)</span> used to generate the data.
+Lighter colors corresponding to larger <span
+class="math inline">\(k\)</span>, the index of the function in the
+basis. The first two eigenfunctions (darker shades of blue) have a
+period of one (lower frequency) and the second eigenfunctions (lighter
+shades of blue) have a period of two (higher frequency).</p>
+<pre class="r"><code>col.me &lt;- c(&quot;darkblue&quot;, &quot;royalblue&quot;, &quot;cadetblue&quot;, &quot;deepskyblue&quot;)
+plot(NULL, xlim = c(0, 1), ylim = c(-1.5, 3.5), 
+     xlab = &quot;Functional domain&quot;, ylab = &quot;Functional values&quot;,
+     bty = &quot;n&quot;)
+for(i in 1:4){
+  lines(t, phi[,i], lwd = 2.5, col = col.me[i])
+}
+
+legend(0.7, 3, legend = c(expression(phi[1](s)), expression(phi[2](s)), expression(phi[3](s)), expression(phi[4](s))),
+       col = col.me, lty = c(1, 1, 1, 1), lwd = c(3, 3, 3, 3), cex = 1, bty = &quot;n&quot;)</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-2-1.png" width="90%" /></p>
+</div>
+<div id="data-generation-and-plotting" class="section level3">
+<h3>Data generation and plotting</h3>
+<p>Given the data generation mechanism structure it is important to see
+how data are actually obtained and what types of structures can be
+generated. This highlights the fact that fPCA provides a data generating
+mechanism. The general recipe is to simulate the scores independently,
+multiply them with the eigenfunctions, and add noise.</p>
+<pre class="r"><code>#Generate independent N(0,1) in an nxK matrix
+xi &lt;- matrix(rnorm(n * K), n, K)
+#Make scores on column k have variance lambda_k
+xi &lt;- xi %*% diag(sqrt(lambdaTrue))
+#Obtain the signal by mutliplying the scores with the eigenvectors
+X &lt;- xi %*% t(phi); # of size I by J
+#Add independent noise
+Y &lt;- X + sigma * matrix(rnorm(n * p), n, p)</code></pre>
+<p>We now visualize the results of the simulations. First we plot the
+first two functions. As over plotting all functions would make the plot
+unreadable, in the second plot we use a heatmap. Heatmaps can be
+misleading, especially when data are noisy and the signal to noise ratio
+is low.</p>
+<pre class="r"><code>#Plot the first two functions simulated 
+par(mar = c(4.5, 4, 0, 1))
+plot(t, Y[1,], type = &quot;l&quot;, 
+     col = rgb(0, 0, 1, alpha = 0.5), ylim = c(-10, 10), 
+     xlab = &quot;Functional domain&quot;, ylab = &quot;Functional values&quot;, 
+     bty = &quot;n&quot;)
+lines(t, Y[2,], col = rgb(1, 0, 0, alpha = 0.5))</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-4-1.png" width="90%" /></p>
+<pre class="r"><code>library(colorRamps)
+library(viridis)
+library(RColorBrewer)
+
+colme &lt;- colorRampPalette(brewer.pal(10, &quot;RdYlBu&quot;),bias=1)(100)
+#Display the heatmap of all the functions
+par(mar = c(4.5, 4, 0.5, 1))
+image(t(Y), xlab = &quot;Functional domain (Time)&quot;, ylab = &quot;Study participants&quot;, 
+      axes = FALSE, col = colme)
+mtext(text = 5 * (1:10), side = 2, line = 0.3, at = seq(1 / 10, 1, length = 10), las = 1, cex = 0.8)
+mtext(text = seq(1 / 10, 1, length = 10), side = 1, line = 0.3, at = seq(1 / 10, 1, length = 10), las = 1, cex = 0.8)</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-5-1.png" width="90%" /></p>
+</div>
+<div id="obtaining-the-fpca-results" class="section level3">
+<h3>Obtaining the FPCA results</h3>
+<p>Given the data generated and displayed we would like to apply
+standard (raw) and functional (smooth) PCA and compare the results
+obtained.</p>
+<p>First conduct direct PCA analysis on the raw data without
+smoothing</p>
+<pre class="r"><code>results_raw &lt;- prcomp(Y)
+#Obtain the estimated eigenvalues
+raw_eigenvalues &lt;- results_raw$sdev ^ 2 / p
+
+#Obtain the estimated eigenvectors
+#Normalize to match with the eigenfunctions
+raw_eigenvectors &lt;- sqrt(p) * results_raw$rotation
+
+#Eigenvectors are unique up to sign
+#If eigenvectors are negative correlated with the true eigenvectors
+#Change their sign
+for(k in 1:K){
+  if(raw_eigenvectors[,k] %*% phi[,k] &lt; 0) 
+    raw_eigenvectors[,k] &lt;- -raw_eigenvectors[,k]
+}</code></pre>
+<p>Now apply the fpca.face smoothing and display the results. The
+function uses one argument, the <span class="math inline">\(n\times
+p\)</span> dimensional matrix of data, where each row corresponds to one
+study participant and each column corresponds to a location on the
+domain (e.g., time).</p>
+<pre class="r"><code>library(refund)
+#Here we use more parameters for illustration purposes 
+results &lt;- fpca.face(Y,center = TRUE, argvals = t, knots = 100, pve = 0.9999, var = TRUE)
+#These are re-scaled to appear on the scale of the original functions 
+Phi &lt;- sqrt(p) * results$efunctions
+eigenvalues &lt;- results$evalues / p
+
+#If eigenvectors are negative correlated with the true eigenvectors
+#Change their sign
+for(k in 1:K){
+  if(Phi[,k] %*% phi[,k] &lt; 0) 
+    Phi[,k] &lt;- -Phi[,k]
+}</code></pre>
+<p>Plot the true eigenfunctions versus estimated eigenfunctions using
+raw and smooth PCA. The plot indicates that raw PCA results in highly
+variable estimates of the true PCA. In contrast smooth PCA provides
+smooth estimators that are more interpretable and reasonable. Smooth PCA
+eigenvectors seem to track pretty closely to the mean of the
+eigenvectors estimated from raw data. Both estimators do not overlap
+perfectly over the true eigenvectors. This is reasonable to observe in
+one simulation. However, checking whether the estimators are biased
+would require multiple simulations and taking the average over these
+simulations.</p>
+<pre class="r"><code>par(mar = c(4.5, 4.5, 2, 2)) 
+par(mfrow = c(K / 2, 2)) 
+seq &lt;- (1:(p / 10)) * 10 
+
+for(k in 1:K){
+  plot(t, raw_eigenvectors[,k], type = &quot;l&quot;, col = &quot;grey70&quot;, lwd = 0.2, 
+       ylim = c(-3, 3), ylab = paste(&quot;Eigenfunction &quot;, k, sep = &quot;&quot;), xlab = &quot;Time&quot;, bty = &quot;n&quot;)
+
+  lines(t[seq], phi[seq, k], lwd = 3, col = &quot;blue&quot;, lty = 1) 
+  lines(t[seq], Phi[seq, k], lwd = 3, col = &quot;red&quot;, lty = 3)
+}</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-8-1.png" width="90%" /></p>
+</div>
+<div id="compare-the-estimated-eigenvalues-using-pca-and-fpca"
+class="section level3">
+<h3>Compare the estimated eigenvalues using PCA and FPCA</h3>
+<p>We next compare the true eigenvalues (blue line) with the estimated
+eigenvalues using raw PCA (gray dotted line) and using smooth PCA (red
+dotted line). Notice that the smooth estimated eigenvalues are very
+close to the true eigenvalues. In contrast, eigenvalues estimated from
+raw PCA overestimate the true eigenvalues by quite a margin. This is
+especially true when the true eigenvalues are zero (no signal). Raw PCA
+continues to assign signal when there is none. Moreover, the estimated
+eigenvalues using raw PCA decrease slowly to zero forming almost a
+straight line. This feature can be observed in many applications. If
+observed, it could suggest that data are noisier than what standard PCA
+assumes (no noise, just smaller signals as the principal component
+number increases).</p>
+<pre class="r"><code>true_eigenvalues &lt;- c(lambdaTrue, rep(0, 46))
+results &lt;- fpca.face(Y, center = TRUE, argvals = t, knots = 100, pve = 0.9999, var = TRUE)
+smooth_eigenvalues &lt;- rep(0, 50)
+ll &lt;- length(results$evalues)
+smooth_eigenvalues[1:ll] &lt;- results$evalues / p
+
+par(mar = c(4.5, 4, 0.5, 1))
+plot(1:50, true_eigenvalues, lwd = 3, col = &quot;blue&quot;, bty = &quot;n&quot;, type = &quot;l&quot;,
+     xlab = &quot;Index&quot;, ylab = &quot;Eigenvalues&quot;)
+lines(1:50, raw_eigenvalues, lwd = 3, xlab = &quot;Index&quot;, ylab = &quot;Eigenvalues&quot;, col = &quot;grey70&quot;, lty = 3)
+lines(1:50, smooth_eigenvalues, col = &quot;red&quot;, lwd = 3, lty = 3)
+legend(30, 1, legend = c(&quot;True&quot;, &quot;Raw&quot;, &quot;Smooth&quot;),
+       col = c(&quot;blue&quot;, &quot;grey70&quot;, &quot;red&quot;), lty = c(1, 3, 3), lwd = c(3, 3, 3), cex = 1, bty = &quot;n&quot;)</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-9-1.png" width="90%" /></p>
+</div>
+<div id="show-how-fpca.face-works-with-nas" class="section level3">
+<h3>Show how fpca.face works with NAs</h3>
+<p>We now show how to use smooth functional PCA even with substantial
+amount of missing observations. Start by generating a matrix of the same
+dimension with Y, but containing <span
+class="math inline">\(80\)</span>% missing observations</p>
+<pre class="r"><code>#Missing data percentage
+miss_perc &lt;- 0.8
+#Randomly assign what data are missing
+NA_mat &lt;- matrix(rbinom(p * n, 1, miss_perc), ncol = p)
+Y_w_NA &lt;- Y
+#Build the matrix with missing observations
+Y_w_NA[NA_mat == 1] &lt;- NA
+
+#Conduct fPCA on the matrix with missing data
+results_NA &lt;- fpca.face(Y_w_NA, center = TRUE, argvals = t, knots = 100, pve = 0.99)
+
+#Obtain the fPCA estimtors of eigenfunctions
+ef_NA &lt;- sqrt(p) * results_NA$efunctions
+
+#If eigenvectors are negative correlated with the true eigenvectors
+#Change their sign
+for(k in 1:K){
+  if(ef_NA[,k] %*% phi[,k] &lt; 0) 
+    ef_NA[,k] &lt;- -ef_NA[,k]
+}</code></pre>
+<pre class="r"><code>par(mar = c(4.5, 4.5, 2, 2)) 
+par(mfrow = c(K / 2, 2)) 
+seq &lt;- (1:(p / 10)) * 10 
+
+for(k in 1:K){
+  plot(t[seq], phi[seq, k], ylim = c(-3, 3), type = &quot;l&quot;, col = &quot;blue&quot;, 
+       ylab = paste(&quot;Eigenfunction &quot;, k, sep = &quot;&quot;), xlab = &quot;Time&quot;, bty = &quot;n&quot;, lwd = 2)
+
+  lines(t[seq], ef_NA[seq, k], type = &quot;l&quot;, col = &quot;red&quot;, lty = 3, lwd = 3) 
+} </code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-11-1.png" width="90%" /></p>
+<p>Note that even with <span class="math inline">\(80\)</span>% missing
+data, the estimated eigenvectors using fPCA (red dotted line) are very
+close to the true eigenvectors (blue solid lines). These estimators
+start to degrade when the missing data becomes extrem and only a few
+observations are available per function.</p>
+</div>
+</div>
+<div id="application-to-nhanes" class="section level2">
+<h2>Application to NHANES</h2>
+<p>(Waiting for Andrew to fill in)</p>
+</div>
+<div id="sparse-fpca-of-the-content-data-set" class="section level2">
+<h2>Sparse FPCA of the CONTENT data set</h2>
+<p>Load the packages that will be used. Here the function
+<code>face::face.sparse</code> is doing the heavy lifting. The package
+<code>tidyverse</code> is used for reading the data and some data
+manipulation, the package <code>fields</code> is used for its
+<code>image.plot</code> function, while <code>refund</code> contains the
+CONTENT data set.</p>
+<pre class="r"><code>library(tidyverse)
+library(refund)
+library(face)
+library(fields)</code></pre>
+<div id="obtain-and-describe-the-data" class="section level3">
+<h3>Obtain and describe the data</h3>
+<p>Data are available in the <code>refund</code> package</p>
+<pre class="r"><code>data(&quot;content&quot;)
+content_df &lt;- content
+head(content_df)
+##   id ma1fe0 weightkg height agedays     cbmi  zlen zwei zwfl zbmi
+## 1  1      0    5.618   56.0      61 17.91454 -0.53 0.70 1.64 1.37
+## 2  1      0    5.990   56.2      65 18.96506 -0.62 1.05 2.18 1.93
+## 3  1      0    5.974   56.5      71 18.71407 -0.75 0.81 1.99 1.69
+## 4  1      0    6.290   57.4      77 19.09092 -0.57 1.01 2.03 1.83
+## 5  1      0    6.618   58.6      84 19.27221 -0.28 1.20 1.94 1.85
+## 6  1      0    6.530   58.8      91 18.88681 -0.46 0.89 1.70 1.56</code></pre>
+<pre class="r"><code>nobs &lt;- dim(content_df)[1]
+id &lt;- content_df$id
+t &lt;- content_df$agedays
+uid &lt;- unique(id)
+nbabies &lt;- length(uid)
+av_obs &lt;- round(nobs / nbabies, digits = 0)</code></pre>
+<p>We now illustrate the sampling locations of the CONTENT data, where
+each study participant is shown on one line. Each dot in the plot below
+is a sampling point for a child expressed in days from birth.</p>
+<pre class="r"><code>par(mar = c(4.5, 4, 0.5, 1))
+plot(1, type = &quot;n&quot;, xlab = &quot;Days from birth&quot;, ylab = &quot;Study participants&quot;, xlim = c(0, 700), ylim = c(0, length(uid)), bty = &quot;n&quot;) 
+
+for(i in 1:length(uid)){
+  seq &lt;- which(id == uid[i])
+  points(t[seq], rep(i, length(seq)), col = &quot;red&quot;, pch = 19, cex = 0.2)
+}</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-15-1.png" width="90%" /></p>
+<p>We now display the z-score for length (blue dots) and weight (red
+dots) for <span class="math inline">\(4\)</span> study participants.
+This plot illustrates the dependence between the normalized length and
+weight measures as a function of time from birth.</p>
+<pre class="r"><code>y1 &lt;- content_df$zlen
+y2 &lt;- content_df$zwei
+Sample &lt;- c(30, 45, 56, 67)
+
+par(mfrow = c(2, 2), mar = c(4.5, 4.5, 3, 2))
+for(i in 1:4){
+  sel &lt;- which(id == uid[Sample[i]])
+  plot(t[sel], y1[sel], col = &quot;blue&quot;, pch = 19, 
+       xlab = &quot;Days from birth&quot;,
+       ylab = &quot;z-score&quot;, main = paste(&quot;Subject &quot;, uid[Sample[i]]), bty = &quot;n&quot;, 
+       ylim = c(-4, 4), xlim = c(0, 701), cex = 0.7)
+  points(t[sel], y2[sel], col = &quot;red&quot;, pch = 19, cex = 0.7)
+}</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-16-1.png" width="90%" /></p>
+</div>
+<div id="estimation-using-face.sparse" class="section level3">
+<h3>Estimation using face.sparse</h3>
+<p>This component of the document illustrates how to use the
+<code>face.sparse</code> function to fit a sparse FPCA model and extract
+important summaries of the fit. Data needs to be in long format with y
+containing the data, id containing the subject ids, and t containing
+time. We build a data frame with these values.</p>
+<pre class="r"><code>id &lt;- content_df$id
+uid &lt;- unique(id)
+t &lt;- content_df$agedays
+y &lt;- content_df$zlen
+
+#Prepare the data for face.sparse
+data &lt;- data.frame(y = y, argvals = t, subj = id)
+
+#Apply face.sparse to the entire data set
+fit_face &lt;- face.sparse(data, argvals.new = (1:701))
+
+#Create a data double
+data.h &lt;- data
+tnew &lt;- fit_face$argvals.new</code></pre>
+<p>All results are now stored in the <code>fit_face</code> variable and
+we will show how to extract and plot estimators of the mean, covariance,
+variance, correlation function, and eigenfunctions.</p>
+<pre class="r"><code>#Smooth marginal mean
+m &lt;- fit_face$mu.new
+#Smooth covariance
+Cov &lt;- fit_face$Chat.new
+#Pointwise covariance
+Cov_diag &lt;- diag(Cov)
+#Smooth correlation 
+Cor &lt;- fit_face$Cor.new
+#Pointwise prediction intervals
+m_p_2sd &lt;- m + 2 * sqrt(Cov_diag)
+m_m_2sd &lt;- m - 2 * sqrt(Cov_diag)
+#Smooth eigenfunctions 
+eigenf &lt;- fit_face$eigenfunctions
+#Smooth eigenvalues 
+eigenv &lt;- fit_face$eigenvalues</code></pre>
+<p>Plot the mean, variance, marginal prediction interval, and
+correlation function. Note that the mean function (panel in first row
+first column) has an increasing trend with a decline between <span
+class="math inline">\(200\)</span> and <span
+class="math inline">\(400\)</span> days after birth. This is likely to
+be due to what babies remained in the study after day <span
+class="math inline">\(200\)</span>. It could be that lighter babies were
+more likely to stay in the study, but this hypothesis requires more
+investigation. The standard deviation (panel in first row second column)
+is very close to <span class="math inline">\(1\)</span>, but smaller
+than <span class="math inline">\(1\)</span>. This is probably due to the
+nature of the sampling, which focuses on a particular subgroup of
+babies. The pointwise prediction interval (panel in second row first
+column) seems to indicate that the assumption of normality of the
+marginal distributions at every time point may be reasonable. The
+correlation plot (panel in second row second column) seems to indicate
+that correlation is not overly complicated, and indicates that most of
+the variability in the smooth component may be explained by a few
+eigenfunctions.</p>
+<pre class="r"><code>par(mfrow = c(2, 2), mar = c(4.5, 4.5, 1, 2))
+#First panel, plot the mean function
+plot(tnew, m, 
+     lwd = 2, lty = 2, col = &quot;blue&quot;, 
+     xlab = &quot;Days from birth&quot;, 
+     ylab = &quot;Mean zlen&quot;, bty = &quot;n&quot;)
+
+#Second panel, plot the standard deviation
+plot(tnew, sqrt(Cov_diag), type = &quot;l&quot;, lwd = 3, 
+     col = &quot;red&quot;,
+     xlab = &quot;Days from birth&quot;,
+     ylab = &quot;SD zlen&quot;, bty = &quot;n&quot;)
+
+#Third panel, plot the mean plus minus 2sd
+plot(1, type = &quot;n&quot;, xlab = &quot;Days from birth&quot;, ylab = &quot;zlen&quot;, xlim = c(0, 700), 
+     ylim = c(-3.5, 3), bty = &quot;n&quot;) 
+
+for(i in 1:length(uid)){ 
+  seq &lt;- which(id == uid[i])
+  lines(t[seq], y[seq], col = rgb(0, 0, 0, alpha = 0.1)) 
+}
+
+#Mean and marginal prediction intervals
+lines(tnew, m, lwd = 3, lty = 1, col = &quot;blue&quot;)
+lines(tnew, m_p_2sd, lwd = 2, lty = 3, col = &quot;red&quot;)
+lines(tnew, m_m_2sd, lwd = 2, lty = 3, col = &quot;red&quot;)
+
+#Fourth panel, correlation function
+image.plot(tnew, tnew, Cor, 
+           xlab = &quot;Days from birth&quot;, 
+           ylab = &quot;Days from birth&quot;,
+           main = &quot;&quot;,
+           axis.args = list(at = c(0.6, 0.7, 0.8, 0.9, 1.0)),
+           legend.shrink = 0.8, 
+           legend.line = -1.5, legend.width = 0.5)</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-19-1.png" width="90%" /></p>
+<p>The first three eigenvalues of the covariance operator explain more
+than <span class="math inline">\(99\)</span>% of the variability of the
+smooth component. Below we display the eigenfunctions that correspond to
+these three largest eigenvalues. The first eigenfunction (PC1, shown in
+blue) is very close to a random intercept, while the second
+eigenfunction (PC2, shown in green) is very close to a random slope.
+However, the third eigenfunction (PC3, shown in red) could probably be
+captured by a quadratic spline with a knot at <span
+class="math inline">\(300\)</span> days from birth.</p>
+<pre class="r"><code>par(mar = c(4.5, 4.5, 0, 2))
+col_me &lt;- c(&quot;cornflowerblue&quot;, &quot;aquamarine3&quot;, &quot;coral1&quot;)
+
+#Make an empty plot
+plot(1, type = &quot;n&quot;, xlab = &quot;Days from birth&quot;, ylab = &quot;&quot;, xlim = c(0, 700), 
+     ylim = c(-3.5, 5), bty = &quot;n&quot;)
+
+for(i in 1:3){
+  lines(0:700, eigenf[,i], col = col_me[i], lwd = 3)
+}
+legend(500, 4, c(&quot;PC1&quot;, &quot;PC2&quot;, &quot;PC3&quot;), 
+       col = col_me, lty = c(1, 1, 1),
+       bty = &quot;n&quot;, lwd = c(3, 3, 3), cex = 0.8)</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-20-1.png" width="90%" /></p>
+</div>
+<div id="predict-trajectories-using-face.sparse" class="section level3">
+<h3>Predict trajectories using face.sparse</h3>
+<p>Predict and plot the z-score for length observations for four study
+participants. These are the same study participants shown in the data
+examples earlier.</p>
+<pre class="r"><code>Sample &lt;- c(30, 45, 56, 67)
+
+#The days where we predict the function
+seq &lt;- 1:701
+#This is used to prepare the data used for prediction
+k &lt;- length(seq)
+par(mfrow = c(2, 2), mar = c(4.5, 4.5, 3, 2))
+for(i in 1:4){
+  #Begin for loop over study participants
+  #Select the data that correspond to individual i in Sample
+  sel &lt;- which(id == uid[Sample[i]])
+  dati &lt;- data.h[sel,]
+  
+  #Create the data frame for prediction
+  dati_pred &lt;- data.frame(y = rep(NA, nrow(dati) + k),
+                          argvals = c(rep(NA, nrow(dati)), seq),
+                          subj = rep(dati$subj[1], nrow(dati) + k ))
+  
+  #Fill the first part of the data set with the observations for the subject that will be predicted
+  dati_pred[1:nrow(dati),] &lt;- dati
+  #Produce the predictions for subject i
+  yhat2 &lt;- predict(fit_face, dati_pred)
+  
+  data3 &lt;- dati
+  Ylim &lt;- range(c(data3$y, yhat2$y.pred))
+  Ord &lt;- nrow(dati) + 1:k
+  
+  plot(data3$argvals, data3$y,
+       xlab = &quot;Days from birth&quot;,
+       ylab = &quot;zlen&quot;, pch = 19, col = &quot;blue&quot;,
+       cex = 0.6, ylim = c(-3, 3),
+       cex.lab = 1.25, cex.axis = 1.25,
+       cex.main = 1.25, xlim = c(1, 700), 
+       bty = &quot;n&quot;, main = paste(&quot;Subject &quot;, uid[Sample[i]]))
+  lines(dati_pred$argvals[Ord], yhat2$y.pred[Ord], col = &quot;red&quot;, lwd = 2)
+  lines(dati_pred$argvals[Ord], yhat2$y.pred[Ord] - 1.96 * yhat2$se.pred[Ord], 
+        col = &quot;red&quot;, lwd = 1, lty = 2)
+  lines(dati_pred$argvals[Ord], yhat2$y.pred[Ord] + 1.96 * yhat2$se.pred[Ord], 
+        col = &quot;red&quot;, lwd = 1, lty = 2)
+  lines(tnew, fit_face$mu.new, col = &quot;black&quot;, lwd = 2)
+}#End for loop over study participants</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-21-1.png" width="90%" /></p>
+</div>
+</div>
+<div id="when-pca-fails" class="section level2">
+<h2>When PCA Fails</h2>
+<div id="pca-for-pure-noise" class="section level3">
+<h3>PCA for pure noise</h3>
+<p>We generate data independently from <span
+class="math display">\[W_i(t)\sim N(0,\sigma^2)\]</span> and apply PCA
+to see what types of results we obtain.</p>
+<p>The number of study participants is set to <span
+class="math inline">\(n=250\)</span> and the number grid points is set
+to <span class="math inline">\(p=3000\)</span> to illustrate a case of
+high dimensional data.</p>
+<pre class="r"><code>set.seed(5242022)
+n &lt;- 250
+p &lt;- 3000
+K &lt;- 4
+t &lt;- (1:p) / p
+sigma &lt;- 2
+W &lt;- sigma * matrix(rnorm(n * p), n, p)</code></pre>
+<p>Apply PCA to the data matrix <span
+class="math inline">\(W\)</span></p>
+<pre class="r"><code>results_raw &lt;- prcomp(W)
+#Obtain the estimated eigenvalues
+raw_eigenvalues &lt;- results_raw$sdev ^ 2 / 3000
+
+#Obtain the estimated eigenvectors
+#Normalize to match with the eigenfunctions
+raw_eigenvectors &lt;- sqrt(p) * results_raw$rotation</code></pre>
+<p>Plot the eigenvectors and save the figure</p>
+<pre class="r"><code>par(mar = c(4.5, 4.5, 2, 2))
+par(mfrow = c(K / 2, 2))
+seq &lt;- (1:(p / 10)) * 10
+for(k in 1:K){
+  plot(t, raw_eigenvectors[,k], type = &quot;l&quot;, col = &quot;grey70&quot;, lwd = 0.2, ylim = c(-3, 3), 
+       ylab = paste(&quot;Eigenfunction &quot;, k, sep = &quot;&quot;), 
+       xlab = &quot;Time&quot;, bty = &quot;n&quot;)
+}</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-24-1.png" width="90%" /></p>
+<p>Plot the first 50 eigenvalues from the largest to the smallest</p>
+<pre class="r"><code>par(mar = c(4.5, 4, 1, 1))
+plot(raw_eigenvalues[1:50], bty = &quot;n&quot;, type = &quot;l&quot;, lwd = 3, ylab = &quot;Eigenvalues&quot;, xlab = &quot;Eigenvalues Index&quot;)</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-25-1.png" width="90%" /></p>
+</div>
+<div id="pca-for-randomly-placed-bumps" class="section level3">
+<h3>PCA for randomly placed bumps</h3>
+<p>We generate data independently data without noise where</p>
+<p><span class="math display">\[W_i(t) =
+\frac{1}{\sqrt{2\pi}\sigma_i}\exp\left\{-\frac{(t-\mu_i)^2}{2\sigma^2_i}\right\}\;,\]</span>
+where <span
+class="math inline">\(\mu_i\sim\textrm{Uniform}[0,1]\)</span> are random
+centers of the Gaussian distributions. The standard deviations are <span
+class="math inline">\(\sigma_i\sim\textrm{Uniform}[0.05,0.15]\)</span>,
+which control the size of the bump.</p>
+<pre class="r"><code>W &lt;- matrix(rep(NA, p * n), ncol = p)
+x &lt;- seq(0, 1, length = 3000)
+
+for(i in 1:n){ 
+  mu &lt;- runif(1)
+  sigma &lt;- 0.01
+  W[i,] &lt;- dnorm(x, mu, sigma)
+}</code></pre>
+<p>Plot the first 5 functions generated via this procedure</p>
+<pre class="r"><code>library(viridis)
+col.sc &lt;- viridis(10)
+plot(1, type = &quot;n&quot;, xlab = &quot;Functional domain&quot;, ylab = &quot;Functional values&quot;, 
+     xlim = c(0, 1), ylim = c(0, 40), bty = &quot;n&quot;)
+for(i in 1:10){
+  lines(x, W[i,], type = &quot;l&quot;, lwd = 2, col = col.sc[i])
+}
+lines(c(0, 1), c(0, 0), lwd = 3)</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-27-1.png" width="90%" /></p>
+<pre class="r"><code>results_raw &lt;- prcomp(W)
+
+raw_eigenvalues &lt;- results_raw$sdev ^ 2 / 3000
+
+#Obtain the estimated eigenvectors
+#Normalize to match with the eigenfunctions
+raw_eigenvectors &lt;- sqrt(p) * results_raw$rotation
+
+par(mar = c(4.5, 4.5, 2, 2))
+par(mfrow = c(K / 2, 2))
+seq &lt;- (1:(p / 10)) * 10
+for(k in 1:K){
+  plot(t, raw_eigenvectors[,k], type = &quot;l&quot;, lwd = 2, ylim = c(-3, 6), 
+       ylab = paste(&quot;Eigenfunction &quot;, k, sep = &quot;&quot;),
+       xlab = &quot;Time&quot;, bty = &quot;n&quot;)
+}</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-28-1.png" width="90%" /></p>
+<p>Plot the first <span class="math inline">\(50\)</span> largest
+eigenvalues for the Gaussian bumps data.</p>
+<pre class="r"><code>par(mar = c(4.5, 4, 1, 1))
+plot(raw_eigenvalues[1:50], bty = &quot;n&quot;, type = &quot;l&quot;, lwd = 3, ylab = &quot;Eigenvalues&quot;, xlab = &quot;Eigenvalues Index&quot;)</code></pre>
+<p><img src="chapter_03_files/figure-html/unnamed-chunk-29-1.png" width="90%" /></p>
+<p>The number of study participants is set to <span
+class="math inline">\(n=250\)</span> and the number grid points is set
+to <span class="math inline">\(p=3000\)</span> to illustrate a case of
+high dimensional data.</p>
+</div>
+</div>
+
+<br><br>
+<footer>
+  <p class="copyright text-muted" align="center">Copyright &copy; 2023</p>
+</footer>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
