@@ -1,0 +1,317 @@
+---
+title: "Chapter 7"
+output:
+  html_document: 
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+# library(tidyfun)
+
+library(mgcv)
+
+library(refund)
+# library(refundr)
+
+# library(splines2)
+
+# library(patchwork)
+
+# source(here::here("source", "nhanes_fpcr.R"))
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.width = 10,
+  # fig.asp = .7,
+  out.width = "90%"
+)
+
+# theme_set(theme_minimal() + theme(legend.position = "bottom"))
+# 
+# options(
+#   ggplot2.continuous.colour = "viridis",
+#   ggplot2.continuous.fill = "viridis"
+# )
+# 
+# scale_colour_discrete = scale_colour_viridis_d
+# scale_fill_discrete = scale_fill_viridis_d
+```
+
+## Exploratory Analysis of the Survival Data in NHANES
+
+We first illustrate the survival data analysis concepts using examples from the NHANES data collected between 2011-2014.
+
+```{r, message=FALSE}
+library(tidyverse)
+library(survival)
+library(mgcv)
+library(refund)
+
+df_cleaned <- readRDS("./../../FDA-with-R/NHANES/data/nhanes_fda_with_r.rds")
+
+df_fig71 <- df_cleaned %>% 
+  mutate(time_yr = round(time / 12, 2)) %>%
+  select(SEQN, time = time_yr, event, age, BMI, race, gender, CHD) %>%
+  filter(SEQN %in% c(64759, 70962, 73561, 75630, 77244, 82820))
+
+#get survival data with functional predictors
+nhanes_df_surv <- df_cleaned %>% 
+  mutate(time_yr = round(time / 12, 2)) %>%
+  filter(!is.na(event)) %>%
+  select(SEQN, time = time_yr, event, age, BMI, race, gender, CHD, TMIMS, MIMS)
+```
+
+Below is the code to obtain a sample of six participants in NHANES 2011-2014. The code then reproduce Figure 7.2 of the book.
+
+```{r, fig.height=6}
+df_sample <- df_fig71
+df_sample$MIMS <- df_cleaned$MIMS[which(df_cleaned$SEQN %in% df_sample$SEQN),]
+str(df_sample)
+
+#plot NHANES sample data
+layout(matrix(c(1:21), 7, 3, byrow = FALSE), widths = c(1, 2, 4))
+
+#title of other info
+par(mar = c(0,0,0,0))
+plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+text(x = 0.45, y = 0.5, paste("SEQN"), cex = 1.8, col = "black", font = 2)
+#other info
+par(mar = c(1,0,1,1))
+for(i in 1:6){
+  plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+  mtext(side = 4, text = df_sample$SEQN[i], line = -6.5, cex = 1.2, las = 1)
+}
+
+#title of predictors
+par(mar = c(0,0,0,0))
+plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+text(x = 0.45, y = 0.5, paste("Predictors"), cex = 1.8, col = "black", font = 2)
+#other info
+par(mar = c(1,0,1,1))
+for(i in 1:6){
+  plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+  mtext(side = 4, text = paste0("age: ", df_sample$age[i],
+                                ", gender: ", df_sample$gender[i],
+                                ", BMI: ", df_sample$BMI[i],
+                                ", \n", df_sample$race[i],
+                                ", CHD: ", df_sample$CHD[i]), line = -17, cex = 0.8, las = 1)
+}
+
+#title of survival data
+par(mar = c(0,0,0,0))
+plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+text(x = 0.45, y = 0.5, paste("Time to event"), cex = 1.8, col = "black", font = 2)
+#survival data
+par(mar = c(0.2,0.5,0.2,0.5))
+for(j in 1:6){
+  if(df_sample$event[j] == 1){
+    plot(x = c(0, df_sample$time[j]), y = c(0, 0), type = "l", xlim = c(0, 8.7), xaxt = "n", yaxt = "n", bty = "n", col = "red", lwd = 2)
+    points(x = df_sample$time[j], y = 0,  pch = 4, col = "red", cex = 2)
+    text(df_sample$time[j], 0, labels = paste0(format(round(df_sample$time[j], 2), nsmall = 2), " years"), cex = 1.5, pos = 3, col = "red")
+  }else{
+    plot(x = c(0, df_sample$time[j]), y = c(0, 0), type = "l", xlim = c(0, 8.7), xaxt = "n", yaxt = "n", bty = "n", lwd = 2)
+    points(x = df_sample$time[j], y = 0, pch = 16, cex = 2)
+    text(df_sample$time[j], 0, labels = paste0(format(round(df_sample$time[j], 2), nsmall = 2), " years"), cex = 1.5, pos = 3)
+  }
+  if(j == 1){
+    legend(4.85, 1.3, legend=c("Censored", "Deceased"),
+           col=c("black", "red"), lty=1, lwd = 2, cex=1.5, box.lty=0, y.intersp=1.3)
+  }
+}
+```
+
+Instead of only focusing on the survival outcomes, we now incorporate the functional predictors into the data set. The code below shows how to reproduce Figure 7.4 of the book.
+
+```{r, fig.height=6}
+layout(matrix(c(1:21), 7, 3, byrow = FALSE), widths = c(1, 2, 4))
+
+#title of other info
+par(mar = c(0,0,0,0))
+plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+text(x = 0.45, y = 0.5, paste("SEQN"), cex = 1.8, col = "black", font = 2)
+#other info
+par(mar = c(1,0,1,1))
+for(i in 1:6){
+  plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+  mtext(side = 4, text = df_sample$SEQN[i], line = -6.5, cex = 1.2, las = 1)
+}
+
+#title of predictors
+par(mar = c(0,0,0,0))
+plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+text(x = 0.45, y = 0.5, paste("Predictors"), cex = 1.8, col = "black", font = 2)
+#other info
+par(mar = c(2,0,1,1))
+for(i in 1:6){
+  plot(df_sample$MIMS[i,], type = "l", xaxt = "n", xlab = "", bty = "n", yaxt = "n")
+  axis(side = 1, at = c(1, 72, 144, 216, 288)*5, labels = c("00:00", "06:00", "12:00", "18:00", "24:00"), padj = -1)
+  mtext(side = 4, text = paste0("age: ", df_sample$age[i], ", ...\n"), line = -20, cex = 0.8, las = 1)
+}
+
+#title of survival data
+par(mar = c(0,0,0,0))
+plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+text(x = 0.5, y = 0.5, paste("Time to event"), cex = 2, col = "black", font = 2)
+#survival data
+par(mar = c(0.2,0.5,0.2,0.5))
+for(j in 1:6){
+  if(df_sample$event[j] == 1){
+    plot(x = c(0, df_sample$time[j]), y = c(0, 0), type = "l", xlim = c(0, 8.7), xaxt = "n", yaxt = "n", bty = "n", col = "red", lwd = 2)
+    points(x = df_sample$time[j], y = 0,  pch = 4, col = "red", cex = 2)
+    text(df_sample$time[j], 0, labels = paste0(format(round(df_sample$time[j], 2), nsmall = 2), " years"), cex = 1.5, pos = 3, col = "red")
+  }else{
+    plot(x = c(0, df_sample$time[j]), y = c(0, 0), type = "l", xlim = c(0, 8.7), xaxt = "n", yaxt = "n", bty = "n", lwd = 2)
+    points(x = df_sample$time[j], y = 0, pch = 16, cex = 2)
+    text(df_sample$time[j], 0, labels = paste0(format(round(df_sample$time[j], 2), nsmall = 2), " years"), cex = 1.5, pos = 3)
+  }
+  if(j == 1){
+    legend(4.85, 1.3, legend=c("Censored", "Deceased"),
+           col=c("black", "red"), lty=1, lwd = 2, cex=1.5, box.lty=0, y.intersp=1.3)
+  }
+}
+```
+
+### Kaplan-Meier Estimators
+
+We further explore the NHANES 2011-2014 survival data by investigating the Kaplan-Meyer (KM) estimators  of the survival function for specific subgroups. The code below reproduce Figure 7.5 of the book which displays results for different age groups at baseline.
+
+```{r, fig.height=6, warning=FALSE, message=FALSE}
+library(survival)
+library(survminer)
+library(gridExtra)
+
+nhanes_df_surv$Age_cat <- cut(nhanes_df_surv$age, 
+                          breaks = c(20, 50, 80),
+                          include.lowest = TRUE)
+
+#set PA group within each age group
+TMIMS_cat_age <- rep(NA, nrow(nhanes_df_surv))
+for(age_group in c("[20,50]", "(50,80]")){
+  TMIMS_cat_age[which(nhanes_df_surv$Age_cat == age_group)] <- 
+    cut(nhanes_df_surv$TMIMS[which(nhanes_df_surv$Age_cat == age_group)], 
+        breaks = quantile(nhanes_df_surv$TMIMS[which(nhanes_df_surv$Age_cat == age_group)], c(0, 0.333, 0.667, 1)), 
+        labels = c("low TMIMS", "medium TMIMS", "high TMIMS"),
+        include.lowest = TRUE)
+}
+nhanes_df_surv$TMIMS_cat_age <- factor(TMIMS_cat_age, labels = c("low TMIMS", "medium TMIMS", "high TMIMS"))
+rm(age_group, TMIMS_cat_age)
+
+
+#draw KM curves by TMIMS category
+##create survival object
+nhanes_df_surv$SurvObj <- with(nhanes_df_surv, Surv(time, event))
+
+##TMIMS by age
+TMIMS.age.km.plot <- list()
+for(age_group in c("[20,50]", "(50,80]")){
+  TMIMS.age.km <- survfit(SurvObj ~ TMIMS_cat_age, data = nhanes_df_surv %>% filter(Age_cat == age_group))
+  TMIMS.age.km.plot[[age_group]] <- ggsurvplot(fit = TMIMS.age.km, 
+                                             data = nhanes_df_surv, 
+                                             risk.table = TRUE,
+                                             pval = TRUE, 
+                                             conf.int = FALSE, 
+                                             break.time.by = 1, 
+                                             ggtheme = theme_minimal(), 
+                                             risk.table.y.text.col = TRUE,
+                                             risk.table.y.text = FALSE, 
+                                             legend.title = "PA Level",
+                                             legend.labs = c("low", "medium", "high"),
+                                             title = paste0("Age: ", age_group),
+                                             xlim = c(0, 8.2),
+                                             ylim = c(0.5, 1),
+                                             pval.size = 6,
+                                             pval.coord = c(0.58, 0.57),
+                                             fontsize = 4.3)
+  TMIMS.age.km.plot[[age_group]]$plot <- TMIMS.age.km.plot[[age_group]]$plot +
+    theme(legend.text = element_text(size = 15, color = "black"),
+          legend.title = element_text(size = 15, color = "black"),
+          title = element_text(size = 14, color = "black"),
+          axis.title.x = element_text(size = 15)) +
+    xlim(0, 8.2)
+  TMIMS.age.km.plot[[age_group]]$table <- TMIMS.age.km.plot[[age_group]]$table +
+    theme(axis.title.x = element_text(size = 15),
+          axis.title.y = element_text(size = 15),
+          title = element_text(size = 14))
+}
+
+grid.arrange(TMIMS.age.km.plot$`[20,50]`$plot, 
+             TMIMS.age.km.plot$`(50,80]`$plot, 
+             TMIMS.age.km.plot$`[20,50]`$table, 
+             TMIMS.age.km.plot$`(50,80]`$table,
+             heights = c(3, 1),
+             nrow = 2)
+```
+
+### Results for the Standard Cox Models
+
+We now show how to fit standard Cox models. The results are shown in Table 7.1 of the book. 
+
+```{r}
+df_cleaned <- nhanes_df_surv %>%
+  filter(age >= 50 & !is.na(BMI) & !is.na(race) & !is.na(gender) & !is.na(CHD) & !is.na(TMIMS) 
+         & CHD %in% c("Yes", "No"))
+
+fit_M1 <- coxph(Surv(time, event) ~ age + gender + race, data = df_cleaned)
+summary(fit_M1, conf.int = FALSE)
+
+fit_M2 <- coxph(Surv(time, event) ~ age + gender + race + BMI + CHD, data = df_cleaned)
+summary(fit_M2, conf.int = FALSE)
+
+fit_M3 <- coxph(Surv(time, event) ~ age + gender + race + BMI + CHD + TMIMS, data = df_cleaned)
+summary(fit_M3, conf.int = FALSE)
+```
+
+## Cox Regression with Baseline Functional Predictors
+
+### Linear Functional Cox Model
+
+(Waiting for Andrew to fill in)
+
+### Smooth Effects of Traditional and Functional Predictors
+
+(Waiting for Andrew to fill in)
+
+### Additive Functional Cox Model
+
+Although the linear functional Cox model provides an efficient and reasonable estimation framework to analyze the association between baseline functional predictors and survival outcome, one limitation is that it only allows a linear association between the functional predictor at each location of the domain and the log hazard. 
+
+The additive functional Cox model replaces the linear functional $\int_S W_i(s)\beta(s)ds$ model with  the functional term  $\int_S F\{s, W_i(s)\}ds$, where $F(\cdot, \cdot)$ is an unknown bivariate smooth function to be estimated. The model becomes
+
+$$\log \lambda_i\{t|\mathbf{Z}_i,W_i(\cdot)\} = 
+    \log\{\lambda_0(t)\} + \mathbf{Z}_i^t \boldsymbol{\gamma} + \int_S F\{s, W_i(s)\}ds\;. $$
+
+The code to fit an additive functional Cox model using the mgcv package and reproduce Figure 7.11 of the book is shown below. 
+
+```{r, warning=FALSE, message=FALSE}
+df_cleaned <- nhanes_df_surv %>%
+  filter(age >= 50 & !is.na(age) & !is.na(BMI) & !is.na(gender) & !is.na(CHD))
+
+nS <- ncol(df_cleaned$MIMS)
+N <- nrow(df_cleaned)
+sind <- seq(0, 1, len = nS)
+lind <- rep(1/nS, nS)
+df_cleaned$smat <- I(matrix(rep(sind, N), N, nS, byrow=TRUE))
+df_cleaned$lmat <- I(matrix(rep(lind, N), N, nS, byrow=TRUE))
+
+#get physical activity quantiles
+df_cleaned$MIMS_sm <- I(fpca.face(unclass(df_cleaned$MIMS))$Yhat)
+df_cleaned$MIMS_q <- I(apply(df_cleaned$MIMS_sm, 2, function(y) ecdf(y)(y)))
+
+#fit AFCM
+fit_afcm <- gam(time ~ age + BMI + gender + CHD +
+                  ti(MIMS_q, smat, by = lmat, bs = c("cr", "cc"), k = c(5, 5), mc = c(TRUE, FALSE)),
+                weights = event, data = df_cleaned, family = cox.ph())
+
+#obtain estimated surface
+par(mar = c(4.5, 4, 1, 1) + 0.1)
+vis.gam(fit_afcm, view = c("smat", "MIMS_q"), plot.type = "contour", color = "topo", 
+        xaxt = "n", 
+        main = "",
+        xlab = "Time of Day", ylab = "Physical Activity Quantile")
+axis(side = 1, at = c(1, 6, 12, 18, 23)/24, labels = c("01:00", "06:00", "12:00", "18:00", "23:00"))
+```
+
+
+

@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Chapter 6: FoFR</title>
+
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
+<script defer src="https://use.fontawesome.com/releases/v5.0.3/js/all.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.0/js/v4-shims.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics 
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151578452-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-151578452-1');
+</script>
+-->
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">FDA with R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="overview.html">Overview</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Datasets
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="dataset_nhanes.html">NHANES</a>
+    </li>
+    <li>
+      <a href="dataset_content.html">Content</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Chapters
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="chapter_01.html">Chapter 1</a>
+    </li>
+    <li>
+      <a href="chapter_02.html">Chapter 2</a>
+    </li>
+    <li>
+      <a href="chapter_03.html">Chapter 3: FPCA</a>
+    </li>
+    <li>
+      <a href="chapter_04.html">Chapter 4: SoFR</a>
+    </li>
+    <li>
+      <a href="chapter_05.html">Chapter 5: FoSR</a>
+    </li>
+    <li>
+      <a href="chapter_06.html">Chapter 6: FoFR</a>
+    </li>
+    <li>
+      <a href="chapter_07.html">Chapter 7</a>
+    </li>
+    <li>
+      <a href="chapter_08.html">Chapter 8</a>
+    </li>
+    <li>
+      <a href="chapter_09.html">Chapter 9</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="scripts.html">Scripts</a>
+</li>
+<li>
+  <a href="https://github.com/FDAwithR">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Chapter 6: FoFR</h1>
+
+</div>
+
+
+<div id="pffr-for-covid19-mortality" class="section level2">
+<h2>PFFR for COVID19 mortality</h2>
+<p>In this document we show how to download the 2020 US weekly excess
+all-cause and Covid-19 mortality. We explain the overall structure and
+provide a few simple plots to explore the data. The data were processed
+from several sources and stored in the <code>refund</code> package. We
+used three files to produce this processed data.</p>
+<p>The first file contains the the all-cause US weekly mortality data
+(week ending on 2017-01-14 to week ending on 2021-04-10) for a total of
+<span class="math inline">\(222\)</span> weeks. Data are made available
+by the National Center for Health Statistics. More precisely, the
+dataset link is called National and State Estimates of Excess Deaths. It
+can be accessed from <a
+href="https://www.cdc.gov/nchs/nvss/vsrr/covid19/excess_deaths.htm#data-tables">this
+website</a>. A direct link to the file can be <a
+href="https://data.cdc.gov/api/views/xkkf-xrst/rows.csv?accessType=DOWNLOAD&amp;bom=true&amp;format=true%20target=">accessed
+here</a>.</p>
+<p>The second file contains weekly COVID-19 mortality data (week ending
+on 2020-01-04 to week ending on 2021-04-17) for a total of <span
+class="math inline">\(68\)</span> weeks. Data are made available by the
+National Center for Health Statistics. More precisely, the dataset link
+is called National and State Estimates of Excess Deaths. It can be
+accessed from <a
+href="https://healthdata.gov/dataset/provisional-covid-19-death-counts-week-ending-date-and-state">this
+website</a>. A direct link to the file can be <a
+href="https://data.cdc.gov/api/views/r8kw-7aab/rows.csv?accessType=DOWNLOAD">accessed
+here</a>.</p>
+<p>The third file contains the estimated population size for all US
+states and territories as of 2020-07-01. The source for these data is <a
+href="https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population">Wickipedia</a>.</p>
+<div id="us-all-cause-excess-and-covid-19-mortality"
+class="section level3">
+<h3>US all-cause excess and Covid-19 mortality</h3>
+<p>Read the data and show the variable names in the list.</p>
+<pre class="r"><code>library(refund)
+data(&quot;COVID19&quot;)
+CV19 &lt;- COVID19
+names(CV19)
+##  [1] &quot;US_weekly_mort&quot;                      &quot;US_weekly_mort_dates&quot;               
+##  [3] &quot;US_weekly_mort_CV19&quot;                 &quot;US_weekly_mort_CV19_dates&quot;          
+##  [5] &quot;US_weekly_excess_mort_2020&quot;          &quot;US_weekly_excess_mort_2020_dates&quot;   
+##  [7] &quot;US_states_names&quot;                     &quot;US_states_population&quot;               
+##  [9] &quot;States_excess_mortality&quot;             &quot;States_excess_mortality_per_million&quot;
+## [11] &quot;States_CV19_mortality&quot;               &quot;States_CV19_mortality_per_million&quot;</code></pre>
+<p>We will now describe every variable.</p>
+<ol style="list-style-type: decimal">
+<li><p><code>US_weekly_mort</code>: A numeric vector of length <span
+class="math inline">\(207\)</span>, which contains the total number of
+weekly all-cause deaths in the US from January 14, 2017 to December 26,
+2020.</p></li>
+<li><p><code>US_weekly_mort_dates</code>: A vector of dates of length
+<span class="math inline">\(207\)</span>, which contains the weeks
+corresponding to the <code>US_weekly_mort</code> vector.</p></li>
+<li><p><code>US_weekly_mort_CV19</code>: A numeric vector of length
+<span class="math inline">\(52\)</span>, which contains the total number
+of weekly COVID 19 deaths in the US from January 4, 2020 to December 26,
+2020</p></li>
+<li><p><code>US_weekly_mort_CV19_dates</code>: A vector of dates of
+length <span class="math inline">\(52\)</span>, which contains the weeks
+corresponding to the <code>US_weekly_mort_CV19</code> vector.</p></li>
+<li><p><code>US_weekly_excess_mort_2020</code>: A numeric vector of
+length <span class="math inline">\(52\)</span>, which contains the US
+weekly excess mortality (total mortality in one week in 2020 minus total
+mortality in the corresponding week of 2019) from January 4, 2020 to
+December 26, 2020.</p></li>
+<li><p><code>US_weekly_excess_mort_2020_dates</code>: A vector dates of
+length <span class="math inline">\(52\)</span>, which contains the weeks
+corresponding to the <code>US_weekly_excess_mort_2020</code>
+vector.</p></li>
+<li><p><code>US_states_names</code>: A vector of strings containing the
+names of <span class="math inline">\(52\)</span> US states and
+territories in alphabetic order. These are the states for which
+all-cause and Covid-19 data are available in this data set.</p></li>
+<li><p><code>US_states_population</code>: A numeric vector containing
+the population of the <span class="math inline">\(52\)</span> states in
+the vector <code>US_states_names</code> estimated as of July 1, 2020.
+The order of the vector <code>US_states_population</code> is the same as
+that of <code>US_states_names</code>.</p></li>
+<li><p><code>States_excess_mortality</code>: A numeric <span
+class="math inline">\(52\times 52\)</span> dimensional matrix that
+contains the weekly US excess mortality in <span
+class="math inline">\(52\)</span> states and territories. Each row
+corresponds to one state in the same order as the vector
+<code>US_states_names</code>. Each column corresponds to a week in 2020
+corresponding to the order in the vector
+<code>US_weekly_excess_mort_2020_dates</code>. The <span
+class="math inline">\((i,j)\)</span>th entry of the matrix the
+difference in all-cause mortality during the week <span
+class="math inline">\(j\)</span> of 2020 and 2019 for state <span
+class="math inline">\(i\)</span>.</p></li>
+<li><p><code>States_excess_mortality_per_million</code>: A numeric <span
+class="math inline">\(52\times 52\)</span> dimensional matrix that
+contains the weekly US excess mortality in <span
+class="math inline">\(52\)</span> states and territories per one million
+individuals. This is obtained by dividing every row (corresponding to a
+state) of <code>States_excess_mortality</code> by the population of that
+state stored in <code>US_states_population</code> and multiplying by one
+million.</p></li>
+<li><p><code>States_CV19_mortality</code>: A numeric <span
+class="math inline">\(52\times 52\)</span> dimensional matrix that
+contains the weekly US Covid-19 mortality in <span
+class="math inline">\(52\)</span> states and territories. Each row
+corresponds to one state in the same order as the vector
+<code>US_states_names</code>. Each column corresponds to a week in 2020
+corresponding to the order in the vector
+<code>US_weekly_excess_mort_2020_dates</code>.</p></li>
+<li><p><code>States_CV19_mortality_per_million</code>: A numeric <span
+class="math inline">\(52\times 52\)</span> dimensional matrix that
+contains the weekly US Covid-19 mortality in <span
+class="math inline">\(52\)</span> states and territories per one million
+individuals. This is obtained by dividing every row (corresponding to a
+state) of <code>States_CV19_mortality</code> by the population of that
+state stored in <code>US_states_population</code> and multiplying by one
+million.</p></li>
+</ol>
+<p>We will use these data to make some exploratory plots and illustrate
+the concept of function on function regression.</p>
+<pre class="r"><code>#Load packages
+library(fields)</code></pre>
+<p>Extract the necessary information from the data list. Give variables
+shorter names.</p>
+<pre class="r"><code>#Date indicating weeks from the beginning of 2020
+current_date &lt;- CV19$US_weekly_excess_mort_2020_dates
+#Names of states and territories considered in the analysis
+new_states &lt;- CV19$US_states_names
+#Excess mortality as a function of time and state
+Wd &lt;- CV19$States_excess_mortality_per_million
+#Columns are weeks, rows are states
+colnames(Wd) &lt;- 1:52
+#Population of states  
+pop_state_n &lt;- CV19$US_states_population
+names(pop_state_n) &lt;- new_states</code></pre>
+<p>The data we are interested in is stored in <code>Wd</code>. Each row
+in this data matrix corresponds to a state or territory (District of
+Columbia and Puerto Rico). Every column contains the weekly all-cause
+excess death rate per one million residents since the beginning of 2020.
+So, the data matrix is <span class="math inline">\(52\times 52\)</span>
+dimensional because there are <span class="math inline">\(50\)</span>
+states and <span class="math inline">\(2\)</span> territories (Puerto
+Rico and District of Columbia) and <span
+class="math inline">\(52\)</span> weeks.</p>
+</div>
+<div id="exploratory-plots-and-analyses" class="section level3">
+<h3>Exploratory plots and analyses</h3>
+<p>Make a plot of weekly number of excess deaths comparing 2020 with
+2019 for each state. There are three states emphasized each using a
+different color: New Jersey (green), Louisiana (red), California (plum).
+The x-axis corresponds to 52 weeks starting with (the week ending) on
+January 4, 2020 and ending with (the week ending) on December 26, 2020.
+The y-axis is expressed in all-case excess mortality rate per one
+million residents. This figure illustrates the problem of studying the
+association between the pattern of excess mortality in each state after
+May 16, 2020 given the patterns of excess mortality before and including
+May 16, 2020 (shown as a vertical blue line). data before May 16, 2020
+is shown as lines and after May 16, 2020 as dots to emphasize the
+different roles played by the data in the two distinct periods.</p>
+<p>The primary objective here is to explore the association between
+these patterns and not to predict. Indeed, in this situation all
+mortality is recorded in each state at the same time and there is no
+point to predict data from a new state that may be unobserved.</p>
+<pre class="r"><code>#This is where the FoFR is conducted
+cutoff &lt;- 20
+par(mfrow = c(1, 1))
+cmar &lt;- c(5, 5, 4, 4)
+par(mar = cmar)
+for(i in 1:length(new_states)){
+  ylabel &lt;- paste(&quot;US states weekly excess deaths/million&quot;)
+  xlabel &lt;- paste(&quot;Weeks starting January 2020&quot;)
+  #Plot only for first state. For others add lines
+  if(i==1){
+    par(bg = &quot;white&quot;)
+    #Here plot the date versus cumulative excess mortality (hence the cumsum)
+    plot(current_date, Wd[i,], type = &quot;l&quot;, lwd = 1.5, 
+         col = rgb(0, 0, 0, alpha = 0.1), cex = 1, xlab = xlabel, 
+         ylab = ylabel, ylim = c(-50, 400), bty = &quot;n&quot;)
+  }else{
+    lines(current_date, Wd[i,], lwd = 1, col = rgb(0, 0, 0, alpha = 0.1))
+  }
+}
+
+emphasize &lt;- c(&quot;New Jersey&quot;, &quot;Louisiana&quot;, &quot;California&quot;, &quot;Maryland&quot;, &quot;Texas&quot;)
+col_emph &lt;- c(&quot;darkseagreen3&quot;, &quot;red&quot;, &quot;plum3&quot;, &quot;deepskyblue4&quot;, &quot;salmon&quot;)
+
+emph_state_ind &lt;- match(emphasize, new_states)
+
+for(i in 1:3){
+  lines(current_date[1:cutoff], Wd[emph_state_ind[i], 1:cutoff], lwd = 2.5, col = col_emph[i])
+  points(current_date[(cutoff+1):dim(Wd)[2]], Wd[emph_state_ind[i], (cutoff+1):dim(Wd)[2]], pch = 19, cex = 0.8, col = col_emph[i])
+}
+
+lines(c(current_date[cutoff], current_date[cutoff]), c(-50, 400), col = &quot;blue&quot;, lwd = 2.5)</code></pre>
+<p><img src="chapter_06_files/figure-html/unnamed-chunk-4-1.png" width="90%" /></p>
+</div>
+<div id="penalized-function-on-function-regression"
+class="section level3">
+<h3>Penalized Function on Function regression</h3>
+<p>We are fitting the following standard linear Function on Function
+Regression (FoFR) <span class="math display">\[W_i(s_j)=f_0(s_j)+\int
+X_i(u)\beta(s_j,u)du+\epsilon_i(s_j)\;.\]</span> The functions <span
+class="math inline">\(W_i:\{21,\ldots,52\}\rightarrow
+\mathbb{R}\)</span> are the observed excess mortality observed at weeks
+<span class="math inline">\(21\)</span> through <span
+class="math inline">\(52\)</span> for state or territory <span
+class="math inline">\(i\)</span>. The functions <span
+class="math inline">\(X_i:\{1,\ldots,20\}\rightarrow \mathbb{R}\)</span>
+are the observed excess mortality observed at weeks <span
+class="math inline">\(1\)</span> through <span
+class="math inline">\(20\)</span> for state or territory <span
+class="math inline">\(i\)</span>. Thus, given a “present”, in our case
+week <span class="math inline">\(20\)</span>, we regress the “future”
+trajectory of all-cause weekly excess mortality, <span
+class="math inline">\(W_i(\cdot)\)</span>, on the “past” trajectory of
+all-cause weekly excess mortality, <span
+class="math inline">\(X_i(\cdot)\)</span>. The nonparametric function
+<span class="math inline">\(f_0(s_j)\)</span> can be interpreted as the
+“marginal mean” of the “future” trajectory of the all-cause weekly
+excess mortality and corresponds to a zero effect, <span
+class="math inline">\(\beta(\cdot,\cdot)\)</span>, of the past on the
+future. The association between the future and past trajectories of
+all-cause weekly mortality is captured by the function <span
+class="math inline">\(\beta:\{21,\ldots,52\}\times\{1,\ldots,20\}\rightarrow
+\mathbb{R}\)</span>. The domain of this function is the Kronecker
+product of the domains of the “future” and “past” trajectories.</p>
+<p>We now show how to implement FoFR where the outcome is the weekly US
+states and territories excess mortality in the last 32 weeks of 2020 and
+the predictor is the first 20 weeks of 2020. The first part is to
+separate the predictor and outcomes for <code>pffr</code> and identify
+the points where the predictor is observed, <code>s</code>, and where
+the outcome is observed, <code>t</code>. The predictor and outcomes are
+stored in matrices with the same number of rows, where each row
+corresponds to a subject (in this case a state or territory). The number
+of columns of the predictor matrix is equal to the number of points
+where the predictor function is evaluated (in our case
+<code>cutoff</code>). The number of columns of the outcome matrix is
+equal to the number of points where the outcome function is evaluated
+(in our case the number of weeks in a year, <span
+class="math inline">\(52\)</span> minus <code>cutoff</code>).</p>
+<pre class="r"><code>#The predictor and outcomes matrices
+Wpred &lt;- Wd[,1:cutoff]
+Wout &lt;- Wd[,(cutoff+1):dim(Wd)[2]]
+#The domains of the predictor and outcome functions
+s &lt;- 1:cutoff
+t &lt;- (cutoff+1):dim(Wd)[2]
+#Conduct pffr (no missing data)
+m1 &lt;- pffr(Wout ~ ff(Wpred, xind = s), yind = t)</code></pre>
+<p>Extract some stuff to plot. First extract and plot the nonparametric
+mean function. Here we extract the pure intercept (not time dependent)
+and the time varying intercept and combine them. They are typically
+separated in nonparametric contexts because there are multiple
+nonparametric components. We could show just the time varying component,
+but we found that to be less interpretable. The reason we are doing this
+is to provide better plots than the standard <code>plot.pffr()</code>
+function, which can be implemented via the call
+<code>plot(m1)</code>.</p>
+<pre class="r"><code>#Extract all the coefficient information
+allcoef &lt;- coef(m1)
+
+#Extract the pure intercept (not time varying)
+intercept_fixed &lt;- allcoef$pterms[1]
+
+#Extract the time varying intercept (stored in smterms)
+intercoef &lt;- allcoef$smterms$Intercept$coef
+#Extract the points where the intercept is evaluated
+interx &lt;- intercoef$t.vec
+
+#Obtain the intercept as the sum between the time invariant and time variant intercepts
+intersm &lt;- intercept_fixed + intercoef$value
+
+#Obtain the standard error of the time varying SE. 
+interse &lt;- intercoef$se
+
+par(mar = c(4, 4, 0, 1))
+#Make a nice plot of the intercept together with its pointwise 95% confidence interval
+plot(interx, intersm, type = &quot;l&quot;, col = &quot;blue&quot;, lwd = 3, bty = &quot;n&quot;, 
+     ylim = c(0, 100),xlab = &quot;Weeks starting 2020-05-23&quot;, 
+     ylab = &quot;Intercept function&quot;)
+xpol &lt;- c(interx, interx[length(interx):1])
+ypol &lt;- c(intersm - 1.96 * interse, intersm[length(interx):1] + 1.96 * interse[length(interx):1])
+polygon(xpol, ypol, col = rgb(0, 0, 1, alpha = 0.2),
+        border = NA)</code></pre>
+<p><img src="chapter_06_files/figure-html/unnamed-chunk-6-1.png" width="90%" /></p>
+<p>We now plot the smooth FoFR surface. Again, we try to provide a plot
+that is better than the standard <code>plot(m1)</code> available in
+<code>pffr</code>. For this, we need to extract the smooth surface and
+to make a heat map with a legend attached to it.</p>
+<pre class="r"><code>#Extract the smooth coefficients. They are stored in a vector, but they are then transformed into a matrix 
+smcoef &lt;- allcoef$smterms$`ff(Wpred,s)`$value
+#Extract the predictor functional arguments
+xsm &lt;- allcoef$smterms$`ff(Wpred,s)`$x
+#Extract the outcome functional arguments
+ysm &lt;- allcoef$smterms$`ff(Wpred,s)`$y
+#Transform the smooth coefficients into a matrix to prepare for plotting
+smcoef &lt;- matrix(smcoef, nrow = length(xsm))
+
+#Use image.plot in the fields package to display the smooth coefficient
+image.plot(xsm, ysm, smcoef, 
+           xlab = &quot;Weeks starting January 2020&quot;, 
+           ylab = &quot;Weeks starting 2020-05-23&quot;, 
+           main = &quot;&quot;, 
+           axis.args = list(at = c(-0.1, 0.0, 0.1, 0.2, 0.3)),
+           legend.shrink = 0.8,
+           legend.line = -1.5, legend.width = 0.5)</code></pre>
+<p><img src="chapter_06_files/figure-html/unnamed-chunk-7-1.png" width="90%" /></p>
+<p>Extract the fitted values and residuals. Plot them in the same
+plot.</p>
+<pre class="r"><code>par(mfrow = c(2, 1), mar = c(4.5, 4.5, 3, 2))
+#First panel, plot the mean function
+fitted_values &lt;- fitted(m1)
+residual_values &lt;- residuals(m1)
+image.plot(21:52, 1:52, t(fitted_values), 
+           main = &quot;Fitted values&quot;,
+           xlab = &quot;Weeks starting 2020-05-23&quot;, 
+           ylab = &quot;States and territories&quot;,
+           axis.args = list(at = c(0.0, 20, 40, 60, 80)),
+           legend.shrink = 0.8,
+           legend.line = -1.5, legend.width = 0.5)
+
+image.plot(21:52, 1:52, t(residual_values), 
+           main = &quot;Residual values&quot;,
+           xlab = &quot;Weeks starting 2020-05-23&quot;, 
+           ylab = &quot;States and territories&quot;,
+           axis.args = list(at = c(-100, -50, 0, 50, 100)),
+           legend.shrink = 0.8,
+           legend.line = -1.5,legend.width  =  0.5)</code></pre>
+<p><img src="chapter_06_files/figure-html/unnamed-chunk-8-1.png" width="90%" /></p>
+<p>We will now investigate the relationship between predicted and
+observed values for a few states. Here we will look at the predictions
+after week 20 for New Jersey, Louisiana, California, and Maryland.</p>
+<pre class="r"><code>par(mfrow = c(2, 2), mar = c(4.5, 4.5, 3, 2))
+for(i in 1:4){
+  #Here plot the date versus cumulative excess mortality for the state
+  plot(current_date, Wd[emph_state_ind[i],],
+       type = &quot;l&quot;, lwd = 1.5,
+       col = rgb(0, 0, 0, alpha = 0.1), cex = 1,
+       xlab = &quot;Weeks starting January 2020&quot;,
+       ylab = &quot;Weekly Excess Deaths/Million&quot;, ylim = c(-50, 400), bty = &quot;n&quot;, 
+       main = emphasize[i])
+  
+  #Plot data before cutoff (the past)
+  lines(current_date[1:cutoff], Wd[emph_state_ind[i], 1:cutoff],
+        lwd = 2.5, col = col_emph[i])
+  #Plot the data after the cutoff (the future)
+  points(current_date[(cutoff + 1):dim(Wd)[2]], 
+         Wd[emph_state_ind[i], (cutoff+1):dim(Wd)[2]],
+         pch = 19, cex = 0.8, col = col_emph[i])
+  #Indicate the separation between &quot;past and future&quot;
+  lines(c(current_date[cutoff], current_date[cutoff]),
+        c(-50, 400), col = &quot;blue&quot;, lwd = 2.5)
+  #Plot the pffr predictions to compare with observed data
+  lines(current_date[(cutoff + 1):dim(Wd)[2]], fitted_values[emph_state_ind[i],], 
+        lwd = 2.5, col = &quot;darkred&quot;)
+}</code></pre>
+<p><img src="chapter_06_files/figure-html/unnamed-chunk-9-1.png" width="90%" /></p>
+<p>Investigate the residuals, test normality, and identify potential
+outliers.</p>
+<pre class="r"><code>par(mfrow = c(2, 2), mar = c(4.5, 4.5, 3, 2))
+#Display the qq-plot versus a theoretical Normal distribution
+qqnorm(residual_values, pch = 19, col = &quot;blue&quot;, cex = 0.8, bty = &quot;n&quot;, main = &quot;QQ-plot of residuals&quot;)
+qqline(residual_values, col = &quot;red&quot;, lwd = 2.5, lty = 2)
+
+#Display predictions and observed data for North Carolina
+#Here plot the date versus cumulative excess mortality for the state
+three_states &lt;- c(34, 35, 43)
+cols &lt;- c(&quot;cyan1&quot;, &quot;darkslateblue&quot;, &quot;lightslategrey&quot;)
+for(i in 1:3){
+  plot(current_date, Wd[three_states[i],], 
+       type = &quot;l&quot;, lwd = 1.5, 
+       col = rgb(0, 0, 0, alpha = 0.1), cex = 1, 
+       xlab = &quot;Weeks starting January 2020&quot;, 
+       ylab = &quot;Weekly Excess Deaths/Million&quot;, ylim = c(-50, 400), bty = &quot;n&quot;, 
+       main = new_states[three_states[i]])
+  
+  #Plot data before cutoff (the past)
+  lines(current_date[1:cutoff], Wd[three_states[i], 1:cutoff],
+        lwd = 2.5, col = cols[i])
+  #Plot the data after the cutoff (the future)
+  points(current_date[(cutoff + 1):dim(Wd)[2]], 
+         Wd[three_states[i], (cutoff + 1):dim(Wd)[2]], 
+         pch = 19, cex = 0.8, col = cols[i])
+  #Indicate the separation between &quot;past and future&quot;
+  lines(c(current_date[cutoff], current_date[cutoff]), 
+        c(-50, 400), col = &quot;blue&quot;, lwd = 2.5)
+  #Plot the pffr predictions to compare with observed data
+  lines(current_date[(cutoff + 1):dim(Wd)[2]], fitted_values[three_states[i],], 
+        lwd = 2.5, col = &quot;darkred&quot;)
+}</code></pre>
+<p><img src="chapter_06_files/figure-html/unnamed-chunk-10-1.png" width="90%" /></p>
+<p>Investigate the correlation of the residuals. We are especially
+interested in studying any potential residual correlations that are not
+accounted for by the model.</p>
+<pre class="r"><code>#Plot the residual correlations
+corr_res &lt;- cor(residual_values)
+image.plot(21:52, 21:52, corr_res, 
+           xlab = &quot;Weeks starting 2020-05-23&quot;, 
+           ylab = &quot;Weeks starting 2020-05-23&quot;, 
+           main = &quot;Residual correlations&quot;, 
+           axis.args = list(at = c(-.4, -.2, .0, .2, .4, .6, .8, 1.0)),
+           legend.shrink = 0.8,
+           legend.line = -1.5, legend.width = 0.5)</code></pre>
+<p><img src="chapter_06_files/figure-html/unnamed-chunk-11-1.png" width="90%" /></p>
+</div>
+<div id="extending-pffr-to-include-additional-covariates"
+class="section level3">
+<h3>Extending pffr to include additional covariates</h3>
+<p>We now extend the model to see if some of the obsrved variability
+could be explained by other variables. We now consider a model of the
+form <span class="math display">\[W_i(s_j)=f_0(s_j)+P_if_1(s_j)+\int
+X_i(u)\beta(s_j,u)du+\epsilon_i(s_j)\;.\]</span> Here the variable <span
+class="math inline">\(P_i\)</span> represents the population size of
+state <span class="math inline">\(i\)</span> expressed in millions. For
+example the population of Alabama was <span
+class="math inline">\(4.921\)</span> millions. Note that here the effect
+of the variable is assumed to be time dependent and time dependence is
+modeled nonparametrically via the function <span
+class="math inline">\(f_1(s_j)\)</span>.</p>
+<p>R code for implementing <code>pffr</code></p>
+<pre class="r"><code>#State population expressed in millions
+pop_state_n &lt;- pop_state_n / 1000000
+#Fit pffr with state population as time dependent variable
+m2 &lt;- pffr(Wout ~ ff(Wpred, xind = s) + pop_state_n, yind = t)
+#Extract the estimated coefficients
+allcoeff &lt;- coef(m2)
+#Extract the population size effects and se for future excess mortality
+pop_size_effect &lt;- allcoeff$smterms$`pop_state_n(t)`$value
+pop_size_se &lt;- allcoeff$smterms$`pop_state_n(t)`$se</code></pre>
+<p>We now plot the time-varying population size effect <span
+class="math inline">\(f_1(s_j)\)</span> together with its standard
+error.</p>
+<pre class="r"><code>par(mar = c(4, 4, 0, 1))
+plot(interx, pop_size_effect, type = &quot;l&quot;, col = &quot;blue&quot;, lwd = 3, bty = &quot;n&quot;, 
+     ylim = c(-2, 2), xlab = &quot;Weeks starting 2020-05-23&quot;, 
+     ylab = &quot;Population size effect&quot;)
+xpol &lt;- c(interx, interx[length(interx):1])
+ypol &lt;- c(pop_size_effect - 1.96 * pop_size_se, pop_size_effect[length(interx):1] + 
+          1.96 * pop_size_se[length(interx):1])
+polygon(xpol, ypol, col = rgb(0, 0, 1, alpha = 0.2), 
+        border = NA)</code></pre>
+<p><img src="chapter_06_files/figure-html/unnamed-chunk-13-1.png" width="90%" /></p>
+</div>
+</div>
+<div id="pffr-for-content-study" class="section level2">
+<h2>PFFR for CONTENT Study</h2>
+<p>Here we are interested in a different problem using the CONTENT data.
+More precisely, at every time point, <span
+class="math inline">\(s^*\)</span>, we would like to predict the future
+growth trajectory of an individual based only on the data from that
+individual up to <span class="math inline">\(s^*\)</span>. The code
+below shows how to reproduce Figure 6.2 in the book.</p>
+<pre class="r"><code>#select one subject
+content_plt &lt;- content[which(content$id == 301),]
+
+#index of data treated as predictor
+threshold &lt;- 200
+ind_given &lt;- which(content_plt$agedays &lt;= threshold)
+
+#make the plot
+par(mfrow = c(1, 2), mar = c(3.5, 3.5, 2, 2))
+plot(content_plt$agedays, content_plt$zwei, 
+     type = &quot;l&quot;,
+     col = &quot;lightgray&quot;,
+     bty = &quot;n&quot;,
+     ylim = c(-1, 1),
+     xlab = &quot;&quot;,
+     ylab = &quot;&quot;,
+     xaxt = &quot;n&quot;)
+axis(side = 1, at = c(0, 200, 400, 600))
+abline(v = threshold, col = &quot;lightgray&quot;, lty = 2)
+points(content_plt$agedays[ind_given], content_plt$zwei[ind_given], 
+       col = &quot;blue&quot;,
+       pch = 19)
+title(expression(&quot;Given&quot; * phantom(&quot; Blue&quot;)), col.main = &quot;black&quot;, line = 1)
+title(expression(phantom(&quot;Given&quot;) * &quot; Blue&quot;), col.main = &quot;blue&quot;, line = 1)
+title(xlab = &quot;Age (Days)&quot;, line = 2.2)
+title(ylab = &quot;zwei&quot;, line = 2.2)
+
+plot(content_plt$agedays, content_plt$zlen, 
+     type = &quot;l&quot;,
+     col = &quot;lightgray&quot;,
+     bty = &quot;n&quot;,
+     ylim = c(-1, 1),
+     xlab = &quot;&quot;,
+     ylab = &quot;&quot;,
+     xaxt = &quot;n&quot;)
+axis(side = 1, at = c(0, 200, 400, 600))
+abline(v = threshold, col = &quot;lightgray&quot;, lty = 2)
+points(content_plt$agedays[ind_given], content_plt$zlen[ind_given], 
+       col = &quot;blue&quot;,
+       pch = 19)
+points(content_plt$agedays[-ind_given], content_plt$zlen[-ind_given], 
+       col = &quot;red&quot;,
+       pch = 19)
+title(expression(&quot;Predict&quot; * phantom(&quot; Red&quot;)), col.main = &quot;black&quot;, line = 1)
+title(expression(phantom(&quot;Predict&quot;) * &quot; Red&quot;), col.main = &quot;red&quot;, line = 1)
+title(xlab = &quot;Age (Days)&quot;, line = 2.2)
+title(ylab = &quot;zlen&quot;, line = 2.2)</code></pre>
+<p><img src="chapter_06_files/figure-html/unnamed-chunk-14-1.png" width="90%" /></p>
+<p>We now show how to use <code>pffr</code> in the CONTENT study, where
+both the outcome and the predictor are sparsely observed functions. We
+discussed the problem of predicting the future growth trajectory of an
+individual at a particular time point based on their data up to that
+point. Specifically, we now consider the association between the z-score
+of length in the <span class="math inline">\(101\)</span> days or later
+and the z-scores of length and weight in the first <span
+class="math inline">\(100\)</span> days. The choice of <span
+class="math inline">\(100\)</span> days as the threshold is arbitrary,
+and other thresholds could be used instead.</p>
+<p>The code below shows how to use the <code>pffr</code> function to
+answer this question and reproduce Figure 6.10 in the book.</p>
+<pre class="r"><code>#Load packages
+library(face)
+library(refund)
+library(fields)</code></pre>
+<div id="data-cleaning-and-interpolation" class="section level3">
+<h3>Data cleaning and interpolation</h3>
+<pre class="r"><code>data(content)
+
+#Split into old and new data
+content_old &lt;- content[which(content$agedays &lt; 100),]
+content_new &lt;- content[which(content$agedays &gt;= 100),]
+
+#Reorganize the data into fpca format
+content_zlen_old &lt;- data.frame(argvals = content_old$agedays,
+                                subj = content_old$id,
+                                y = content_old$zlen)
+
+content_zwei_old &lt;- data.frame(argvals = content_old$agedays,
+                                subj = content_old$id,
+                                y = content_old$zwei)
+
+content_zlen_new &lt;- data.frame(argvals = content_new$agedays,
+                                subj = content_new$id,
+                                y = content_new$zlen)
+
+#Sparse fpca
+fpca_zlen_old &lt;- face.sparse(data = content_zlen_old, calculate.scores = TRUE, argvals.new = 1:100)
+fpca_zwei_old &lt;- face.sparse(data = content_zwei_old, calculate.scores = TRUE, argvals.new = 1:100)
+fpca_zlen_new &lt;- face.sparse(data = content_zlen_new, calculate.scores = TRUE, 
+                             argvals.new = seq(101, max(content_new$agedays), 2))
+
+#Obtain interpolated values on a regular grid
+id &lt;- fpca_zlen_old$rand_eff$subj
+xind &lt;- fpca_zlen_old$argvals.new
+yind &lt;- fpca_zlen_new$argvals.new
+zlen_old_it &lt;- fpca_zlen_old$rand_eff$scores %*% t(fpca_zlen_old$eigenfunctions)
+zwei_old_it &lt;- fpca_zwei_old$rand_eff$scores %*% t(fpca_zwei_old$eigenfunctions)
+zlen_new_it &lt;- fpca_zlen_new$rand_eff$scores %*% t(fpca_zlen_new$eigenfunctions)
+colnames(zlen_old_it) &lt;- colnames(zwei_old_it) &lt;- fpca_zlen_old$argvals.new
+colnames(zlen_new_it) &lt;- fpca_zlen_new$argvals.new</code></pre>
+</div>
+<div id="fit-fofr-using-pffr" class="section level3">
+<h3>Fit FoFR using PFFR</h3>
+<pre class="r"><code>#Fit PFFR
+m_content &lt;- pffr(zlen_new_it ~ ff(zlen_old_it, xind = xind) + ff(zwei_old_it, xind = xind),
+                  yind = yind)
+
+#Extract coefficients
+allcoef &lt;- coef(m_content)
+## using seWithMean for  s(yind.vec) .
+
+#Extract the smooth coefficients. They are stored in a vector, but they are then transformed into a matrix 
+smcoef_zlen &lt;- allcoef$smterms$`ff(zlen_old_it,xind)`$value
+smcoef_zwei &lt;- allcoef$smterms$`ff(zwei_old_it,xind)`$value
+
+#Extract the predictor functional arguments
+xsm_zlen &lt;- allcoef$smterms$`ff(zlen_old_it,xind)`$x
+xsm_zwei &lt;- allcoef$smterms$`ff(zwei_old_it,xind)`$x
+
+#Extract the outcome functional arguments
+ysm_zlen &lt;- allcoef$smterms$`ff(zlen_old_it,xind)`$y
+ysm_zwei &lt;- allcoef$smterms$`ff(zwei_old_it,xind)`$y
+
+#Transform the smooth coefficients into a matrix to prepare for plotting
+smcoef_zlen_plot &lt;- matrix(smcoef_zlen, nrow=length(xsm_zlen))
+smcoef_zwei_plot &lt;- matrix(smcoef_zwei, nrow=length(xsm_zwei))
+
+#Use image.plot in the fields package to display the smooth coefficient
+par(mfrow = c(1, 2), mar = c(5, 5, 5, 5))
+image.plot(xsm_zlen, ysm_zlen, smcoef_zlen_plot,
+           xlab = &quot;Days 1 to 100&quot;, 
+           ylab = &quot;Days 101 to 701&quot;, 
+           main = &quot;zlen (Days 101 to 701) on zlen (Days 1 to 100)&quot;,
+           # axis.args = list(at = c(-0.1,0.0,0.1,0.2,0.3)),
+           # legend.shrink = 0.8,
+           # legend.line = -1.5, 
+           legend.width = 0.5)
+
+image.plot(xsm_zwei, ysm_zwei, smcoef_zwei_plot,
+           xlab = &quot;Days 1 to 100&quot;, 
+           ylab = &quot;Days 101 to 701&quot;, 
+           main = &quot;zlen (Days 101 to 701) on zwei (Days 1 to 100)&quot;,
+           # axis.args = list(at = c(-0.1,0.0,0.1,0.2,0.3)),
+           legend.shrink = 0.8,
+           legend.line = -1.5,
+           legend.width = 0.5)</code></pre>
+<p><img src="chapter_06_files/figure-html/unnamed-chunk-17-1.png" width="90%" /></p>
+</div>
+</div>
+<div id="fitting-fofr-using-mgcv" class="section level2">
+<h2>Fitting FoFR Using mgcv</h2>
+<p>(Waiting for Andrew to fill in)</p>
+</div>
+<div id="inference-for-fofr" class="section level2">
+<h2>Inference for FoFR</h2>
+<p>(Waiting for Andrew to fill in)</p>
+</div>
+
+<br><br>
+<footer>
+  <p class="copyright text-muted" align="center">Copyright &copy; 2023</p>
+</footer>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

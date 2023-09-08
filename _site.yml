@@ -21,8 +21,16 @@ navbar:
       href: chapter_03.html
     - text: "Chapter 4: SoFR"
       href: chapter_04.html
-    - text: "Chapter 4: FoSR"
+    - text: "Chapter 5: FoSR"
       href: chapter_05.html
+    - text: "Chapter 6: FoFR"
+      href: chapter_06.html
+    - text: "Chapter 7"
+      href: chapter_07.html
+    - text: "Chapter 8"
+      href: chapter_08.html
+    - text: "Chapter 9"
+      href: chapter_09.html
   - text: Scripts
     href: scripts.html
   - icon: fa-github
