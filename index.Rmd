@@ -10,4 +10,6 @@ In the "Datasets" section, we provide an overview of the datasets used in the bo
 In the "Chapters" section, we provide the code and software and show how to reproduce the analysis presented in the book.
 In the "Scripts" section, we provide some scripts or functions that the code depends on that are not shown in the book.
 
+This book will use the `refund` and `mgcv` packages to implement most statistical methods. For some methods additional packages may be required. Please make sure to install the required packages before running the code.
+
 The website will be updated from time to time as the software develops. 
