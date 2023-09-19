@@ -13,7 +13,7 @@
 
 <title>NHANES</title>
 
-<script src="site_libs/header-attrs-2.16/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -29,14 +29,14 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
 <script defer src="https://use.fontawesome.com/releases/v5.0.3/js/all.js"></script>
 <script defer src="https://use.fontawesome.com/releases/v5.0.0/js/v4-shims.js"></script>
@@ -198,8 +198,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -207,16 +207,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -383,7 +376,19 @@ div.tocify {
       <a href="chapter_04.html">Chapter 4: SoFR</a>
     </li>
     <li>
-      <a href="chapter_05.html">Chapter 4: FoSR</a>
+      <a href="chapter_05.html">Chapter 5: FoSR</a>
+    </li>
+    <li>
+      <a href="chapter_06.html">Chapter 6: FoFR</a>
+    </li>
+    <li>
+      <a href="chapter_07.html">Chapter 7</a>
+    </li>
+    <li>
+      <a href="chapter_08.html">Chapter 8</a>
+    </li>
+    <li>
+      <a href="chapter_09.html">Chapter 9</a>
     </li>
   </ul>
 </li>
@@ -410,20 +415,60 @@ div.tocify {
 </div>
 
 
-<p>NHANES, accessed from ….</p>
-<p>The version of the NHANES data that we is used in the book can be
-found <a href="">here</a>.</p>
-<div id="context" class="section level2">
-<h2>Context</h2>
-<p>Overview</p>
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>National Health and Nutrition Examination Survey (NHANES) is a large
+ongoing study conducted by the US CDC to assess the health and
+nutritional status of the non-institutionalized US population. The study
+is conducted in two-year waves with approximately 10,000 participants
+per wave. More information can be found on their <a
+href="https://www.cdc.gov/nchs/nhanes/index.htm">website</a>.</p>
+</div>
+<div id="data-sources-and-cleaning" class="section level2">
+<h2>Data Sources and Cleaning</h2>
+<p>The version of the NHANES data that we used in the book can be found
+here: <a
+href="http://www.ciprianstats.org/sites/default/files/nhanes/nhanes_fda_with_r.rds">single-level</a>,
+<a
+href="http://www.ciprianstats.org/sites/default/files/nhanes/nhanes_fda_with_r_ml.rds">multi-level</a>.</p>
+<p>The data were collected from NHANES 2011-2012 and NHANES 2013-2014
+cohorts. Each participant recruited in these waves was asked to wear a
+wrist-worn physical activity monitor (Actigraph GT3X+) for seven
+consecutive days. The raw 80hz tri-axial acceleration data were
+extracted from the device, processed, and released on the NHANES website
+in different units (<a
+href="https://wwwn.cdc.gov/nchs/nhanes/search/datapage.aspx?Component=Examination&amp;CycleBeginYear=2011">2011-2012</a>,
+<a
+href="https://wwwn.cdc.gov/nchs/nhanes/search/datapage.aspx?Component=Examination&amp;CycleBeginYear=2013">2013-2014</a>).</p>
+<p>The data we used were extracted from the NHANES website and were
+organized into an analyzable format following a similar pipeline
+described in the <code>rnhanesdata</code> package. Here is the <a
+href="https://github.com/andrew-leroux/rnhanesdata">link</a> to the
+github repo of the <code>rnhanesdata</code> package, which contains the
+code for data cleaning and vignettes for data analysis. Note that the
+<code>rnhanesdata</code> package was designed to clean the data
+collected from NHANES 2003-2004 and NHANES 2005-2006. Therefore, the
+data cleaning steps we performed here were similar but not identical to
+those described in the vignette.</p>
 </div>
 <div id="data-description" class="section level2">
-<h2>Data description</h2>
-<p>The original data …</p>
-<p>There are ZZ variables in this dataset:</p>
-<ul>
-<li></li>
-</ul>
+<h2>Data Description</h2>
+<p>Two NHANES data sets are shared with this book. The single-level
+version is primarily used in the book. For a participant with multiple
+days of minute-level accelerometry data, the data was compressed by take
+the average at each minute across available days, resulting in 1,440
+observations per participant. The minute-level data were stored in the
+<code>MIMS</code> matrix of the data frame. The standard deviation of
+the intensity values at each minute across available days was also
+calculated and stored in the <code>MIMS_sd</code> matrix. This dataset
+has 12610 rows and 13 columns.</p>
+<p>The uncompressed physical activity data were stored in the
+<code>MIMS</code> column of the multi-level version of the dataset. Each
+row represents data collected from one eligible day of one participant.
+Therefore, there are multiple rows for each participant. This dataset
+has 79910 rows and 6 columns. It is mainly used in the Multilevel
+Functional Data Analysis chapter of the book as well as in data
+illustrations.</p>
 </div>
 
 <br><br>
