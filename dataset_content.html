@@ -11,7 +11,7 @@
 
 
 
-<title>Additional Scripts</title>
+<title>Content</title>
 
 <script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -29,6 +29,9 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -236,6 +239,69 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
 
 </head>
 
@@ -243,6 +309,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -340,23 +416,74 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Additional Scripts</h1>
+<h1 class="title toc-ignore">Content</h1>
 
 </div>
 
 
-<p>Some code relies on scripts or functions that is not shown in the
-book. These are listed here for completeness.</p>
-<ul>
-<li><a href="source/nhanes_fpcr.R">nhanes_fpcr.R</a> is used in Chapter
-4 to …</li>
-<li><a href="source/pffrcoef_to_tf.R">pffrcoef_to_tf.R</a> is used in
-Chapter 5 to …</li>
-<li><a href="source/fosr_gam_res_to_tfd.R">fosr_gam_res_to_tfd.R</a> is
-used in Chapter 5 to …</li>
-<li><a href="source/nhanes_boot_fui.R">nhanes_boot_fui.R</a> is used in
-Chapter 5 to …</li>
-</ul>
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>The CONTENT child growth study (referred to in this book as the
+CONTENT study) was funded by the Sixth Framework Programme of the
+European Union, Project CONTENT (INCO-DEV-3-032136) and was led by
+Dr. William Checkley. The study was conducted between May 2007 and
+February 2011 in Las Pampas de San Juan Miraflores and Nuevo Paraíso,
+two peri-urban shanty towns with high population density located on the
+southern edge of Lima city in Peru. The shanty towns had approximately
+<span class="math inline">\(40,000\)</span> residents with <span
+class="math inline">\(25\)</span>% of the population under the age of
+<span class="math inline">\(5\)</span>. A simple census was conducted to
+identify pregnant women and children less than <span
+class="math inline">\(3\)</span> months of age. Eligible newborns and
+pregnant women were randomly selected from the census and invited to
+participate in the study. Only one newborn was recruited per household.
+Written informed consent was required from parents or guardians before
+enrollment. The study design was that of a longitudinal cohort study
+with the primary objective to assess if infection with Helicobacter
+pylori (H. pylori) increases the risk of diarrhea, which, in turn, could
+adversely affect the growth in children less than <span
+class="math inline">\(2\)</span> years of age.</p>
+</div>
+<div id="data-sources" class="section level2">
+<h2>Data Sources</h2>
+<p>We would like to thank Dr. William Checkley for making this important
+de-identified data publicly available and to the members of the
+communities of Pampas de San Juan de Miraflores and Nuevo Paraíso who
+participated in this study. The data can be loaded directly using the
+<code>refund</code> package as follows.</p>
+<pre class="r"><code>library(refund)
+data(content)</code></pre>
+</div>
+<div id="data-description" class="section level2">
+<h2>Data Description</h2>
+<pre class="r"><code>str(content)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    4405 obs. of  10 variables:
+##  $ id      : int  1 1 1 1 1 1 1 1 1 1 ...
+##  $ ma1fe0  : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ weightkg: num  5.62 5.99 5.97 6.29 6.62 ...
+##  $ height  : num  56 56.2 56.5 57.4 58.6 58.8 59.2 61.1 62.5 63.9 ...
+##  $ agedays : int  61 65 71 77 84 91 105 119 140 154 ...
+##  $ cbmi    : num  17.9 19 18.7 19.1 19.3 ...
+##  $ zlen    : num  -0.53 -0.62 -0.75 -0.57 -0.28 -0.46 -0.79 -0.37 -0.36 -0.11 ...
+##  $ zwei    : num  0.7 1.05 0.81 1.01 1.2 0.89 1.24 1.51 1.17 1.46 ...
+##  $ zwfl    : num  1.64 2.18 1.99 2.03 1.94 1.7 2.43 2.34 1.88 2.05 ...
+##  $ zbmi    : num  1.37 1.93 1.69 1.83 1.85 1.56 2.29 2.31 1.84 2.04 ...</code></pre>
+<p>Anthropometric data were obtained longitudinally on <span
+class="math inline">\(197\)</span> children weekly until the child was
+<span class="math inline">\(3\)</span> months of age, every two weeks
+between three and <span class="math inline">\(11\)</span> months of age,
+and once monthly thereafter for the remainder of follow-up up to age
+<span class="math inline">\(2\)</span>. Here we will focus on child
+length and weight, both measured at the same visits. Even if visits were
+designed to be equally spaced, they were obtained within different days
+of each sampling period. For example, the observation on week four for a
+child could be on day <span class="math inline">\(22\)</span> or <span
+class="math inline">\(25\)</span>, depending on the availability of the
+contact person, day of the week, or on the researchers who conducted the
+visit. Moreover, not all planned visits were completed, which provided
+the data a quasi-sparse structure, as observations are not temporally
+synchronized across children.</p>
+</div>
 
 <br><br>
 <footer>
@@ -364,6 +491,8 @@ Chapter 5 to …</li>
 </footer>
 
 
+</div>
+</div>
 
 </div>
 
@@ -396,6 +525,35 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
