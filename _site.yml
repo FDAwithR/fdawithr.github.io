@@ -9,6 +9,10 @@ navbar:
     menu:
     - text: "NHANES"
       href: dataset_nhanes.html
+    - text: "COVID-19"
+      href: dataset_covid19.html
+    - text: "CD4"
+      href: dataset_cd4.html
     - text: "Content"
       href: dataset_content.html
   - text: Chapters

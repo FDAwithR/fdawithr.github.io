@@ -1,0 +1,29 @@
+---
+title: "CD4"
+output:
+  html_document: 
+    toc: true
+    toc_float: true
+---
+
+## Overview
+
+Human immune deficiency virus (HIV) attacks CD4 cells, which are an essential part of the human immune system. This reduces the  concentration of CD4 cells in the blood, which affects their ability to signal  other types of immune cells. Ultimately, this compromises the immune system and substantially reduces the human body's ability to fight off infections. Therefore, the CD4 cell count per milliliter of blood is a widely used measure of HIV progression.
+
+## Data Sources
+
+The CD4 counts data used in this book can be loaded as follows.
+
+```{r, warning=FALSE}
+library(refund)
+data(cd4)
+```
+
+## Data Description
+
+```{r, warning=FALSE}
+dim(cd4)
+```
+
+This data contains the CD4 cell counts for $366$ HIV infected individuals from the Multicenter AIDS Cohort Study (MACS). We would like to thank Professor Peter Diggle for making this important de-identified data publicly available on his website and for giving us the permission to use it in this book. We would also like to thank the participants in this MACS sub-study. The data is stored as a $366 \times 61$ sparse matrix.
+

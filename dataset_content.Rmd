@@ -1,0 +1,28 @@
+---
+title: "Content"
+output:
+  html_document: 
+    toc: true
+    toc_float: true
+---
+
+## Overview
+
+The CONTENT child growth study (referred to in this book as the CONTENT study) was funded by the Sixth Framework Programme of the European Union, Project CONTENT (INCO-DEV-3-032136) and was led by Dr. William Checkley. The study was conducted between May 2007 and February 2011 in Las Pampas de San Juan Miraflores and Nuevo Paraíso, two peri-urban shanty towns with high population density located on the southern edge of Lima city in Peru. The shanty towns had approximately $40,000$ residents with $25$\% of the population under the age of $5$. A simple census was conducted to identify pregnant women and children less than $3$ months of age. Eligible newborns and pregnant women were randomly selected from the census and invited to participate in the study. Only one newborn was recruited per household. Written informed consent was required from parents or guardians before enrollment. The study design was that of a longitudinal cohort study with the primary objective to assess if infection with Helicobacter pylori (H. pylori) increases the risk of diarrhea, which, in turn, could adversely affect the growth in children less than $2$ years of age. 
+
+## Data Sources
+
+We would like to thank Dr. William Checkley for making this important de-identified data publicly available and to the members of the communities of Pampas de San Juan de Miraflores and Nuevo Paraíso who participated in this study. The data can be loaded directly using the `refund` package as follows.
+
+```{r, warning=FALSE}
+library(refund)
+data(content)
+```
+
+## Data Description
+
+```{r, warning=FALSE}
+str(content)
+```
+
+Anthropometric data were obtained longitudinally on $197$ children weekly until the child was $3$ months of age, every two weeks between three and $11$ months of age, and once monthly thereafter for the remainder of follow-up up to age $2$. Here we will focus on child length and weight, both measured at the same visits. Even if visits were designed to be equally spaced, they were obtained within different days of each sampling period. For example, the observation on week four for a child could be on day $22$ or $25$, depending on the availability of the contact person, day of the week, or on the researchers who conducted the visit. Moreover, not all planned visits were completed, which provided the data a quasi-sparse structure, as observations are not temporally synchronized across children. 

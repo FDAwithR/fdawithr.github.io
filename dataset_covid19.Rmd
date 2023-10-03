@@ -1,0 +1,33 @@
+---
+title: "COVID-19"
+output:
+  html_document: 
+    toc: true
+    toc_float: true
+---
+
+## Overview
+
+COVID-19 is an infectious disease caused  by the SARS-Cov-2 virus that was first identified in Wuhan, China in 2019. The virus spreads primarily via airborne mechanisms. In COVID-19, “CO” stands for corona, “VI” for virus, “D” for disease, and $19$ for $2019$, the first year the virus was identified in humans. According to the World Health Organization, COVID-19 has become a world pandemic with more than $767$ million confirmed infections and almost $7$ million confirmed deaths in virtually every country of the world by June 6, 2023.
+
+## Data Sources
+
+Here we focus on mortality data collected in the US before and during the pandemic. The COVID-19 data used in this book can be loaded using the following lines of code.
+
+```{r, warning=FALSE}
+library(refund)
+data(COVID19)
+```
+
+## Data Description
+
+```{r, warning=FALSE}
+str(COVID19)
+```
+
+The all-cause mortality data is weekly mortality (week ending on 2017-01-14 to week ending on 2021-04-10) for a total of $222$ weeks. Data are made available by the National Center for Health Statistics. More precisely, the dataset link is called National and State Estimates of Excess Deaths. It can be accessed from   [this website](https://www.cdc.gov/nchs/nvss/vsrr/covid19/excess_deaths.htm#data-tables). A direct link to the file can be [accessed here](https://data.cdc.gov/api/views/xkkf-xrst/rows.csv?accessType=DOWNLOAD&bom=true&format=true%20target=). 
+
+The COVID-19 mortality data is weekly mortality with COVID-19 as cause of death (week ending on 2020-01-04 to week ending on 2021-04-17) for a total of $68$ weeks. Data are made available by the National Center for Health Statistics. More precisely, the dataset link is called National and State Estimates of Excess Deaths. It can be accessed from   [this website](https://healthdata.gov/dataset/provisional-covid-19-death-counts-week-ending-date-and-state). A direct link to the file can be [accessed here](https://data.cdc.gov/api/views/r8kw-7aab/rows.csv?accessType=DOWNLOAD).
+
+A third data set contains the estimated population size for all US states and teritories as of 2020-07-01. The source for these data is [Wikipedia](https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population).
+

@@ -11,7 +11,7 @@
 
 
 
-<title>Additional Scripts</title>
+<title>COVID-19</title>
 
 <script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -29,6 +29,9 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -236,6 +239,69 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
 
 </head>
 
@@ -243,6 +309,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -340,23 +416,73 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Additional Scripts</h1>
+<h1 class="title toc-ignore">COVID-19</h1>
 
 </div>
 
 
-<p>Some code relies on scripts or functions that is not shown in the
-book. These are listed here for completeness.</p>
-<ul>
-<li><a href="source/nhanes_fpcr.R">nhanes_fpcr.R</a> is used in Chapter
-4 to …</li>
-<li><a href="source/pffrcoef_to_tf.R">pffrcoef_to_tf.R</a> is used in
-Chapter 5 to …</li>
-<li><a href="source/fosr_gam_res_to_tfd.R">fosr_gam_res_to_tfd.R</a> is
-used in Chapter 5 to …</li>
-<li><a href="source/nhanes_boot_fui.R">nhanes_boot_fui.R</a> is used in
-Chapter 5 to …</li>
-</ul>
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>COVID-19 is an infectious disease caused by the SARS-Cov-2 virus that
+was first identified in Wuhan, China in 2019. The virus spreads
+primarily via airborne mechanisms. In COVID-19, “CO” stands for corona,
+“VI” for virus, “D” for disease, and <span
+class="math inline">\(19\)</span> for <span
+class="math inline">\(2019\)</span>, the first year the virus was
+identified in humans. According to the World Health Organization,
+COVID-19 has become a world pandemic with more than <span
+class="math inline">\(767\)</span> million confirmed infections and
+almost <span class="math inline">\(7\)</span> million confirmed deaths
+in virtually every country of the world by June 6, 2023.</p>
+</div>
+<div id="data-sources" class="section level2">
+<h2>Data Sources</h2>
+<p>Here we focus on mortality data collected in the US before and during
+the pandemic. The COVID-19 data used in this book can be loaded using
+the following lines of code.</p>
+<pre class="r"><code>library(refund)
+data(COVID19)</code></pre>
+</div>
+<div id="data-description" class="section level2">
+<h2>Data Description</h2>
+<pre class="r"><code>str(COVID19)</code></pre>
+<pre><code>## List of 12
+##  $ US_weekly_mort                     : num [1:207] 61114 59454 58176 58537 59175 ...
+##  $ US_weekly_mort_dates               : Date[1:207], format: &quot;2017-01-14&quot; &quot;2017-01-21&quot; ...
+##  $ US_weekly_mort_CV19                : num [1:52] 0 0 3 1 0 2 0 5 9 37 ...
+##  $ US_weekly_mort_CV19_dates          : chr [1:52] &quot;01/04/2020&quot; &quot;01/11/2020&quot; &quot;01/18/2020&quot; &quot;01/25/2020&quot; ...
+##  $ US_weekly_excess_mort_2020         : num [1:52] 1698 2222 1011 1111 535 ...
+##  $ US_weekly_excess_mort_2020_dates   : Date[1:52], format: &quot;2020-01-04&quot; &quot;2020-01-11&quot; ...
+##  $ US_states_names                    : chr [1:52] &quot;Alabama&quot; &quot;Alaska&quot; &quot;Arizona&quot; &quot;Arkansas&quot; ...
+##  $ US_states_population               : num [1:52] 4921532 731158 7421401 3030522 39368078 ...
+##  $ States_excess_mortality            : num [1:52, 1:52] 4 -4 -52 -20 196 18 1 14 2 121 ...
+##  $ States_excess_mortality_per_million: num [1:52, 1:52] 0.813 -5.471 -7.007 -6.6 4.979 ...
+##  $ States_CV19_mortality              : num [1:52, 1:52] 0 0 0 0 0 0 0 0 0 0 ...
+##  $ States_CV19_mortality_per_million  : num [1:52, 1:52] 0 0 0 0 0 0 0 0 0 0 ...</code></pre>
+<p>The all-cause mortality data is weekly mortality (week ending on
+2017-01-14 to week ending on 2021-04-10) for a total of <span
+class="math inline">\(222\)</span> weeks. Data are made available by the
+National Center for Health Statistics. More precisely, the dataset link
+is called National and State Estimates of Excess Deaths. It can be
+accessed from <a
+href="https://www.cdc.gov/nchs/nvss/vsrr/covid19/excess_deaths.htm#data-tables">this
+website</a>. A direct link to the file can be <a
+href="https://data.cdc.gov/api/views/xkkf-xrst/rows.csv?accessType=DOWNLOAD&amp;bom=true&amp;format=true%20target=">accessed
+here</a>.</p>
+<p>The COVID-19 mortality data is weekly mortality with COVID-19 as
+cause of death (week ending on 2020-01-04 to week ending on 2021-04-17)
+for a total of <span class="math inline">\(68\)</span> weeks. Data are
+made available by the National Center for Health Statistics. More
+precisely, the dataset link is called National and State Estimates of
+Excess Deaths. It can be accessed from <a
+href="https://healthdata.gov/dataset/provisional-covid-19-death-counts-week-ending-date-and-state">this
+website</a>. A direct link to the file can be <a
+href="https://data.cdc.gov/api/views/r8kw-7aab/rows.csv?accessType=DOWNLOAD">accessed
+here</a>.</p>
+<p>A third data set contains the estimated population size for all US
+states and teritories as of 2020-07-01. The source for these data is <a
+href="https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population">Wikipedia</a>.</p>
+</div>
 
 <br><br>
 <footer>
@@ -364,6 +490,8 @@ Chapter 5 to …</li>
 </footer>
 
 
+</div>
+</div>
 
 </div>
 
@@ -396,6 +524,35 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
