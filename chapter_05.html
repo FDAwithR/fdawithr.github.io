@@ -339,7 +339,7 @@ div.tocify {
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="overview.html">Overview</a>
+  <a href="about_authors.html">About the Authors</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -350,6 +350,12 @@ div.tocify {
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="dataset_nhanes.html">NHANES</a>
+    </li>
+    <li>
+      <a href="dataset_covid19.html">COVID-19</a>
+    </li>
+    <li>
+      <a href="dataset_cd4.html">CD4</a>
     </li>
     <li>
       <a href="dataset_content.html">Content</a>
@@ -376,7 +382,19 @@ div.tocify {
       <a href="chapter_04.html">Chapter 4: SoFR</a>
     </li>
     <li>
-      <a href="chapter_05.html">Chapter 4: FoSR</a>
+      <a href="chapter_05.html">Chapter 5: FoSR</a>
+    </li>
+    <li>
+      <a href="chapter_06.html">Chapter 6: FoFR</a>
+    </li>
+    <li>
+      <a href="chapter_07.html">Chapter 7</a>
+    </li>
+    <li>
+      <a href="chapter_08.html">Chapter 8</a>
+    </li>
+    <li>
+      <a href="chapter_09.html">Chapter 9</a>
     </li>
   </ul>
 </li>
@@ -1547,17 +1565,7 @@ columns: <code>term</code> (taking values <code>(Intercept)</code>,
   min_regressions %&gt;%
   select(epoch, term, coef = estimate) %&gt;%
   tf_nest(coef, .id = term, .arg = epoch) %&gt;%
-  mutate(smooth_coef = tf_smooth(coef, method = &quot;lowess&quot;))
-
-fui_coef_df %&gt;% 
-  ggplot(aes(y = smooth_coef, color = term)) + 
-  geom_spaghetti(size = 1.2) + 
-  geom_spaghetti(aes(tf = coef), alpha = .2)  + 
-  facet_wrap(~term, scales = &quot;free&quot;) 
-## Warning in geom_spaghetti(size = 1.2): Ignoring unknown parameters: `size`
-## Warning in geom_spaghetti(aes(tf = coef), alpha = 0.2): Ignoring unknown
-## aesthetics: tf</code></pre>
-<p><img src="chapter_05_files/figure-html/unnamed-chunk-37-1.png" width="90%" /></p>
+  mutate(smooth_coef = tf_smooth(coef, method = &quot;lowess&quot;))</code></pre>
 <p>The figure below contains a panel for each term, and shows
 epoch-level and smooth coefficients. Note the similarity between the
 smoothed coefficients and those obtained by “functional” approaches,
@@ -1566,15 +1574,13 @@ plausible and scalable approach to FoSR modeling.</p>
 <pre class="r"><code>fui_coef_df %&gt;% 
   ggplot(aes(y = smooth_coef, color = term)) + 
   geom_spaghetti(size = 1.2) + 
-  geom_spaghetti(aes(tf = coef), alpha = .2)  + 
+  geom_spaghetti(aes(y = coef), alpha = .2)  + 
   facet_wrap(~term, scales = &quot;free&quot;) + 
   scale_x_continuous(
     breaks = seq(0, 24, length = 5),
     labels = str_c(seq(0, 24, length = 5), &quot;:00&quot;)) + 
   labs(x = &quot;Time of day (hours)&quot;, y = &quot;Coefficient&quot;)
-## Warning in geom_spaghetti(size = 1.2): Ignoring unknown parameters: `size`
-## Warning in geom_spaghetti(aes(tf = coef), alpha = 0.2): Ignoring unknown
-## aesthetics: tf</code></pre>
+## Warning in geom_spaghetti(size = 1.2): Ignoring unknown parameters: `size`</code></pre>
 <p><img src="chapter_05_files/figure-html/unnamed-chunk-38-1.png" width="90%" /></p>
 <p>An important focus is to model error structures and thereby obtain
 accurate inference. The scalable approach we suggest in this section

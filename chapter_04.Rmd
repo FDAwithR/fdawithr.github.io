@@ -202,9 +202,8 @@ in a way that is flexible and computationally feasible.
 
 ### Parametric estimation of the coefficient function
 
-Our first approach expands the coefficient function $\beta_1(s)$ using a relatively low-dimensional basis expansion; doing so leads to a more familiar setting in which scalar basis coefficients are the target of estimation and inference. Specifically, let $\beta_1(s) = \sum_{k = 1}^{K}\beta_{1k}B_{k}(s)$ where $B_1(s), \dots, B_{K}(s)$ is a collection of basis functions. Substituting this expansion into the integral term in (\ref{eq:ch4_linear_sofr}) gives
+Our first approach expands the coefficient function $\beta_1(s)$ using a relatively low-dimensional basis expansion; doing so leads to a more familiar setting in which scalar basis coefficients are the target of estimation and inference. Specifically, let $\beta_1(s) = \sum_{k = 1}^{K}\beta_{1k}B_{k}(s)$ where $B_1(s), \dots, B_{K}(s)$ is a collection of basis functions. Substituting this expansion into the integral term gives
 \begin{equation}
-\arraycolsep=1.4pt\def\arraystretch{2}
 \begin{array}{lll}
 E[Y_i] &=& \beta_0 + \int_S \beta_1 (s)X_{i}(s)\, ds \\
   &=& \beta_0 + \sum_{k=1}^{K} \left[ \int_{S} B_{k}(s)X_{i}(s)\, ds\right] \beta_{1k} \\
@@ -215,7 +214,6 @@ where $C_{ik} = \int_{S} B_{k}(s)X_{i}(s)\, ds$, $\mathbf{C}_i = [C_{i1}, \dots,
 
 Many options for the basis have been considered in the expansive literature for SoFR. To illustrate the ideas in this Section, we start with a quadratic basis and obtain the corresponding estimate of the coefficient function $\beta_{1}(s)$. We define the basis
 \begin{equation}
-\arraycolsep=1.4pt
 \left\{\begin{array}{lll}
   B_{1}(s) = 1\;,\\
   B_{2}(s) = s\;,\\
@@ -315,7 +313,7 @@ $$\mathbf{D}=\begin{bmatrix}
 \mathbf{0}_{1 \times 1} & \mathbf{0}_{K \times 1} \\
 \;\mathbf{0}_{1 \times K} & \mathbf{P}\\
 \end{bmatrix}\;,$$
-where $\mathbf{0}_{a\times b}$ is a matrix of zero entries with $a$ rows and $b$ columns. For fixed values of $\lambda$, a closed form solution for $\widehat{\boldsymbol{\beta}}$ is $\widehat{\boldsymbol{\beta}}=(\mathbf{X}^t\mathbf{X}+\lambda \mathbf{D})^{-1}\mathbf{X}^t\mathbf{y}$. Varying $\lambda$ from 0 to $\infty$ will induce no penalization and full penalization, respectively, and choosing an appropriate tuning parameter is an important practical challenge. As elsewhere in this Chapter, though, we emphasize that the familiar form in (\ref{eq:ch4_penalized_ss}) should not mask the novelty and innovation of this model, which  implements penalized spline smoothing to estimate the coefficient function in a scalar-on-function regression. 
+where $\mathbf{0}_{a\times b}$ is a matrix of zero entries with $a$ rows and $b$ columns. For fixed values of $\lambda$, a closed form solution for $\widehat{\boldsymbol{\beta}}$ is $\widehat{\boldsymbol{\beta}}=(\mathbf{X}^t\mathbf{X}+\lambda \mathbf{D})^{-1}\mathbf{X}^t\mathbf{y}$. Varying $\lambda$ from 0 to $\infty$ will induce no penalization and full penalization, respectively, and choosing an appropriate tuning parameter is an important practical challenge. As elsewhere in this Chapter, though, we emphasize that the familiar form should not mask the novelty and innovation of this model, which  implements penalized spline smoothing to estimate the coefficient function in a scalar-on-function regression. 
 
 We illustrate these ideas in the next code chunk, which continues to use BMI as an outcome and MIMS as a functional predictor. The code draws on elements that have been seen previously. We first define a B-spline basis with 30 degrees of freedom evaluated over the finite grid `arg`. Using functionality in the `splines2` package, we obtain the second derivative of each spline basis function evaluated over the same finite grid. The elements of the penalty matrix $\mathbf{P}$ are obtained through numeric approximations to the integrals. The design matrix $\mathbf{X}$ is obtained by adding a column taking the value $1$ everywhere to the terms $C_{ik}$. Next, we construct the matrix $\mathbf{D}$. The response vector $\mathbf{y}$ is extracted from `nhanes_df` and we choose high and low values for the tuning parameter $\lambda$. Given all of these elements, we estimate the coefficient vector $\boldsymbol{\beta}$ to obtain `coef_high` and `coef_low`.
 
@@ -359,7 +357,7 @@ pen_spline_coef_df %>%
   labs(x = "Time of day (hours)", y = "Coefficient")
 ```
 
-Recasting the penalized sum of squares in (\ref{eq:ch4_penalized_ss}) as a mixed model allows the data-driven estimation of tuning parameters; more broadly, this opens the door to using a wide range of methods for mixed model estimation and inference in functional regression settings. Below, we construct the design matrix $\mathbf{C}$ using numeric integration. The penalty matrix $\mathbf{P}$, which contains the numeric integral of the squared second derivative of the basis functions, is reused from a prior code chunk. We pass these as arguments into `mgcv::gam()` by specifying `C` in the formula that defines the regression structure, and then use the `paraPen` argument to supply our penalty matrix `P` for the design matrix `C`. Lastly, we specify the estimation method to be REML.
+Recasting the penalized sum of squares as a mixed model allows the data-driven estimation of tuning parameters; more broadly, this opens the door to using a wide range of methods for mixed model estimation and inference in functional regression settings. Below, we construct the design matrix $\mathbf{C}$ using numeric integration. The penalty matrix $\mathbf{P}$, which contains the numeric integral of the squared second derivative of the basis functions, is reused from a prior code chunk. We pass these as arguments into `mgcv::gam()` by specifying `C` in the formula that defines the regression structure, and then use the `paraPen` argument to supply our penalty matrix `P` for the design matrix `C`. Lastly, we specify the estimation method to be REML.
 
 ```{r}
 C = (nhanes_df$MIMS_mat %*% B_bspline) * (1 / 60)

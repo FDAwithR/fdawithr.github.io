@@ -2,7 +2,13 @@
 title: "Functional Data Analysis with R"
 ---
 
-<br><br><img src="images/cover.jpg" alt="logo" style="float:left; width:38%; padding:20px"><br>
+by [Ciprian M. Crainiceanu](http://www.ciprianstats.org), [Jeff Goldsmith](http://jeffgoldsmith.com), [Andrew Leroux](https://coloradosph.cuanschutz.edu/resources/directory/directory-profile/Leroux-Andrew-UCD6003212586), and [Erjia Cui](https://sites.google.com/view/erjiacui/home)
+
+<br>
+
+[**Preorder now!**](https://www.barnesandnoble.com/w/functional-data-analysis-with-r-ciprian-m-crainiceanu/1144067537)
+
+<br><img src="images/cover.jpg" alt="logo" style="float:left; width:38%; padding:20px"><br>
 
 Modern Functional Data Analysis consists of the development of robust statistical methods and reproducible software for model implementation and visualization. The goal of this website is to provide the code and software to implement statistical methods and reproduce the analysis presented in the book "Functional Data Analysis with R" by Crainiceanu, Goldsmith, Leroux, Cui. 
 
@@ -13,3 +19,4 @@ In the "Scripts" section, we provide some scripts or functions that the code dep
 This book will use the `refund` and `mgcv` packages to implement most statistical methods. For some methods additional packages may be required. Please make sure to install the required packages before running the code.
 
 The website will be updated from time to time as the software develops. 
+

@@ -339,7 +339,7 @@ div.tocify {
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="overview.html">Overview</a>
+  <a href="about_authors.html">About the Authors</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -350,6 +350,12 @@ div.tocify {
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="dataset_nhanes.html">NHANES</a>
+    </li>
+    <li>
+      <a href="dataset_covid19.html">COVID-19</a>
+    </li>
+    <li>
+      <a href="dataset_cd4.html">CD4</a>
     </li>
     <li>
       <a href="dataset_content.html">Content</a>
@@ -376,7 +382,19 @@ div.tocify {
       <a href="chapter_04.html">Chapter 4: SoFR</a>
     </li>
     <li>
-      <a href="chapter_05.html">Chapter 4: FoSR</a>
+      <a href="chapter_05.html">Chapter 5: FoSR</a>
+    </li>
+    <li>
+      <a href="chapter_06.html">Chapter 6: FoFR</a>
+    </li>
+    <li>
+      <a href="chapter_07.html">Chapter 7</a>
+    </li>
+    <li>
+      <a href="chapter_08.html">Chapter 8</a>
+    </li>
+    <li>
+      <a href="chapter_09.html">Chapter 9</a>
     </li>
   </ul>
 </li>
@@ -661,9 +679,7 @@ and inference. Specifically, let <span class="math inline">\(\beta_1(s)
 = \sum_{k = 1}^{K}\beta_{1k}B_{k}(s)\)</span> where <span
 class="math inline">\(B_1(s), \dots, B_{K}(s)\)</span> is a collection
 of basis functions. Substituting this expansion into the integral term
-in (<span class="math inline">\(\ref{eq:ch4_linear_sofr}\)</span>) gives
-<span class="math display">\[\begin{equation}
-\arraycolsep=1.4pt\def\arraystretch{2}
+gives <span class="math display">\[\begin{equation}
 \begin{array}{lll}
 E[Y_i] &amp;=&amp; \beta_0 + \int_S \beta_1 (s)X_{i}(s)\, ds \\
   &amp;=&amp; \beta_0 + \sum_{k=1}^{K} \left[ \int_{S}
@@ -695,7 +711,6 @@ literature for SoFR. To illustrate the ideas in this Section, we start
 with a quadratic basis and obtain the corresponding estimate of the
 coefficient function <span class="math inline">\(\beta_{1}(s)\)</span>.
 We define the basis <span class="math display">\[\begin{equation}
-\arraycolsep=1.4pt
 \left\{\begin{array}{lll}
   B_{1}(s) = 1\;,\\
   B_{2}(s) = s\;,\\
@@ -908,11 +923,10 @@ class="math inline">\(\lambda\)</span> from 0 to <span
 class="math inline">\(\infty\)</span> will induce no penalization and
 full penalization, respectively, and choosing an appropriate tuning
 parameter is an important practical challenge. As elsewhere in this
-Chapter, though, we emphasize that the familiar form in (<span
-class="math inline">\(\ref{eq:ch4_penalized_ss}\)</span>) should not
-mask the novelty and innovation of this model, which implements
-penalized spline smoothing to estimate the coefficient function in a
-scalar-on-function regression.</p>
+Chapter, though, we emphasize that the familiar form should not mask the
+novelty and innovation of this model, which implements penalized spline
+smoothing to estimate the coefficient function in a scalar-on-function
+regression.</p>
 <p>We illustrate these ideas in the next code chunk, which continues to
 use BMI as an outcome and MIMS as a functional predictor. The code draws
 on elements that have been seen previously. We first define a B-spline
@@ -952,18 +966,17 @@ through simple modifications to the previous code. A figure below shows
 the resulting coefficient functions. Note that we specify the color for
 these curves for consistency with later plots.</p>
 <p><img src="chapter_04_files/figure-html/unnamed-chunk-11-1.png" width="90%" /></p>
-<p>Recasting the penalized sum of squares in (<span
-class="math inline">\(\ref{eq:ch4_penalized_ss}\)</span>) as a mixed
-model allows the data-driven estimation of tuning parameters; more
-broadly, this opens the door to using a wide range of methods for mixed
-model estimation and inference in functional regression settings. Below,
-we construct the design matrix <span
-class="math inline">\(\mathbf{C}\)</span> using numeric integration. The
-penalty matrix <span class="math inline">\(\mathbf{P}\)</span>, which
-contains the numeric integral of the squared second derivative of the
-basis functions, is reused from a prior code chunk. We pass these as
-arguments into <code>mgcv::gam()</code> by specifying <code>C</code> in
-the formula that defines the regression structure, and then use the
+<p>Recasting the penalized sum of squares as a mixed model allows the
+data-driven estimation of tuning parameters; more broadly, this opens
+the door to using a wide range of methods for mixed model estimation and
+inference in functional regression settings. Below, we construct the
+design matrix <span class="math inline">\(\mathbf{C}\)</span> using
+numeric integration. The penalty matrix <span
+class="math inline">\(\mathbf{P}\)</span>, which contains the numeric
+integral of the squared second derivative of the basis functions, is
+reused from a prior code chunk. We pass these as arguments into
+<code>mgcv::gam()</code> by specifying <code>C</code> in the formula
+that defines the regression structure, and then use the
 <code>paraPen</code> argument to supply our penalty matrix
 <code>P</code> for the design matrix <code>C</code>. Lastly, we specify
 the estimation method to be REML.</p>
