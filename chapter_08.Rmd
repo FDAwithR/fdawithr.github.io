@@ -52,7 +52,7 @@ library(gridExtra)
 library(ggpubr)
 
 #load NHANES data
-data <- readRDS("./../../FDA-with-R/NHANES/data/nhanes_fda_with_r_ml.rds")
+data <- readRDS("./data/nhanes_fda_with_r_ml.rds")
 dow <- c("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday")
 unit <- "MIMS"
 #set color palette to plot
@@ -134,7 +134,7 @@ We now show how to implement Multilevel Functional Principal Component Analysis 
 library(refund)
 library(tidyverse)
 
-nhanes_ml_df <- readRDS("./../../FDA-with-R/NHANES/data/nhanes_fda_with_r_ml.rds")
+nhanes_ml_df <- readRDS("./data/nhanes_fda_with_r_ml.rds")
 
 fit_mfpca <- mfpca.face(Y = nhanes_ml_df$MIMS,
                         id = nhanes_ml_df$SEQN,
@@ -233,7 +233,7 @@ Functional mixed models (FMM) are extension of mixed effects models to functiona
 ture. 
 
 ```{r, message=FALSE, warning=FALSE}
-nhanes_ml_df <- readRDS("./../../FDA-with-R/NHANES/data/nhanes_fda_with_r_ml.rds")
+nhanes_ml_df <- readRDS("./data/nhanes_fda_with_r_ml.rds")
 
 #Select id to plot
 id <- c(62161, 62163, 83727)

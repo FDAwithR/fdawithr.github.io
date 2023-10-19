@@ -339,7 +339,7 @@ div.tocify {
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="overview.html">Overview</a>
+  <a href="about_authors.html">About the Authors</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -611,7 +611,7 @@ library(ggplot2)
 library(gridExtra)
 
 #load data
-nhanes_mortality &lt;- readRDS(&quot;./../../FDA-with-R/NHANES/data/nhanes_fda_with_r.rds&quot;)
+nhanes_mortality &lt;- readRDS(&quot;./data/nhanes_fda_with_r.rds&quot;)
 
 nhanes_plot &lt;- nhanes_mortality %&gt;% group_by(event) %&gt;% summarise(n = n())
 nhanes_plot &lt;- nhanes_plot[which(!is.na(nhanes_plot$event)),]

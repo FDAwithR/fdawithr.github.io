@@ -47,7 +47,7 @@ The first file contains the the all-cause US weekly mortality data (week ending 
 
 The second file contains weekly COVID-19 mortality data (week ending on 2020-01-04 to week ending on 2021-04-17) for a total of $68$ weeks. Data are made available by the National Center for Health Statistics. More precisely, the dataset link is called National and State Estimates of Excess Deaths. It can be accessed from   [this website](https://healthdata.gov/dataset/provisional-covid-19-death-counts-week-ending-date-and-state). A direct link to the file can be [accessed here](https://data.cdc.gov/api/views/r8kw-7aab/rows.csv?accessType=DOWNLOAD).
 
-The third file contains the estimated population size for all US states and territories as of 2020-07-01. The source for these data is [Wickipedia](https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population).
+The third file contains the estimated population size for all US states and territories as of 2020-07-01. The source for these data is [Wikipedia](https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population).
 
 ### US all-cause excess and Covid-19 mortality
 
@@ -512,9 +512,8 @@ image.plot(xsm_zwei, ysm_zwei, smcoef_zwei_plot,
 
 ## Fitting FoFR Using mgcv
 
-(Waiting for Andrew to fill in)
+TBA
 
 ## Inference for FoFR
 
-(Waiting for Andrew to fill in)
-
+TBA

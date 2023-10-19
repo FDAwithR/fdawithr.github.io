@@ -218,7 +218,7 @@ library(ggplot2)
 library(gridExtra)
 
 #load data
-nhanes_mortality <- readRDS("./../../FDA-with-R/NHANES/data/nhanes_fda_with_r.rds")
+nhanes_mortality <- readRDS("./data/nhanes_fda_with_r.rds")
 
 nhanes_plot <- nhanes_mortality %>% group_by(event) %>% summarise(n = n())
 nhanes_plot <- nhanes_plot[which(!is.na(nhanes_plot$event)),]

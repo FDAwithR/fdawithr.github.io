@@ -50,7 +50,7 @@ library(gridExtra)
 library(ggpubr)
 
 ## load NHANES data
-data <- readRDS("./../../FDA-with-R/NHANES/data/nhanes_fda_with_r_ml.rds") ## need to change once deciding where to put NHANES data
+data <- readRDS("./data/nhanes_fda_with_r_ml.rds")
 
 ## plot NHANES data
 id <- c(75111,77936,82410)
@@ -124,7 +124,7 @@ library(stringr)
 library(tidyr)
 library(mgcv)
 
-nhanes_lite <- readRDS("./../../FDA-with-R/NHANES/data/nhanes_fda_with_r.rds")
+nhanes_lite <- readRDS("./data/nhanes_fda_with_r.rds")
 
 ## subset data to create MIMS-by-age plot
 nhanes_age <- nhanes_lite
@@ -236,7 +236,7 @@ The all-cause mortality data is weekly mortality (week ending on 2017-01-14 to w
 
 The COVID-19 mortality data is weekly mortality with COVID-19 as cause of death (week ending on 2020-01-04 to week ending on 2021-04-17) for a total of $68$ weeks. Data are made available by the National Center for Health Statistics. More precisely, the dataset link is called National and State Estimates of Excess Deaths. It can be accessed from   [this website](https://healthdata.gov/dataset/provisional-covid-19-death-counts-week-ending-date-and-state). A direct link to the file can be [accessed here](https://data.cdc.gov/api/views/r8kw-7aab/rows.csv?accessType=DOWNLOAD).
 
-A third data set contains the estimated population size for all US states and teritories as of 2020-07-01. The source for these data is [Wickipedia](https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population).
+A third data set contains the estimated population size for all US states and teritories as of 2020-07-01. The source for these data is [Wikipedia](https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population).
 
 Our overall goal is to visualize this data with special emphasis on the year 2020. We have two main objectves: (1) to visualize all-cause total and excess mortality (mortality in a week in 2020 minus mortality in the coresponding week in 2019); and (2) to visualize total COVID-19 mortality as a function of time.
 
