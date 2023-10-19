@@ -797,7 +797,7 @@ library(survival)
 library(mgcv)
 library(refund)
 
-df_cleaned <- readRDS("./../../FDA-with-R/NHANES/data/nhanes_fda_with_r.rds")
+df_cleaned <- readRDS("./data/nhanes_fda_with_r.rds")
 
 df_cluster <- df_cleaned %>% 
   filter(!is.na(event))

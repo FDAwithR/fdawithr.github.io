@@ -339,7 +339,7 @@ div.tocify {
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="overview.html">Overview</a>
+  <a href="about_authors.html">About the Authors</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -437,7 +437,7 @@ library(gridExtra)
 library(ggpubr)
 
 #load NHANES data
-data &lt;- readRDS(&quot;./../../FDA-with-R/NHANES/data/nhanes_fda_with_r_ml.rds&quot;)
+data &lt;- readRDS(&quot;./data/nhanes_fda_with_r_ml.rds&quot;)
 dow &lt;- c(&quot;Sunday&quot;,&quot;Monday&quot;,&quot;Tuesday&quot;,&quot;Wednesday&quot;,&quot;Thursday&quot;,&quot;Friday&quot;,&quot;Saturday&quot;)
 unit &lt;- &quot;MIMS&quot;
 #set color palette to plot
@@ -523,7 +523,7 @@ using the <code>mfpca.face()</code> function from the
 <pre class="r"><code>library(refund)
 library(tidyverse)
 
-nhanes_ml_df &lt;- readRDS(&quot;./../../FDA-with-R/NHANES/data/nhanes_fda_with_r_ml.rds&quot;)
+nhanes_ml_df &lt;- readRDS(&quot;./data/nhanes_fda_with_r_ml.rds&quot;)
 
 fit_mfpca &lt;- mfpca.face(Y = nhanes_ml_df$MIMS,
                         id = nhanes_ml_df$SEQN,
@@ -616,7 +616,7 @@ to functional data. They provide a useful framework that allows the
 explicit separation of different sources of observed variability. We now
 show NHANES data with a multilevel functional mixed effects model (FMM)
 struc- ture.</p>
-<pre class="r"><code>nhanes_ml_df &lt;- readRDS(&quot;./../../FDA-with-R/NHANES/data/nhanes_fda_with_r_ml.rds&quot;)
+<pre class="r"><code>nhanes_ml_df &lt;- readRDS(&quot;./data/nhanes_fda_with_r_ml.rds&quot;)
 
 #Select id to plot
 id &lt;- c(62161, 62163, 83727)
