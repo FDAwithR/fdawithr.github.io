@@ -6,7 +6,7 @@ by [Ciprian M. Crainiceanu](http://www.ciprianstats.org), [Jeff Goldsmith](http:
 
 <br>
 
-[**Preorder now!**](https://www.barnesandnoble.com/w/functional-data-analysis-with-r-ciprian-m-crainiceanu/1144067537)
+[Publisher site](https://www.taylorfrancis.com/books/mono/10.1201/9781003278726/functional-data-analysis-ciprian-crainiceanu-jeff-goldsmith-andrew-leroux-erjia-cui) | [**Preorder now!**](https://www.barnesandnoble.com/w/functional-data-analysis-with-r-ciprian-m-crainiceanu/1144067537)
 
 <br><img src="images/cover.jpg" alt="logo" style="float:left; width:38%; padding:20px"><br>
 
