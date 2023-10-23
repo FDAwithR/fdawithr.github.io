@@ -12,7 +12,7 @@ COVID-19 is an infectious disease caused  by the SARS-Cov-2 virus that was first
 
 ## Data Sources
 
-Here we focus on mortality data collected in the US before and during the pandemic. The COVID-19 data used in this book can be loaded using the following lines of code.
+Here we focus on mortality data collected in the US before and during the pandemic. The COVID-19 data used in this book can be downloaded [here](http://ciprianstats.org/sites/default/files/covid19/COVID19.RData). The data used in this book can also be loaded using the following lines of code. 
 
 ```{r, warning=FALSE}
 library(refund)
