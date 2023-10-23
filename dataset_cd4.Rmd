@@ -12,7 +12,7 @@ Human immune deficiency virus (HIV) attacks CD4 cells, which are an essential pa
 
 ## Data Sources
 
-The CD4 counts data used in this book can be loaded as follows.
+The CD4 counts data used in this book can be downloaded [here](http://ciprianstats.org/sites/default/files/covid19/cd4.RData). The data is also available in the `refund` package and can be loaded in R as follows.
 
 ```{r, warning=FALSE}
 library(refund)
