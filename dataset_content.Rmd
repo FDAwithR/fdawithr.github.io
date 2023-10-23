@@ -12,7 +12,7 @@ The CONTENT child growth study (referred to in this book as the CONTENT study) w
 
 ## Data Sources
 
-We would like to thank Dr. William Checkley for making this important de-identified data publicly available and to the members of the communities of Pampas de San Juan de Miraflores and Nuevo Paraíso who participated in this study. The data can be loaded directly using the `refund` package as follows.
+We would like to thank Dr. William Checkley for making this important de-identified data publicly available and to the members of the communities of Pampas de San Juan de Miraflores and Nuevo Paraíso who participated in this study. The data used in this book can be downloaded [here](http://ciprianstats.org/sites/default/files/covid19/content.RData). The data can also be loaded directly from the `refund` package as follows.
 
 ```{r, warning=FALSE}
 library(refund)
