@@ -4,11 +4,10 @@ title: "Functional Data Analysis with R"
 
 by [Ciprian M. Crainiceanu](http://www.ciprianstats.org), [Jeff Goldsmith](http://jeffgoldsmith.com), [Andrew Leroux](https://coloradosph.cuanschutz.edu/resources/directory/directory-profile/Leroux-Andrew-UCD6003212586), and [Erjia Cui](https://sites.google.com/view/erjiacui/home)
 
-<br>
 
-[Publisher site](https://www.taylorfrancis.com/books/mono/10.1201/9781003278726/functional-data-analysis-ciprian-crainiceanu-jeff-goldsmith-andrew-leroux-erjia-cui) | [**Preorder now!**](https://www.barnesandnoble.com/w/functional-data-analysis-with-r-ciprian-m-crainiceanu/1144067537)
+[Publisher site](https://www.taylorfrancis.com/books/mono/10.1201/9781003278726/functional-data-analysis-ciprian-crainiceanu-jeff-goldsmith-andrew-leroux-erjia-cui) | **Preorder now** on [Amazon](https://www.amazon.com/Functional-Analysis-Monographs-Statistics-Probability/dp/1032244712/ref=sr_1_6?crid=UEKJYVS8EV6R&keywords=crainiceanu&qid=1698108861&sprefix=crainiceanu%2Caps%2C83&sr=8-6) or [B&N](https://www.barnesandnoble.com/w/functional-data-analysis-with-r-ciprian-m-crainiceanu/1144067537)
 
-<br><img src="images/cover.jpg" alt="logo" style="float:left; width:38%; padding:20px"><br>
+<img src="images/cover.jpg" alt="logo" style="float:left; width:38%; padding:20px"><br>
 
 Modern Functional Data Analysis consists of the development of robust statistical methods and reproducible software for model implementation and visualization. The goal of this website is to provide the code and software to implement statistical methods and reproduce the analysis presented in the book "Functional Data Analysis with R" by Crainiceanu, Goldsmith, Leroux, Cui. 
 
