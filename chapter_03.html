@@ -13,7 +13,7 @@
 
 <title>Chapter 3: FPCA</title>
 
-<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -730,7 +730,493 @@ observations are available per function.</p>
 </div>
 <div id="application-to-nhanes" class="section level2">
 <h2>Application to NHANES</h2>
-<p>TBA</p>
+<p>We begin by by reading in of the subject-level NHANES data
+(nhanes_fda_with_r.rds). Note that we restrict the sample to
+participants aged 5 to 80.</p>
+<pre class="r"><code>## read in the data (assumes data are in the current working directory)
+df_subj &lt;- read_rds(here::here(&quot;data&quot;,&quot;nhanes_fda_with_r.rds&quot;))
+## filter out participants 80+ and younger than 5
+df_subj &lt;-
+        df_subj %&gt;% 
+        filter(age &gt;= 5, age &lt; 80)</code></pre>
+<div id="functional-principal-components-analysis"
+class="section level3">
+<h3>Functional Principal Components Analysis</h3>
+<p>Next, we compare FPCA to PCA on the minute level MIMS profiles
+(subject average MIMS across days). For FPCA, we apply the FACE method
+(<em>refund::fpca.face</em>) using the package defaults. For PCA we
+estimate the principal components using the connection between SVD and
+eigen decomposition of the empirical covariance matrix.</p>
+<pre class="r"><code>## Do fPCA on the subject-average MIMS profiles
+MIMS_mat &lt;- unclass(df_subj$MIMS)
+fpca_MIMS_subj &lt;- fpca.face(MIMS_mat)
+
+## Do PCA on the subject-average MIMS profiles
+# subtract column (minute) means to center the &quot;varianbles&quot;
+MIMS_mn     &lt;- colMeans(MIMS_mat)
+MIMS_mat_cn &lt;- sweep(MIMS_mat, MARGIN=2, STATS=MIMS_mn, FUN=&quot;-&quot;)
+# then do SVD
+svd_MIMS_subj &lt;- svd(MIMS_mat_cn)</code></pre>
+<p>We can then plot the first four principal components from each
+approach.</p>
+<pre class="r"><code>## plot the results of PCA vs fpca
+sind &lt;- seq(0,1,len=1440)
+xinx &lt;- (c(1,6,12,18,23)*60+1)/1440
+xinx_lab &lt;- c(&quot;01:00&quot;,&quot;06:00&quot;,&quot;12:00&quot;,&quot;18:00&quot;,&quot;23:00&quot;)
+df_plt &lt;- 
+        data.frame(&quot;PC&quot; = rep(paste0(&quot;PC&quot;,1:4), each=1440),
+                   &quot;time&quot; = rep(sind, 4),
+                   &quot;fPCA&quot; = as.vector(fpca_MIMS_subj$efunctions[,1:4]),
+                   &quot;PCA&quot; = -as.vector(svd_MIMS_subj$v[,1:4]))
+df_plt &lt;- 
+        df_plt %&gt;% 
+        pivot_longer(cols=c(&quot;fPCA&quot;,&quot;PCA&quot;))
+
+
+fpca_vs_pca_NHANES &lt;- 
+        df_plt %&gt;% 
+        mutate(name = factor(name, levels=c(&quot;fPCA&quot;,&quot;PCA&quot;),labels=c(&quot;(A) fPCA&quot;,&quot;(B) PCA&quot;))) %&gt;% 
+        ggplot() + 
+        geom_line(aes(x=time, y=value, color=PC), lwd=1.25) + 
+        facet_grid(~name) + 
+        theme_minimal(base_size=18) + 
+        xlab(&quot;Time of Day (s)&quot;) + 
+        ylab(expression(&quot;Estimated Eigenfunctions (&quot; ~ phi[k](s) ~ &quot;)&quot;)) + 
+        scale_x_continuous(breaks=xinx, labels=xinx_lab) + 
+        theme(legend.position=c(.9,.9),
+              panel.grid.major.y = element_blank(),
+              panel.grid.major.x = element_blank(),
+              panel.grid.minor.x = element_blank(),
+              panel.grid.minor.y = element_blank(),
+              axis.line.x = element_line(linewidth = 1, linetype = &quot;solid&quot;, colour = &quot;black&quot;),
+              axis.line.y = element_line(linewidth = 1, linetype = &quot;solid&quot;, colour = &quot;black&quot;),
+              strip.text = element_text(face=&quot;bold&quot;, size=18, hjust=0.03),
+              axis.ticks.x = element_line(linewidth = 1),
+              axis.ticks.y = element_line(linewidth = 1)) + 
+        labs(color=&quot;Eigenfunction&quot;) + 
+        guides(color=guide_legend(ncol=2))
+fpca_vs_pca_NHANES</code></pre>
+<p><img src="chapter_03_files/figure-html/plot_fpca_vs_pca-1.png" width="90%" /></p>
+<p>Interpreting the functional PCs may be challenging, particularly for
+PCs which explain a relatively low proportion of variance. One
+visualization technique is to plot the distribution of curves which load
+lowest/highest on a particular PC. Here, we plot the individuals in the
+bottom and top 10% of scores for the first four PCs. The code below
+calculates these quantities.</p>
+<pre class="r"><code>## plot individual curves loading highly/lowly on the first 4 PCs
+# set the seed for reproducibility
+set.seed(1983)
+# number of eigenfunctions to plot
+K &lt;- 4
+# number of sample curves to plot for each PC
+n_plt &lt;-  10
+# create container data frame for storing/plotting the individual curves
+# for high/low loadings on each of the K PCs
+# this data frame will have 
+#  2 * K * n_plt * 1440 rows
+#  2 = high/low
+#  K = # of PCs
+#  n_plt = number of individual curves to plot
+#  1440 = minutes in a day
+df_plt_ind &lt;- expand.grid(&quot;sind&quot; = sind,
+                          &quot;id&quot; = 1:n_plt,
+                          &quot;high&quot; = c(&quot;high&quot;,&quot;low&quot;),
+                          &quot;PC&quot; = paste0(&quot;PC &quot;,1:4)) %&gt;% 
+        mutate(high = relevel(high, ref=&quot;low&quot;))
+# create container data frame for storing/plotting the average curves
+# for high/ow loadings on each of the first K PCs
+# this data frame will have 
+#  2 * K * 1440 rows
+#  2 = high/low
+#  K = # of PCs
+#  1440 = minutes in a day
+df_plt_ind_mu &lt;- expand.grid(&quot;sind&quot; = sind,
+                             &quot;high&quot; = c(&quot;high&quot;,&quot;low&quot;),
+                             &quot;PC&quot; = paste0(&quot;PC &quot;,1:4),
+                             &quot;value&quot; = NA)%&gt;% 
+        mutate(high = relevel(high, ref=&quot;low&quot;))
+# NOTE: the code below assumes an ordering of rows implied by the construction
+#       used by the expand.grid function
+
+# create empty vectors to store the average and individual curves, respectively
+mu_vec &lt;- c()
+ind_vec &lt;- c()
+# loop over eigenfunctions
+for(k in 1:K){
+        # get the 10th and 90th percentiles of the scores
+        q_k &lt;- quantile(fpca_MIMS_subj$scores[,k],c(0.1,0.9))
+        # get indices associated with low/high scores
+        inx_low_k &lt;- which(fpca_MIMS_subj$scores[,k] &lt;= q_k[1])
+        inx_high_k &lt;- which(fpca_MIMS_subj$scores[,k] &gt; q_k[2])
+        # get the average curves in each quantile: 0-.1, .9-1
+        mu_low_k &lt;- colMeans(fpca_MIMS_subj$Yhat[inx_low_k,])
+        mu_high_k &lt;- colMeans(fpca_MIMS_subj$Yhat[inx_high_k,])
+        # concatenate with existing mean vector
+        mu_vec &lt;- c(mu_vec, mu_low_k, mu_high_k)
+        # get individual curves for the n_plt randomly selected participants
+        val_low_k &lt;- as.vector(t(fpca_MIMS_subj$Yhat[sample(inx_low_k, size=n_plt),]))
+        val_high_k &lt;- as.vector(t(fpca_MIMS_subj$Yhat[sample(inx_high_k, size=n_plt),]))
+        # concatenate with existing individual vector
+        ind_vec &lt;- c(ind_vec, val_low_k, val_high_k)
+}
+# add the mean and individual vectors into the data frames constructed before the loop
+df_plt_ind_mu$value &lt;- mu_vec
+df_plt_ind$value &lt;- ind_vec</code></pre>
+<p>We can then plot the average and individual curves. We do see the
+individual curves which load highly on each of the first four PCs do, on
+average, largely reflect the shapes of the PCs, with this visual effect
+most strong for the first three PCs.</p>
+<pre class="r"><code>plt_ind &lt;- 
+        df_plt_ind %&gt;% 
+        mutate(id = factor(id),
+               id_high = paste0(id,&quot;_&quot;,high)) %&gt;%
+        ggplot() + 
+        geom_line(aes(x=sind, y=value, group=id_high, color=high),alpha=0.5) + 
+        facet_wrap(~PC,ncol=2) + 
+        theme_minimal(base_size=18) + 
+        scale_x_continuous(breaks=xinx, labels=xinx_lab) + 
+        theme(legend.position=&quot;none&quot;,
+              panel.grid.major.y = element_blank(),
+              panel.grid.major.x = element_blank(),
+              panel.grid.minor.x = element_blank(),
+              panel.grid.minor.y = element_blank(),
+              axis.line.x = element_line(size = 1, linetype = &quot;solid&quot;, colour = &quot;black&quot;),
+              axis.line.y = element_line(size = 1, linetype = &quot;solid&quot;, colour = &quot;black&quot;),
+              strip.text = element_text(face=&quot;bold&quot;, size=18, hjust=0.03),
+              axis.ticks.x = element_line(size = 1),
+              axis.ticks.y = element_line(size = 1)) + 
+        xlab(&quot;Time of Day (s)&quot;) + ylab(expression(&quot;MIMS: &quot; ~ W[i](s))) + 
+        geom_line(aes(x=sind, y=value, group=high, color=high),
+                  data=df_plt_ind_mu, lwd=2) 
+## Warning: The `size` argument of `element_line()` is deprecated as of ggplot2 3.4.0.
+## ℹ Please use the `linewidth` argument instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.
+plt_ind</code></pre>
+<p><img src="chapter_03_files/figure-html/plt_high_low-1.png" width="90%" /></p>
+</div>
+</div>
+<div id="generalized-functional-principal-components-analysis-gfpca"
+class="section level2">
+<h2>Generalized Functional Principal Components Analysis (GFPCA)</h2>
+<p>Functional data come in many forms. For many types of continuous
+functional data, the Gaussian assumption may not be reasonable. In this
+case, it may be be possible to apply a set of transformations <span
+class="math inline">\(g_s:\mathbb{R}\rightarrow\mathbb{R}\)</span> such
+that <span class="math inline">\(g_s\{W_i(s)\}\)</span> is approximately
+Gaussian for every <span class="math inline">\(s\in S\)</span>. In this
+case PCA and FPCA can be applied to the transformed data. However are
+not be always available or desirable. Moreover, when data are not
+continuous (e.g., binary) transformations do not solve the underlying
+problem. However, we can still apply the principals of FPCA if we assume
+a the data are generated from a latent Gaussian process.</p>
+<p>Suppose <span class="math inline">\(W_i(s)\)</span>, <span
+class="math inline">\(s\in S\)</span> are non-Gaussian observed data. We
+assume that <span class="math inline">\(W_i(s_j)\)</span> have a
+distribution with mean <span
+class="math inline">\(E\{W_i(s_j)\}=\mu_i(s_j)\)</span>, where <span
+class="math display">\[\begin{equation*}
+    \eta_i(s_j)=h\{\mu_i(s_j)\}=X_i(s_j)=\beta_0(s_j) +
+\sum_{k=1}^K\xi_{ik}\phi_k(s_j)\;,
+\end{equation*}\]</span> <span
+class="math inline">\(\eta_i(\cdot)\)</span> is the linear predictor,
+<span class="math inline">\(h(\cdot)\)</span> is a link function, <span
+class="math inline">\(\beta_0(\cdot)\)</span> is a function that varies
+smoothly along the domain <span class="math inline">\(S\)</span>, <span
+class="math inline">\(\phi_k(\cdot)\)</span> are assumed to be
+orthonormal functions in the <span class="math inline">\(L_2\)</span>
+norm, and <span class="math inline">\(\xi_{ik}\)</span> are mutually
+uncorrelated random variables. The distribution of <span
+class="math inline">\(W_i(s_j)\)</span> could belong to the exponential
+family or any type of non-Gaussian distribution. The expectation is that
+the number of orthonormal functions, <span
+class="math inline">\(K\)</span>, is not too large and the functions
+<span class="math inline">\(\phi_k(\cdot)\)</span>, <span
+class="math inline">\(k=1,\ldots,K\)</span>, are unknown and will be
+estimated from the data. The advantage of this conceptual model is that,
+once the functions <span class="math inline">\(\phi_k(\cdot)\)</span>
+are estimated, the model becomes a generalized linear mixed model (GLMM)
+with a small number of uncorrelated random effects. This transforms the
+high-dimensional functional model with non-Gaussian measurements into a
+low-dimensional GLMM that can be used for estimation and inference.</p>
+<div id="application-to-nhanes-1" class="section level3">
+<h3>Application to NHANES</h3>
+<p>The fast GFPCA method is first shown as presented in the book, as a
+4-step procedure estimated manually using mase <strong>R</strong>
+functions in combination with <strong>mgcv</strong>. Afterward, we show
+how to fit the same GFPCA model using the <strong>fastGFPCA</strong>
+package, which wraps this code into a single estimation function.</p>
+<p>The GFPCA method decribed in the book is applied to binarized
+physical activity (active/inactive) profiles. There are many possible
+ways to define such a profile. For the purposes of this application, we
+chose to first binarize the day-level data, then take the median across
+days (rounding up in the event of a tie). To do this we first read in
+the multi-level (day-level) physical activity data.</p>
+<pre class="r"><code>df_gfpca_subj_day &lt;- read_rds(here::here(&quot;data&quot;,&quot;nhanes_fda_with_r_ml.rds&quot;))</code></pre>
+<p>The next step is to binarize the day level data, then take the median
+across days. Here we use a threshold of 10.558 which was suggested by a
+recently published paper comparing MIMS to activity counts.</p>
+<pre class="r"><code>## Y_ij(s)
+# extract the day-level activity data
+Ymat &lt;- unclass(df_gfpca_subj_day$MIMS)
+## Y_ij^B(s)
+# binarize the data (this vectorizes the matrix), then put back in matrix format
+YBmat &lt;- matrix(as.numeric(Ymat &gt;= 10.558), nrow(Ymat), ncol(Ymat), byrow=FALSE)
+
+## Create X_i(s)
+# get unique IDs for all participants and their corresponding row indices
+uid &lt;- unique(df_gfpca_subj_day$SEQN)
+nid &lt;- length(uid)
+inx_rows &lt;- split(1:nrow(YBmat), factor(df_gfpca_subj_day$SEQN, levels=uid))
+# calculate X_i(s)
+Xmat &lt;- t(vapply(inx_rows, function(x) round(colMeans(YBmat[x,,drop=FALSE])),
+                 numeric(1440)))
+rm(Ymat, YBmat)</code></pre>
+<p>Having created our binarized activity profiles, we then set up a long
+data matrix which will be used for estimation.</p>
+<pre class="r"><code>## Put the data in long format
+sind &lt;- 1:1440
+df_gfpca &lt;- data.frame(SEQN = as.factor(rep(uid, each=1440)),
+                       X = as.vector(t(Xmat)),
+                       sind = sind)</code></pre>
+<p>To show what these binarized activity profiles look like, we plot
+profiles for four randomly selected participants.</p>
+<pre class="r"><code>## plot 4 profiles
+set.seed(191)
+n_plt &lt;- 4
+ids_plt &lt;- sample(uid, size=n_plt, replace=F)
+plt_profiles_gfpca &lt;- 
+        df_gfpca %&gt;% 
+        # filter(SEQN %in% paste0(&quot;SEQN &quot;, ids_plt)) %&gt;% 
+        filter(SEQN %in% as.character(ids_plt)) %&gt;%
+        mutate(sind_bin = floor(sind/60)) %&gt;% 
+        group_by(SEQN, sind_bin) %&gt;% 
+        mutate(sind_bin = mean(sind),
+                  X_bin = mean(X)) %&gt;% 
+        ungroup() %&gt;% 
+        ggplot() + 
+        geom_point(aes(x=sind, y=X), alpha=0.25) + 
+        geom_line(aes(x=sind_bin, y=X_bin),linewidth=1.5,color=&quot;red&quot;) + 
+        facet_wrap(~SEQN, ncol=2) + 
+        theme_minimal(base_size=18) + 
+        scale_x_continuous(breaks=xinx*1440, labels=xinx_lab) + 
+        scale_y_continuous(breaks=c(0,1), labels=c(&quot;0 (Inactive)&quot;,&quot;1 (Active)&quot;)) + 
+        theme(legend.position=&quot;none&quot;,
+              panel.grid.major.y = element_blank(),
+              panel.grid.major.x = element_blank(),
+              panel.grid.minor.x = element_blank(),
+              panel.grid.minor.y = element_blank(),
+              axis.line.x = element_line(size = 1, linetype = &quot;solid&quot;, colour = &quot;black&quot;),
+              axis.line.y = element_line(size = 1, linetype = &quot;solid&quot;, colour = &quot;black&quot;),
+              strip.text = element_text(face=&quot;bold&quot;, size=18, hjust=0.03),
+              axis.ticks.x = element_line(size = 1),
+              axis.ticks.y = element_line(size = 1)) + 
+        xlab(&quot;Time of Day (s)&quot;) + ylab(&quot;&quot;)  </code></pre>
+<p>Now, although the fast GFPCA methodology described in the book can
+indeed handle data on the order of the NHANES data, the execution time
+is still relatively long when compared to the expected compile times for
+a markdown document. To facilite fast compilation, here we restrict the
+sample to a subset of <span class="math inline">\(N=300\)</span>
+participants. Users interested in obtaining the full results need only
+comment out the chunk below.</p>
+<pre class="r"><code>set.seed(5)
+N_sub &lt;- 300
+uid_sub &lt;- sample(uid, size=N_sub, replace=F)
+df_gfpca &lt;- df_gfpca %&gt;% filter(SEQN %in% uid_sub)</code></pre>
+<p>The fast GFPCA method starts by fixing a value <span
+class="math inline">\(s\in S\)</span> and a neighborhood <span
+class="math inline">\(N_s\)</span> around <span
+class="math inline">\(s\)</span>. The following random intercept model
+is then estimated <span class="math display">\[\begin{equation}
+    \eta_i(s_j)=h\{\mu_i(s_j)\}=\beta_0(s)+X_i(s)\;\;{\rm
+for}\;\;{s_j\in N_s},
+    \label{eq:ch3_n4}
+\end{equation}\]</span> where <span
+class="math inline">\(\beta_0(s)\)</span> is the fixed intercept and
+<span class="math inline">\(X_i(s)\sim N(0,\sigma^2_s)\)</span> are
+independent random intercepts for <span class="math inline">\(s\in
+N_s\)</span> and <span class="math inline">\(i=1,\ldots,n\)</span>, and
+<span class="math inline">\(\eta_i(s)=\beta_0(s)+X_i(s)\)</span> is the
+linear predictor. We refer to the set of neighborhoods as bins, and
+define each bin by it’s midpoint and the neighborhood. We refer readers
+to the text for additional details. This choice is non-trivial, and open
+questions remain regarding how to optimally choose these bins. At a high
+level, these bins should cover the entire functional domain, and each
+bin should have enough data so that the local models are estimable
+(i.e., the data are not all 0 or all 1 in the case of binary data), and
+not be so wide as to cover regions where the underlying functions are
+expected to exhibit a high degree of curvature.</p>
+<p>This approach will produce estimators of <span
+class="math inline">\(X_i(s)\)</span> at every value of <span
+class="math inline">\(s\in S\)</span>. FPCA can then be applied to
+smooth these estimators across <span class="math inline">\(s\)</span>.
+An advantage of this approach is that it can be used with any
+distribution of <span class="math inline">\(W_i^*(s_j)\)</span> as long
+as the single-level mixed effects model can be fit and is readily
+extended to such scenarios as covariate adjusted models and
+multilevel/structured functional data (manuscripts in progress).</p>
+<p>The code below shows how to partition the 24 hour domain in 20 minute
+wide bins and fit the local GLMMs. For simplicity of presentation, here
+we do not take advantage of they cyclical nature of the data by creating
+bins which cross midnight (see the fastGFPCA function at the end of this
+section). Note that because we have subset the data (N=300) and there
+are a high proportion of 0s during the nighttime hours, you will see
+some convergence warnings. In practice these should be carefully
+inspected and evaluate whether bins need to be modified (e.g., widened
+during the nighttime).</p>
+<p>Note that to be consistent with the behavior of the
+<strong>fast_gfpca</strong> wrapper function, we use fast method for
+estimation of the local GLMMs (nAGQ=0 argument to the
+<strong>glmer</strong> function).</p>
+<pre class="r"><code>## Step 1: choose bins
+# bin width (minutes)
+w &lt;- 20
+#Add column for bin indicator
+df_gfpca_local &lt;- 
+        df_gfpca %&gt;%
+        mutate(sind_w = floor(sind / w) * w + w / 2)
+## Step 2: Fit separate GLMMs for each bin
+fit_gfpca_local &lt;-
+        df_gfpca_local %&gt;%
+        nest_by(sind_w) %&gt;%
+        mutate(fit = list(glmer(X ~ 1 + (1|SEQN),
+                                data = data, family = binomial,
+                                nAGQ = 0))) %&gt;%
+        summarize(y_i = coef(fit)$SEQN[[1]]) %&gt;%
+        ungroup()
+## boundary (singular) fit: see help(&#39;isSingular&#39;)
+## Warning: Returning more (or less) than 1 row per `summarise()` group was deprecated in
+## dplyr 1.1.0.
+## ℹ Please use `reframe()` instead.
+## ℹ When switching from `summarise()` to `reframe()`, remember that `reframe()`
+##   always returns an ungrouped data frame and adjust accordingly.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.
+## `summarise()` has grouped output by &#39;sind_w&#39;. You can override using the
+## `.groups` argument.</code></pre>
+<p>Next, for Step 3, we extract the estimated linear predictor for each
+paritcipant and perform FPCA on those predicted values via the
+<strong>fpca.face</strong> function.</p>
+<pre class="r"><code>#Re-arrange predicted log odds to wide format
+etamat &lt;- matrix(fit_gfpca_local$y_i, N_sub, 1440 / w + 1)
+#Estimate FPCA
+fPCA_local &lt;- fpca.face(etamat, pve = 0.95)</code></pre>
+<p>If we plot the first four eigenfunctions (see below), we find that
+the shapes are extremely similar to those presented in the text.</p>
+<pre class="r"><code>sind_bin &lt;- sort(unique(fit_gfpca_local$sind_w))
+matplot(sind_bin, fPCA_local$efunctions[,1:4],type=&#39;l&#39;, xlab=&quot;Time of Day (s)&quot;, ylab=expression(hat(phi)[k](s)), xaxt=&#39;n&#39;)
+axis(1, at=c(1,6,12,18,23)*60+1, labels=c(&quot;01:00&quot;,&quot;06:00&quot;,&quot;12:00&quot;,&quot;18:00&quot;,&quot;23:00&quot;))</code></pre>
+<p><img src="chapter_03_files/figure-html/fastGPFCA_step3_plot-1.png" width="90%" /></p>
+<p>We then need to evaluate the estimated eigenfunctions on the original
+grid. The code below shows how to do this using linear interpolation (as
+presented in the text). These re-evaluated eigenfunctions are added to
+the data frame used for model fitting to include as random slopes in our
+final model. Here we choose to use 4 eigenfunctions.</p>
+<p>Note that in the <strong>fastGFPCA</strong> function we evaluate the
+eigenfunctions exactly using the fact that the eigenfunctions provided
+by the <strong>fpca.face</strong> algorithm are a linear combination of
+B-splines.</p>
+<pre class="r"><code>K &lt;- 4
+#Linear interpolation of eigenfunctions on original grid
+sind_bin &lt;- sort(unique(df_gfpca_local$sind_w))
+phi_interp &lt;- matrix(NA, 1440, 4)
+colnames(phi_interp) &lt;- paste0(&quot;phi_&quot;, 1:K)
+for(k in 1:K) {
+        phi_local &lt;- fPCA_local$efunctions[,k]
+        interp_k &lt;- approx(sind_bin, y=phi_local, xout=sind)
+        phi_interp[,k] &lt;- interp_k$y
+}
+phi_interp &lt;- data.frame(phi_interp)
+phi_interp$sind &lt;- sind
+#Add these interpolated eigenfunctions to the long format dataframe
+df_gfpca &lt;- left_join(df_gfpca, phi_interp, by = &quot;sind&quot;)
+uid &lt;- unique(df_gfpca$SEQN)
+set.seed(19111)
+uid_sub &lt;- c(paste0(&quot;SEQN SEQN &quot;, c(ids_plt)), sample(uid, size=300, replace=F))
+df_gfpca_sub &lt;- 
+        df_gfpca %&gt;% 
+        filter(SEQN %in% uid_sub) %&gt;% 
+        mutate(SEQN = factor(str_extract(SEQN, &quot;[0-9]+&quot;))) %&gt;% 
+        drop_na()</code></pre>
+<p>Finally, for Step 4, we re-estimate the model conditional on the
+estimated eigenfunctions.</p>
+<pre class="r"><code>#Estimate the GLMM
+fit_gfpca &lt;-
+        bam(X ~ s(sind, bs = &quot;cc&quot;, k = 20) +
+                    s(SEQN, by = phi_1, bs = &quot;re&quot;) +
+                    s(SEQN, by = phi_2, bs = &quot;re&quot;) +
+                    s(SEQN, by = phi_3, bs = &quot;re&quot;) +
+                    s(SEQN, by = phi_4, bs = &quot;re&quot;),
+            method = &quot;fREML&quot;, discrete = TRUE, data = df_gfpca, 
+            family=binomial)</code></pre>
+<p>Alternatively, the method can be estimated using the convenient
+wrapper function <strong>fast_gfpca</strong> in the cleverly named
+<strong>fastGFPCA</strong> package. Note that the data input for this
+wrapper function requires a particular naming convention. Specifically,
+“id” for the participant identifier, “value” for the functional data,
+and “index” for the functional domain. The <strong>fast_gfpca</strong>
+supports cyclic/periodic data using the “periodicity” argument. Below,
+we estimate fast GFPCA on the NHANES data using non-overlapping bins of
+20 minutes and 4 eigenfunctions for the latent Gaussian process.</p>
+<pre class="r"><code>library(fastGFPCA)
+df_gfpca &lt;- 
+  df_gfpca %&gt;% 
+  mutate(id = SEQN, value = X, index = sind)
+fit_gfpca_wrap &lt;- fast_gfpca(Y=df_gfpca, overlap = F, binwidth=20, family=&quot;binomial&quot;,
+                             periodicity = TRUE, npc=4)</code></pre>
+<p>We can inspect the contents of the returned object. The function
+returns the final estimates for the linear predictor (Yhat), the
+estimated subject-specific scores from step 4 (scores), the population
+mean function (mu), the estiamted eigenfunctions (efunctions), and the
+estimated eigenvalues from Step 3 (evalues).</p>
+<pre class="r"><code>str(fit_gfpca_wrap)
+## List of 8
+##  $ Yhat      : num [1:300, 1:1440] -5.35 -4.28 -4.73 -4.63 -2.99 ...
+##  $ scores    : num [1:300, 1:4] 1.341 0.489 -0.391 1.1 -0.658 ...
+##  $ mu        : Named num [1:1440] -3.74 -3.76 -3.76 -3.77 -3.78 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:1440] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##  $ efunctions: num [1:1440, 1:4] -0.0706 -0.0721 -0.0736 -0.075 -0.0765 ...
+##  $ evalues   : num [1:4] 126.7 59 20.5 12.2
+##  $ npc       : num 4
+##  $ pve       : num NA
+##  $ family    :List of 12
+##   ..$ family    : chr &quot;binomial&quot;
+##   ..$ link      : chr &quot;logit&quot;
+##   ..$ linkfun   :function (mu)  
+##   ..$ linkinv   :function (eta)  
+##   ..$ variance  :function (mu)  
+##   ..$ dev.resids:function (y, mu, wt)  
+##   ..$ aic       :function (y, n, mu, wt, dev)  
+##   ..$ mu.eta    :function (eta)  
+##   ..$ initialize: language {     if (NCOL(y) == 1) { ...
+##   ..$ validmu   :function (mu)  
+##   ..$ valideta  :function (eta)  
+##   ..$ simulate  :function (object, nsim)  
+##   ..- attr(*, &quot;class&quot;)= chr &quot;family&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;fpca&quot;</code></pre>
+<p>Below we plot the estimated eigenfunctions obtained from the
+<strong>fastGFPCA::fast_gfpca</strong> function and from our manual
+coding of the fast GFPCA methodology for comparison. We see the
+estimates are effectively identical. Note that 1) the sign of the first
+and fourth eigenfunction was changed for ease of visual comparison
+(recall that eigenfunctions/scores are unique up to a sign); and 2) the
+magnitude of the eigenfunctions are not the same. This is because the
+<strong>fpca.face</strong> function returns orthonormal vectors (does
+not account for the scale of the domain). The
+<strong>fastGFPCA::fast_gfpca</strong> rescales the vectors internally
+so that the <em>eigenfunctions</em> are orthonormal.</p>
+<pre class="r"><code>par(mfrow=c(1,2))
+matplot(sind_bin, fPCA_local$efunctions[,1:4]*kronecker(t(c(-1,1,-1,1)), rep(1,nrow(fPCA_local$efunctions))),
+        type=&#39;l&#39;, xlab=&quot;Time of Day (s)&quot;,
+        main=&quot;&quot;, ylab=expression(hat(phi)[k](s)), xaxt=&#39;n&#39;)
+axis(1, at=c(1,6,12,18,23)*60+1, labels=c(&quot;01:00&quot;,&quot;06:00&quot;,&quot;12:00&quot;,&quot;18:00&quot;,&quot;23:00&quot;))
+
+matplot(1:1440, fit_gfpca_wrap$efunctions[,1:4],type=&#39;l&#39;, xlab=&quot;Time of Day (s)&quot;,
+        main=&quot;fastGFPCA::fast_gfpca&quot;,ylab=expression(hat(phi)[k](s)), xaxt=&#39;n&#39;)
+axis(1, at=c(1,6,12,18,23)*60+1, labels=c(&quot;01:00&quot;,&quot;06:00&quot;,&quot;12:00&quot;,&quot;18:00&quot;,&quot;23:00&quot;))</code></pre>
+<p><img src="chapter_03_files/figure-html/fast_gfpca_package_return_plot-1.png" width="90%" /></p>
+</div>
 </div>
 <div id="sparse-fpca-of-the-content-data-set" class="section level2">
 <h2>Sparse FPCA of the CONTENT data set</h2>
