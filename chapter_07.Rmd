@@ -13,6 +13,7 @@ library(tidyverse)
 library(mgcv)
 
 library(refund)
+library(cowplot)
 # library(refundr)
 
 # library(splines2)
@@ -48,6 +49,7 @@ library(tidyverse)
 library(survival)
 library(mgcv)
 library(refund)
+library(cowplot)
 
 df_cleaned <- readRDS("./data/nhanes_fda_with_r.rds")
 
@@ -267,11 +269,265 @@ summary(fit_M3, conf.int = FALSE)
 
 ### Linear Functional Cox Model
 
-TBA
+As discussed in Chapter 7.3 of the book, we consider the extension of the linear functional model to Cox regression, the Linear Functional Cox Model (LFCM). We motivate the model with an application to the NHANES 2011-2014 accelerometry data. As in previous chapters, the functional predictor, 24-hour activity profiles, is denoted as $W_i:S\rightarrow \mathbb{R}$ for each study participant, $i=1,\ldots,n$. The linear Cox model is then
+
+\begin{equation}
+\log \lambda_i\{t|\mathbf{Z}_i,W_i(\cdot)\} = 
+    \log\{\lambda_0(t)\} + \mathbf{Z}_i^t \boldsymbol{\gamma} + \int_S W_i(s)\beta(s)ds\;. 
+    \label{eq:ch7_n61}
+\end{equation}
+
+Before estimating this model, we first subset our data to those participants aged 50-80 (recall, data has been subset already to ages 50 and over). Additionally, we drop factor variables in the models (in this case just CHD) with levels "Don't know" and "refused".
+
+```{r lfcm_data_processing}
+## get a set of variables for subjects using pair-wise available data 
+## who meet our age criteria
+## and re-code dont know or refused as missing
+nhanes_df_surv <- 
+        df_cleaned %>% 
+        filter(age < 80) %>% 
+        ## replace don't know and refused levels with NA
+        mutate_if(.predicate=is.factor, .funs=function(x) recode_factor(x, "Don't know" = NA_character_, "Refused" = NA_character_)) %>% 
+        ## create mortality time in years
+        mutate(time = time/12) 
+```
+
+With the data set up, we first estimate the model using **refund::pfr** by using the **refund::lf** constructor for linear functional terms, applying a cyclic cubic regression spline basis to estimate the functional effect, $\beta$.
+
+
+
+```{r lfcm_fit_pfr}
+nS <- ncol(nhanes_df_surv$MIMS) # dimension of the functional predictor
+svec <- seq(0, 1, len = nS) # observed points on the functional domain
+fit_lfcm_pfr <- pfr(time ~ age + BMI + gender + CHD + 
+                       lf(MIMS, bs="cc",k=30,argvals=svec), 
+               method="REML", data=nhanes_df_surv,weights=nhanes_df_surv$event,
+               family=cox.ph)
+```
+
+As in the book, we now show how to fit the same model using **mgcv::gam** directly. To do this, we need to set up the relevant data matrices used for fitting the LFCM using our spline basis expansion combined with numerical apprxoimation of the integral term. Note that for simplicity of presentation we use Riemann integration to determine our quadrature weights, while **refund::pfr** uses Simpson's rule by default. The results from the two models will thus be very similar, but not identical. If we used Simpson's rule for assigning quadrature weights, the results would indeed by identical. 
+
+```{r lfcm_create_data_matrix}
+N <- nrow(nhanes_df_surv) # number of samples
+#Quadrature weights for Riemann integration
+lvec <- matrix(1 / nS, 1440, 1)
+# matrix containing quadrature weights for all participants
+L <- kronecker(matrix(1, N, 1),t(lvec))
+# matrix containing functional domain values
+S <- kronecker(matrix(1, N, 1), t(svec))
+nhanes_df_surv$S <- I(S)
+#Pointwise product of w i(s) and the quadrature weights, "L"
+nhanes_df_surv$W_L <- I(nhanes_df_surv$MIMS * L)
+```
+
+We then fit the model using the corresponding **mgcv::gam** syntax.
+
+```{r lfcm_fit_mgcv}
+fit_lfcm_mgcv <- gam(time ~ age + BMI + gender + CHD + 
+                       s(S, by=W_L, bs="cc",k=30), method="REML", 
+                data=nhanes_df_surv, weights=nhanes_df_surv$event,
+               family=cox.ph)
+```
+
+
+Finally, we plot the results from the two estimation procedures (point estimates and point-wise confidence intervals) using the plot method associated with the **mgcv::gam** and **refund::pfr** functions. The way to obtain estimated coefficient values and their corresponding standard errors is shown in the next subsection of this vignette.
+
+```{r lfcm_plot_mgcv_vs_pfr}
+
+xinx <- (c(1,6,12,18,23)*60+1)/1440
+xinx_lab <- c("01:00","06:00","12:00","18:00","23:00")
+par(mfrow=c(1,2))
+plot(fit_lfcm_pfr, rug=FALSE, shade=TRUE,xlab="Time of Day", ylab=expression(hat(beta)(s)), main="Estimate from refund::pfr()",
+     xaxt='n')
+abline(h=0,col='red',lty=2)
+axis(1, at=xinx, labels=xinx_lab)
+plot(fit_lfcm_mgcv, rug=FALSE, shade=TRUE,xlab="Time of Day", ylab=expression(hat(beta)(s)), main="Estimate from mgcv::gam()",
+     xaxt='n')
+abline(h=0,col='red',lty=2)
+axis(1, at=xinx, labels=xinx_lab)
+```
+
 
 ### Smooth Effects of Traditional and Functional Predictors
 
-TBA
+We not consider the scenario where we want to estimate a linear functional term and a non-linear effect of a scalar covariate in a Cox model framework. Suppose that an individual's covariate vector of non-functional predictors is $\mathbf{Z}_i = [\mathbf{Z}^t_{i,1}, \mathbf{Z}^t_{i,2} ]^t$, where $\mathbf{Z}_{i,1}$ is a vector of length $Q_1$ containing the covariates for which we assume a linear effect, and $\mathbf{Z}_{i,2}$ is a vector of length $Q_2$ containing the covariates for which we assume a non-linear (additive) effect. Here $Q=Q_1+Q_2$ is the total number of scalar covariates. The LFCM then becomes 
+\begin{align}
+    \log \lambda_i\{t|\mathbf{Z}_i, W_i(\cdot)\} &= 
+    \log\{\lambda_0(t)\} + \sum_{q=1}^{Q_1} \gamma_q Z_{iq} + \sum_{q=Q_1+1}^Q f_q(Z_{iq}) + \int_S W_i(s)\beta(s)ds \label{eq:lfcm_am}\;.
+\end{align}
+
+Returning to our data appliaction, suppose we want to let $Z_{i,1} = [\text{age}_i, \text{BMI}_i]^t$ and $Z_{i,2} = [\text{gender}_i, \text{CHD}_i]^t$. That is, we want to estimate non-linear effects of age and BMI on mortality, with linear effects for our categorical (binary) predictors of gender and CHD. 
+
+We first show how to fit a model with non-linear effects for age and BMI using the same syntax presented in previous chapters.
+
+```{r acm_fit_pfr}
+fit_acm <- gam(time ~  s(age,k=30,bs="cr") + s(BMI,k=30,bs="cr")+
+                       gender+CHD,
+               method="REML", 
+               data=nhanes_df_surv, weights=nhanes_df_surv$mortstat,
+               family=cox.ph)
+```
+
+We can add a linear functional term easily by moving to the **refund::pfr** function (alternatively, use **mgcv::gam** directly using the approach described above).
+
+```{r alfcm_fit_pfr}
+fit_lfcm_acm <- pfr(time ~ s(age,k=30,bs="cr") + s(BMI,k=30,bs="cr") + 
+                            gender + CHD + 
+                            lf(MIMS, bs="cc",k=30,argvals=svec), 
+                    method="REML", data=nhanes_df_surv,weights=nhanes_df_surv$mortstat,
+                    family=cox.ph)
+```
+
+The estimated coefficients can then be obtained using a call the the predict method for **refund::pfr** with type="terms".
+
+```{r acm_alfcm_get_coefs}
+aind <- seq(50,80,len=100)
+bind <- seq(15,80,len=100)
+df_pred <- data.frame("age" = aind,
+                      "BMI" = bind,
+                      gender="Male",CHD="No","MIMS"=I(matrix(nhanes_df_surv$MIMS[1,], 100, 1440, byrow=TRUE)))
+coefs_lfcm_acm <- predict(fit_lfcm_acm, newdata=df_pred,type='terms',se.fit=TRUE)
+coefs_lfcm_acm <- data.frame("est_age" = coefs_lfcm_acm$fit[,"s(age)"],
+                        "se_age" = coefs_lfcm_acm$se.fit[,"s(age)"],
+                        "est_bmi" = coefs_lfcm_acm$fit[,"s(BMI)"],
+                        "se_bmi" = coefs_lfcm_acm$se.fit[,"s(BMI)"])
+coefs_lfcm_acm <- 
+        coefs_lfcm_acm %>% 
+        mutate("LB_age" = est_age - qnorm(0.975)*se_age,
+               "UB_age" = est_age + qnorm(0.975)*se_age,
+               "LB_bmi" = est_bmi - qnorm(0.975)*se_bmi,
+               "UB_bmi" = est_bmi + qnorm(0.975)*se_bmi)
+beta_lfcm_acm <- coef(fit_lfcm_acm, n=100, select=3)
+coefs_lfcm_acm[["est_beta"]] <- beta_lfcm_acm$value[,1]
+coefs_lfcm_acm[["sind"]] <- beta_lfcm_acm$MIMS.argvals
+coefs_lfcm_acm[["LB_beta"]] <- beta_lfcm_acm$value[,1] - qnorm(0.975)*beta_lfcm_acm$se
+coefs_lfcm_acm[["UB_beta"]] <- beta_lfcm_acm$value[,1] + qnorm(0.975)*beta_lfcm_acm$se
+
+coefs_acm <- predict(fit_acm, newdata=df_pred,type='terms',se.fit=TRUE)
+coefs_acm <- data.frame("est_age" = coefs_acm$fit[,"s(age)"],
+                        "se_age" = coefs_acm$se.fit[,"s(age)"],
+                        "est_bmi" = coefs_acm$fit[,"s(BMI)"],
+                        "se_bmi" = coefs_acm$se.fit[,"s(BMI)"])
+coefs_acm <- 
+        coefs_acm %>% 
+        mutate("LB_age" = est_age - qnorm(0.975)*se_age,
+               "UB_age" = est_age + qnorm(0.975)*se_age,
+               "LB_bmi" = est_bmi - qnorm(0.975)*se_bmi,
+               "UB_bmi" = est_bmi + qnorm(0.975)*se_bmi)
+coefs_acm <- data.frame(dplyr::select(df_pred, -MIMS), coefs_acm)
+coefs_lfcm_acm <- data.frame(dplyr::select(df_pred, -MIMS), coefs_lfcm_acm)
+```
+
+We can then create Figure 7.10 in the textbook using the code below.
+
+```{r acm_alfcm_plot_coefs, fig.height=10, fig.width=15}
+lims_bmi <- max(abs(c(as.vector(unlist(coefs_acm[,c("LB_bmi","UB_bmi")])), as.vector(unlist(coefs_lfcm_acm[,c("LB_bmi","UB_bmi")]) ))))*c(-1,1)
+lims_age <- max(abs(c(as.vector(unlist(coefs_acm[,c("LB_age","UB_age")])), as.vector(unlist(coefs_lfcm_acm[,c("LB_age","UB_age")]) ))))*c(-1,1)
+lims_beta <- max(abs(as.vector(unlist(coefs_lfcm_acm[,c("LB_beta","UB_beta")] ))))*c(-1,1)
+plt_acm_age_coef  <- 
+        coefs_acm %>% 
+        ggplot() + 
+        geom_ribbon(aes(x=age, ymin=LB_age,ymax=UB_age),alpha=0.2) + 
+        geom_line(aes(x=age,y=est_age)) + 
+        geom_line(aes(x=age,y=est_age)) + 
+        geom_hline(yintercept=0, lty=2, color='red') +
+        xlab("Age (years)") + 
+        ylab("")+
+        theme_classic(base_size=18)+ ylim(lims_age)
+
+plt_acm_bmi_coef  <- 
+        coefs_acm %>% 
+        ggplot() + 
+        geom_ribbon(aes(x=BMI, ymin=LB_bmi,ymax=UB_bmi),alpha=0.2) + 
+        geom_line(aes(x=BMI,y=est_bmi)) + 
+        geom_line(aes(x=BMI,y=est_bmi)) + 
+        geom_hline(yintercept=0, lty=2, color='red') +
+        xlab("BMI") +
+        ylab("")+
+        theme_classic(base_size=18)+ ylim(lims_bmi)
+
+
+
+
+plt_lfcm_acm_age_coef  <- 
+        coefs_lfcm_acm %>% 
+        ggplot() + 
+        geom_ribbon(aes(x=age, ymin=LB_age,ymax=UB_age),alpha=0.2) + 
+        geom_line(aes(x=age,y=est_age)) + 
+        geom_line(aes(x=age,y=est_age)) + 
+        theme_classic(base_size=18)+ ylim(lims_age)+
+        geom_hline(yintercept=0, lty=2, color='red') +
+        xlab("Age (years)") +
+        ylab("")
+
+plt_lfcm_acm_bmi_coef  <- 
+        coefs_lfcm_acm %>% 
+        ggplot() + 
+        geom_ribbon(aes(x=BMI, ymin=LB_bmi,ymax=UB_bmi),alpha=0.2) + 
+        geom_line(aes(x=BMI,y=est_bmi)) + 
+        geom_line(aes(x=BMI,y=est_bmi)) + 
+        theme_classic(base_size=18) + ylim(lims_bmi) +
+        geom_hline(yintercept=0, lty=2, color='red') +
+        xlab("BMI") +
+        ylab("")
+plt_lfcm_acm_beta_coef  <- 
+        coefs_lfcm_acm %>% 
+        ggplot() + 
+        geom_ribbon(aes(x=sind, ymin=LB_beta,ymax=UB_beta),alpha=0.2) + 
+        geom_line(aes(x=sind,y=est_beta)) + 
+        geom_hline(yintercept=0, lty=2, color='red') +
+        theme_classic(base_size=18) + 
+        ylab("")+
+        scale_x_continuous(breaks=(c(1,6,12,18,23)*60+1)/1440, labels=c("01:00","06:00","12:00","18:00","23:00")) + 
+        xlab("Time of Day (s)") +ylim(lims_beta)
+
+
+title_coef_lfcm_v2 <- ggplot() + 
+        theme(panel.background = element_rect(fill = "black"),plot.title = element_text(size=18))+
+        labs(title = expression(bold("Functional Effect: " ~ hat(bold(beta))(s)  %+-%  bold("1.96") %*% SE(hat(bold(beta))(s)) ~ phantom(hat(bold(f))))))
+title_coef_acm_age <- ggplot() + 
+        theme(panel.background = element_rect(fill = "black"),plot.title = element_text(size=18))+
+        labs(title = expression(bold("Age Effect: " ~ hat(bold(f))(Age)  %+-%  bold("1.96") %*% SE(hat(bold(f))(Age)))))
+title_coef_acm_bmi <- ggplot() + 
+        theme(panel.background = element_rect(fill = "black"),plot.title = element_text(size=18))+
+        labs(title = expression(bold("BMI Effect: " ~ hat(bold(f))(BMI)  %+-%  bold("1.96") %*% SE(hat(bold(f))(BMI)))) )
+title_acm <- ggplot() + 
+        theme(panel.background = element_rect(fill = "black"),plot.title = element_text(size=18))+
+        labs(title = expression(bold("Additive Cox Model")))
+title_lfcm_acm <- ggplot() + 
+        theme(panel.background = element_rect(fill = "black"),plot.title = element_text(size=18))+
+        labs(title = expression(bold("(B) Functional Linear Additive Cox Model: Estimated Coefficients")))
+
+title_acm <- ggplot() + 
+        theme(panel.background = element_rect(fill = "black"),plot.title = element_text(size=18))+
+        labs(title = expression(bold("(A) Additive Cox Model: Estimated Coefficients")))
+
+
+
+title_coef_lfcm_acm <- plot_grid(NULL, title_coef_acm_age, title_coef_acm_bmi, title_coef_lfcm_v2, ncol=4, rel_widths = c(0.075,1,1,1))
+title_coef_acm <- plot_grid(NULL, title_coef_acm_age, title_coef_acm_bmi, NULL, ncol=4, rel_widths = c(0.075,1,1,1))
+
+plt_coef_acm_lfcm <- 
+        plot_grid(NULL, plt_lfcm_acm_age_coef, plt_lfcm_acm_bmi_coef, plt_lfcm_acm_beta_coef, ncol=4,
+                  label_size = 12, rel_widths = c(0.05,1,1,1))+
+        draw_label(x=0.03,y=0.53, label=expression("Lower Risk" %<-% "No Risk" %->% "Higher Risk"),
+                   angle=90,size=16)
+plt_coef_acm <- 
+        plot_grid(NULL, plt_acm_age_coef, plt_acm_bmi_coef, NULL, ncol=4,
+                  label_size = 12, rel_widths = c(0.05,1,1,1))+
+        draw_label(x=0.03,y=0.53, label=expression("Lower Risk" %<-% "No Risk" %->% "Higher Risk"),
+                   angle=90,size=16)
+
+plt_coef_acm_lfcm_comp <- plot_grid(title_lfcm_acm, title_coef_lfcm_acm,plt_coef_acm_lfcm, rel_heights = c(0.115,0.1385, 1),ncol=1 )
+plt_coef_acm_comp <- plot_grid(title_acm, title_coef_acm,plt_coef_acm, rel_heights = c(0.115,0.1385, 1),ncol=1 )
+
+plt_coefs_combined_acm_lfcm <- plot_grid(plt_coef_acm_comp, plt_coef_acm_lfcm_comp, ncol=1)
+plt_coefs_combined_acm_lfcm
+```
+
+
+
+
 
 ### Additive Functional Cox Model
 
