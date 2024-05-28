@@ -593,9 +593,9 @@ In this Section, we will consider several obvious and necessary extensions of th
 
 Most real-data analyses that involve a functional predictor will also include one or more scalar covariates. All methods in the previous section can easily be adapted to this setting. To be explicit, we are now interested in fitting models of the form
 \begin{equation}
-Y_i=\beta_0 + \int_{S} \beta_1 (s)X_{i}(s)\, ds + \bm{Z}_i^t\bm{\gamma}  + \epsilon_i\;,
+Y_i=\beta_0 + \int_{S} \beta_1 (s)X_{i}(s)\, ds + \mathbf{Z}_i^t\mathbf{\gamma}  + \epsilon_i\;,
 \end{equation}
-where $\bm{Z}_i$ is a $Q\times 1$ dimensional vector of scalar covariates for subject $i$ and $\bm{\gamma}$ is the vector of associated coefficients. 
+where $\mathbf{Z}_i$ is a $Q\times 1$ dimensional vector of scalar covariates for subject $i$ and $\mathbf{\gamma}$ is the vector of associated coefficients. 
 
 The code chunk below regresses `BMI` on `MIMS_mat` as a functional predictor and `age` and `gender` as scalar covariates using `pfr()`; recall that `pfr()` expects functional predictors to be structured as matrices. Except for the addition of `age` and `gender` in the formula, all other elements of the model fitting code have been seen before. 
 
@@ -634,7 +634,7 @@ bind_rows(pfr_adj_inf_df, pfr_inf_df) %>%
 
 It is frequently the case that more than one functional predictor is available; often the functions are observed over the same domain, but this is not necessary. The goal is to fit a model of the form
 \begin{equation}
-Y_i=\beta_0 + \sum_{r=1}^{R} \int_{S_r} \beta_r(s) X_{ir}(s)\, ds + \bm{Z}_i^t\bm{\gamma}  + \epsilon_i
+Y_i=\beta_0 + \sum_{r=1}^{R} \int_{S_r} \beta_r(s) X_{ir}(s)\, ds + \mathbf{Z}_i^t\mathbf{\gamma}  + \epsilon_i
 \end{equation}
 where $X_{ir}(s)$, $1 \leq r \leq R$ are functional predictors observed over domains $S_r$ with associated coefficient functions $\beta_r(s)$. The interpretation of the coefficients here is similar to that elsewhere; it is possible to interpret the effect of $X_{ir}(s)$ on the expected value of $Y_i$ through the coefficient $\beta_r(s)$, keeping all other functional and non-functional predictors fixed. As when adding scalar predictors to the "simple" scalar-on-function regression model,  techniques described previously can be readily adapted to this setting. 
 
@@ -677,9 +677,9 @@ pfr_mult_inf_df %>%
 
 ### Exponential family outcomes
 
-Outcomes that follow binomial, Poisson, and other exponential family distributions are common in practice, and require the use of a generalized linear model framework for estimation and inference. This is, of course, a natural extension to the estimation methods we favor. For example, given a binary outcome $Y_i$, scalar predictors $\bm{Z}_i$, and a functional predictor $X_i(s)$, one can pose the logistic scalar-on-function regression $E[Y_i|\{X_{i}(s):s\in S\},\mathbf{Z}_i] = \mu_i$, where 
+Outcomes that follow binomial, Poisson, and other exponential family distributions are common in practice, and require the use of a generalized linear model framework for estimation and inference. This is, of course, a natural extension to the estimation methods we favor. For example, given a binary outcome $Y_i$, scalar predictors $\mathbf{Z}_i$, and a functional predictor $X_i(s)$, one can pose the logistic scalar-on-function regression $E[Y_i|\{X_{i}(s):s\in S\},\mathbf{Z}_i] = \mu_i$, where 
 \begin{equation}
-g(\mu_i)= \beta_0 + \int_{S} \beta_1 (s)X_{i}(s)ds + \bm{Z}_i^t\bm{\gamma}\;, \label{eq:SoFR_mgcv}
+g(\mu_i)= \beta_0 + \int_{S} \beta_1 (s)X_{i}(s)ds + \mathbf{Z}_i^t\mathbf{\gamma}\;, \label{eq:SoFR_mgcv}
 \end{equation}
 where $g(\cdot)$ is the logit link function. Model parameters can be interpreted as log odd ratios or exponentiated to obtain odds ratios. Expanding the coefficient function in terms of a basis expansion again provides a mechanism for estimation and inference. Rather than minimizing a sum of squares or the penalized equivalent, one now minimizes a (penalized) log likelihood. Tuning parameters for penalized approaches can be selected in a variety of ways, but we continue to take advantage of the connection between roughness penalties and mixed model representations. Non-penalized approaches can be fit directly using `glm()`, while penalized models are available through `mgcv::gam()` or `pfr()`. 
 
